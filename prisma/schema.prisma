@@ -1,0 +1,340 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== PERSONEL ====================
+enum PersonelRol {
+  ADMIN
+  YONETICI
+  PERSONEL
+}
+
+model Personel {
+  id        String      @id @default(cuid())
+  visibleId String      @unique // 6 haneli kimlik
+  ad        String
+  soyad     String
+  parola    String
+  rol       PersonelRol @default(PERSONEL)
+  fotograf  String?     // Profil fotoğrafı URL
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Iliskiler - olusturan/guncelleyen olarak
+  createdMusteriler Musteri[] @relation("MusteriCreatedBy")
+  updatedMusteriler Musteri[] @relation("MusteriUpdatedBy")
+  createdLeads      Lead[]    @relation("LeadCreatedBy")
+  updatedLeads      Lead[]    @relation("LeadUpdatedBy")
+  createdGsmler     Gsm[]     @relation("GsmCreatedBy")
+  updatedGsmler     Gsm[]     @relation("GsmUpdatedBy")
+  createdAdresler   Adres[]   @relation("AdresCreatedBy")
+  updatedAdresler   Adres[]   @relation("AdresUpdatedBy")
+  createdTakipler   Takip[]   @relation("TakipCreatedBy")
+  updatedTakipler   Takip[]   @relation("TakipUpdatedBy")
+  createdNotlar     Not[]     @relation("NotCreatedBy")
+  createdTanitimlar Tanitim[] @relation("TanitimCreatedBy")
+  updatedTanitimlar Tanitim[] @relation("TanitimUpdatedBy")
+
+  // Lokasyon iliskileri
+  createdIller      Il[]      @relation("IlCreatedBy")
+  updatedIller      Il[]      @relation("IlUpdatedBy")
+  createdIlceler    Ilce[]    @relation("IlceCreatedBy")
+  updatedIlceler    Ilce[]    @relation("IlceUpdatedBy")
+  createdMahalleler Mahalle[] @relation("MahalleCreatedBy")
+  updatedMahalleler Mahalle[] @relation("MahalleUpdatedBy")
+
+  @@map("personeller")
+}
+
+// ==================== MUSTERI ====================
+model Musteri {
+  id         String  @id @default(cuid())
+  tc         String? @unique // TC Kimlik No
+  ad         String
+  soyad      String
+  faaliyet   String? // Richtext
+  pio        Boolean @default(false)
+  asli       Boolean @default(false)
+  fotograf   String? // URL/path
+  isArchived Boolean @default(false) // Arşivlenmiş mi?
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("MusteriCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("MusteriUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  gsmler   Gsm[]
+  adresler Adres[]
+  notlar   Not[]
+
+  @@index([ad, soyad])
+  @@index([tc])
+  @@map("musteriler")
+}
+
+// ==================== LEAD ====================
+model Lead {
+  id       String  @id @default(cuid())
+  tc       String?
+  ad       String
+  soyad    String
+  faaliyet String?
+  pio      Boolean @default(false)
+  asli     Boolean @default(false)
+  fotograf String?
+  isActive Boolean @default(true)
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("LeadCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("LeadUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  gsmler       Gsm[]
+  adresler     Adres[]
+  tanitimlar   TanitimKatilimci[]
+
+  @@index([ad, soyad])
+  @@map("leadler")
+}
+
+// ==================== GSM ====================
+model Gsm {
+  id        String   @id @default(cuid())
+  numara    String
+  musteriId String?
+  musteri   Musteri? @relation(fields: [musteriId], references: [id], onDelete: Cascade)
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  isPrimary Boolean  @default(false)
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("GsmCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("GsmUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  takipler Takip[]
+
+  @@index([numara])
+  @@index([musteriId])
+  @@index([leadId])
+  @@map("gsmler")
+}
+
+// ==================== LOKASYON MODELLERI ====================
+model Il {
+  id       String  @id @default(cuid())
+  ad       String  @unique
+  plaka    Int?    @unique
+  isActive Boolean @default(true)
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("IlCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("IlUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  ilceler Ilce[]
+
+  @@map("iller")
+}
+
+model Ilce {
+  id       String  @id @default(cuid())
+  ad       String
+  ilId     String
+  il       Il      @relation(fields: [ilId], references: [id])
+  isActive Boolean @default(true)
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("IlceCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("IlceUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  mahalleler Mahalle[]
+
+  @@unique([ilId, ad])
+  @@map("ilceler")
+}
+
+model Mahalle {
+  id       String  @id @default(cuid())
+  ad       String
+  ilceId   String
+  ilce     Ilce    @relation(fields: [ilceId], references: [id])
+  isActive Boolean @default(true)
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("MahalleCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("MahalleUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  adresler Adres[]
+
+  @@unique([ilceId, ad])
+  @@map("mahalleler")
+}
+
+// ==================== ADRES ====================
+model Adres {
+  id        String   @id @default(cuid())
+  ad        String?  // Adres adı (Ev, İş, vb.)
+  mahalleId String
+  mahalle   Mahalle  @relation(fields: [mahalleId], references: [id])
+  detay     String?  // Detaylı adres bilgisi - kapi no, daire vs.
+  musteriId String?
+  musteri   Musteri? @relation(fields: [musteriId], references: [id], onDelete: Cascade)
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  isPrimary Boolean  @default(false)
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("AdresCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("AdresUpdatedBy", fields: [updatedUserId], references: [id])
+
+  @@index([musteriId])
+  @@index([leadId])
+  @@map("adresler")
+}
+
+// ==================== TAKIP ====================
+enum TakipDurum {
+  UZATILACAK
+  DEVAM_EDECEK
+  SONLANDIRILACAK
+  UZATILDI
+}
+
+model Takip {
+  id            String     @id @default(cuid())
+  gsmId         String
+  gsm           Gsm        @relation(fields: [gsmId], references: [id], onDelete: Cascade)
+  baslamaTarihi DateTime   @default(now())
+  bitisTarihi   DateTime   // Default: baslamaTarihi + 90 gun
+  durum         TakipDurum @default(UZATILACAK)
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("TakipCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("TakipUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  alarmlar Alarm[]
+
+  @@index([gsmId])
+  @@index([bitisTarihi])
+  @@map("takipler")
+}
+
+// ==================== ALARM ====================
+enum AlarmTip {
+  TAKIP_BITIS
+  ODEME_HATIRLATMA
+  OZEL
+}
+
+enum AlarmDurum {
+  BEKLIYOR
+  TETIKLENDI
+  ONAYLANDI
+  IPTAL
+}
+
+model Alarm {
+  id          String     @id @default(cuid())
+  takipId     String?
+  takip       Takip?     @relation(fields: [takipId], references: [id], onDelete: Cascade)
+  tip         AlarmTip
+  tetikTarihi DateTime
+  mesaj       String?
+  durum       AlarmDurum @default(BEKLIYOR)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([tetikTarihi])
+  @@index([durum])
+  @@map("alarmlar")
+}
+
+// ==================== NOT ====================
+model Not {
+  id            String    @id @default(cuid())
+  musteriId     String
+  musteri       Musteri   @relation(fields: [musteriId], references: [id], onDelete: Cascade)
+  icerik        String    // Richtext
+  createdAt     DateTime  @default(now())
+  createdUserId String?
+  createdUser   Personel? @relation("NotCreatedBy", fields: [createdUserId], references: [id])
+
+  @@index([musteriId])
+  @@map("notlar")
+}
+
+// ==================== TANITIM ====================
+model Tanitim {
+  id     String   @id @default(cuid())
+  tarih  DateTime @default(now())
+  adres  String?  // Tanitim yapilan adres
+  notlar String?
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("TanitimCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("TanitimUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Coklu katilimci iliskisi
+  katilimcilar TanitimKatilimci[]
+
+  @@index([tarih])
+  @@map("tanitimlar")
+}
+
+model TanitimKatilimci {
+  id        String   @id @default(cuid())
+  tanitimId String
+  tanitim   Tanitim  @relation(fields: [tanitimId], references: [id], onDelete: Cascade)
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id])
+  gsmId     String?  // Hangi GSM ile iletisim kuruldu
+
+  @@unique([tanitimId, leadId])
+  @@map("tanitim_katilimcilari")
+}

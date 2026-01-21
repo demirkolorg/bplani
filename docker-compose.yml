@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bplani-db
+    environment:
+      POSTGRES_USER: bplani
+      POSTGRES_PASSWORD: bplani_secret_2024
+      POSTGRES_DB: bplani
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bplani"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: bplani-app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://bplani:bplani_secret_2024@db:5432/bplani
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    name: bplani_postgres_data
