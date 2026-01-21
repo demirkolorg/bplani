@@ -61,17 +61,17 @@ function TakipRow({
   const kalanGun = getKalanGun(takip.bitisTarihi)
 
   return (
-    <div className={`flex items-center gap-3 py-2 px-3 rounded-md ${isActive ? 'bg-muted/50' : 'bg-muted/20'}`}>
-      <Badge variant={durumVariants[takip.durum as TakipDurum]} className="text-[10px] px-1.5 py-0 shrink-0">
+    <div className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-colors ${isActive ? 'bg-gradient-to-r from-blue-50 to-blue-25 border border-blue-200 dark:from-blue-950/50 dark:to-blue-900/30 dark:border-blue-800/50' : 'bg-muted/30 border border-transparent'}`}>
+      <Badge variant={durumVariants[takip.durum as TakipDurum]} className="text-xs px-2 py-0.5 shrink-0 font-medium">
         {takipDurumLabels[takip.durum as TakipDurum]}
       </Badge>
 
-      <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0 flex-1">
-        <span className="whitespace-nowrap">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0 flex-1">
+        <span className="whitespace-nowrap font-medium">
           {format(new Date(takip.baslamaTarihi), "dd.MM.yy", { locale: tr })}
         </span>
-        <span>→</span>
-        <span className="whitespace-nowrap">
+        <span className="text-muted-foreground/50">→</span>
+        <span className="whitespace-nowrap font-medium">
           {format(new Date(takip.bitisTarihi), "dd.MM.yy", { locale: tr })}
         </span>
       </div>
@@ -82,10 +82,10 @@ function TakipRow({
         <Button
           variant="ghost"
           size="sm"
-          className="h-5 px-1.5 text-[10px]"
+          className="h-7 w-7 p-0 hover:bg-blue-100 dark:hover:bg-blue-900/50"
           onClick={onDurumChange}
         >
-          <RefreshCw className="h-3 w-3" />
+          <RefreshCw className="h-3.5 w-3.5" />
         </Button>
       )}
     </div>
@@ -113,15 +113,22 @@ function GsmRow({
   const hasPastTakipler = pastTakipler.length > 0
 
   return (
-    <div className={`border rounded-lg ${gsm.isPrimary ? 'border-primary/50 bg-primary/5' : ''}`}>
+    <div className={`border rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ${gsm.isPrimary ? 'border-primary/30 bg-gradient-to-r from-primary/5 to-transparent dark:from-primary/10' : 'border-border/50 bg-card'}`}>
       {/* GSM Header */}
-      <div className="flex items-center gap-3 p-3">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="font-mono font-medium">{gsm.numara}</span>
-          {gsm.isPrimary && (
-            <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500 shrink-0" />
-          )}
+      <div className="flex items-center gap-3 p-4">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="p-2 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
+            <Phone className="h-4 w-4" />
+          </div>
+          <div>
+            <span className="font-mono font-semibold text-base">{gsm.numara}</span>
+            {gsm.isPrimary && (
+              <div className="flex items-center gap-1 mt-0.5">
+                <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                <span className="text-xs font-medium text-amber-600">Birincil</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Aktif Takip Özeti */}
@@ -174,7 +181,7 @@ function GsmRow({
       </div>
 
       {/* Takip Detayları */}
-      <div className="px-3 pb-3 space-y-1.5">
+      <div className="px-4 pb-4 space-y-2">
         {activeTakip ? (
           <TakipRow
             takip={activeTakip}
@@ -184,9 +191,9 @@ function GsmRow({
         ) : (
           <button
             onClick={() => onTakipEkle(gsm)}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-md border border-dashed text-xs text-muted-foreground hover:bg-muted/50 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border-2 border-dashed border-muted-foreground/30 text-sm text-muted-foreground hover:border-primary/50 hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all duration-200"
           >
-            <Plus className="h-3 w-3" />
+            <Plus className="h-4 w-4" />
             Takip Ekle
           </button>
         )}
@@ -239,16 +246,15 @@ export function MusteriGsmList({ musteriId }: MusteriGsmListProps) {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Phone className="h-4 w-4" />
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Phone className="h-5 w-5 text-blue-600" />
             GSM Numaraları
             {gsmler && gsmler.length > 0 && (
-              <Badge variant="secondary" className="text-xs">{gsmler.length}</Badge>
+              <span className="text-sm font-normal text-muted-foreground">({gsmler.length})</span>
             )}
           </CardTitle>
           <Button size="sm" onClick={() => setShowGsmModal(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Ekle
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>

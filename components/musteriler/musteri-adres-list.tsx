@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Trash2, Star, StarOff } from "lucide-react"
+import { Plus, Trash2, Star, StarOff, MapPin } from "lucide-react"
 import { useAdreslerByMusteri, useCreateAdres, useUpdateAdres, useDeleteAdres } from "@/hooks/use-adres"
 
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { LokasyonSelector } from "@/components/lokasyon/lokasyon-selector"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface MusteriAdresListProps {
   musteriId: string
@@ -22,7 +30,7 @@ export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
   const updateAdres = useUpdateAdres()
   const deleteAdres = useDeleteAdres()
 
-  const [showAddForm, setShowAddForm] = React.useState(false)
+  const [showAddModal, setShowAddModal] = React.useState(false)
   const [adresAd, setAdresAd] = React.useState("")
   const [lokasyon, setLokasyon] = React.useState<{
     ilId?: string
@@ -48,7 +56,7 @@ export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
         musteriId,
         isPrimary: !adresler || adresler.length === 0,
       })
-      setShowAddForm(false)
+      setShowAddModal(false)
       setAdresAd("")
       setLokasyon({})
       setDetay("")
@@ -82,74 +90,26 @@ export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Adresler</CardTitle>
-        {!showAddForm && (
+    <>
+      <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-green-600" />
+            Adresler
+            {adresler && adresler.length > 0 && (
+              <span className="text-sm font-normal text-muted-foreground">({adresler.length})</span>
+            )}
+          </CardTitle>
           <Button
-            variant="outline"
             size="sm"
-            onClick={() => setShowAddForm(true)}
+            onClick={() => setShowAddModal(true)}
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Adres Ekle
+            <Plus className="h-4 w-4" />
           </Button>
-        )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Add new address form */}
-        {showAddForm && (
-          <div className="space-y-4 rounded-md border p-4">
-            <div className="space-y-2">
-              <Label htmlFor="adresAd">Adres Adı</Label>
-              <Input
-                id="adresAd"
-                value={adresAd}
-                onChange={(e) => setAdresAd(e.target.value)}
-                placeholder="Ev, İş, vb."
-              />
-            </div>
-            <LokasyonSelector
-              value={lokasyon}
-              onChange={setLokasyon}
-              required
-            />
-            <div className="space-y-2">
-              <Label htmlFor="adresDetay">Adres Detayı</Label>
-              <Textarea
-                id="adresDetay"
-                value={detay}
-                onChange={(e) => setDetay(e.target.value)}
-                placeholder="Sokak, kapı no, daire, kat vb. detaylar..."
-                rows={3}
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowAddForm(false)
-                  setAdresAd("")
-                  setLokasyon({})
-                  setDetay("")
-                  setError("")
-                }}
-              >
-                İptal
-              </Button>
-              <Button
-                onClick={handleAdd}
-                disabled={createAdres.isPending || !lokasyon.mahalleId}
-              >
-                {createAdres.isPending && (
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                )}
-                Ekle
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Address List */}
         {isLoading ? (
@@ -161,41 +121,63 @@ export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
             {adresler.map((adres) => (
               <li
                 key={adres.id}
-                className="flex items-start justify-between rounded-md border p-3"
+                className={`flex items-start gap-4 rounded-xl border p-4 transition-all duration-200 shadow-sm hover:shadow-md ${
+                  adres.isPrimary 
+                    ? 'border-primary/30 bg-gradient-to-r from-primary/5 to-transparent dark:from-primary/10' 
+                    : 'border-border/50 bg-card'
+                }`}
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    {adres.ad && (
-                      <span className="font-semibold">{adres.ad}:</span>
-                    )}
-                    <span className="font-medium">{formatAdres(adres)}</span>
-                    {adres.isPrimary && (
-                      <span className="text-xs text-primary">(Birincil)</span>
-                    )}
-                  </div>
-                  {adres.detay && (
-                    <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{adres.detay}</p>
-                  )}
+                <div className="p-2 rounded-lg bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400 shrink-0 mt-0.5">
+                  <MapPin className="h-4 w-4" />
                 </div>
-                <div className="flex gap-1 ml-2">
+                <div className="flex-1 min-w-0">
+                  <div className="space-y-1">
+                    {/* Adres Adı ve Birincil Badge */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {adres.ad && (
+                        <span className="font-semibold text-foreground">{adres.ad}</span>
+                      )}
+                      {adres.isPrimary && (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                          <span className="text-xs font-medium text-amber-600">Birincil</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Mahalle ve Lokasyon */}
+                    <div className="text-sm">
+                      <span className="font-medium text-muted-foreground">{adres.mahalle.ad} Mah.</span>
+                      {adres.detay && (
+                        <span className="text-muted-foreground"> {adres.detay}</span>
+                      )}
+                    </div>
+                    
+                    {/* İlçe / İl */}
+                    <div className="text-sm text-muted-foreground">
+                      {adres.mahalle.ilce.ad} / {adres.mahalle.ilce.il.ad}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 hover:bg-amber-50 dark:hover:bg-amber-900/50"
                     onClick={() => handleSetPrimary(adres.id)}
                     disabled={adres.isPrimary || updateAdres.isPending}
                     title={adres.isPrimary ? "Zaten birincil" : "Birincil yap"}
                   >
                     {adres.isPrimary ? (
-                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                      <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
                     ) : (
-                      <StarOff className="h-4 w-4" />
+                      <StarOff className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-red-50 dark:hover:bg-red-900/50"
                     onClick={() => setDeleteId(adres.id)}
                     title="Sil"
                   >
@@ -222,5 +204,68 @@ export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
         />
       </CardContent>
     </Card>
+
+    {/* Add Address Modal */}
+    <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Yeni Adres Ekle</DialogTitle>
+          <DialogDescription>
+            Müşteri için yeni bir adres ekleyin.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="adresAd">Adres Adı</Label>
+            <Input
+              id="adresAd"
+              value={adresAd}
+              onChange={(e) => setAdresAd(e.target.value)}
+              placeholder="Ev, İş, vb."
+            />
+          </div>
+          <LokasyonSelector
+            value={lokasyon}
+            onChange={setLokasyon}
+            required
+          />
+          <div className="space-y-2">
+            <Label htmlFor="adresDetay">Adres Detayı</Label>
+            <Textarea
+              id="adresDetay"
+              value={detay}
+              onChange={(e) => setDetay(e.target.value)}
+              placeholder="Sokak, kapı no, daire, kat vb. detaylar..."
+              rows={3}
+            />
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddModal(false)
+                setAdresAd("")
+                setLokasyon({})
+                setDetay("")
+                setError("")
+              }}
+            >
+              İptal
+            </Button>
+            <Button
+              onClick={handleAdd}
+              disabled={createAdres.isPending || !lokasyon.mahalleId}
+            >
+              {createAdres.isPending && (
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              )}
+              Ekle
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }

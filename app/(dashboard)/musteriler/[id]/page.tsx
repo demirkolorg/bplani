@@ -3,15 +3,22 @@
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Pencil, User, Phone, MapPin, FileText } from "lucide-react"
+import { ArrowLeft, Pencil, User, Phone, MapPin, FileText, Info } from "lucide-react"
 
 import { useMusteri } from "@/hooks/use-musteriler"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { MusteriFormModal } from "@/components/musteriler/musteri-form-modal"
 import { MusteriGsmList } from "@/components/musteriler/musteri-gsm-list"
 import { MusteriAdresList } from "@/components/musteriler/musteri-adres-list"
@@ -72,9 +79,9 @@ export default function MusteriDetayPage() {
 
   return (
     <div className="container mx-auto py-6">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-start gap-4">
+      {/* Clean Profile Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/musteriler">
               <ArrowLeft className="h-4 w-4" />
@@ -100,7 +107,7 @@ export default function MusteriDetayPage() {
             </h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               {musteri.tc && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground font-mono">
                   TC: {musteri.tc}
                 </span>
               )}
@@ -109,141 +116,36 @@ export default function MusteriDetayPage() {
               )}
               {musteri.pio && <Badge variant="secondary">PIO</Badge>}
               {musteri.asli && <Badge variant="secondary">Asli</Badge>}
+              {musteri.faaliyet && (
+                <Badge 
+                  variant="outline" 
+                  className="bg-blue-50 text-blue-700 border-blue-300 max-w-xs truncate"
+                  title={musteri.faaliyet.replace(/<[^>]*>/g, '')}
+                >
+                  {musteri.faaliyet.replace(/<[^>]*>/g, '').substring(0, 30)}{musteri.faaliyet.replace(/<[^>]*>/g, '').length > 30 ? '...' : ''}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
 
-        <Button onClick={() => setShowEditModal(true)}>
-          <Pencil className="mr-2 h-4 w-4" />
-          Düzenle
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">GSM</span>
-            </div>
-            <p className="text-2xl font-bold mt-2">
-              {musteri.gsmler?.length || 0}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Adres</span>
-            </div>
-            <p className="text-2xl font-bold mt-2">
-              {musteri.adresler?.length || 0}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Not</span>
-            </div>
-            <p className="text-2xl font-bold mt-2">
-              {musteri.notlar?.length || 0}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">Kayıt Tarihi</div>
-            <p className="text-lg font-medium mt-1">
-              {new Date(musteri.createdAt).toLocaleDateString("tr-TR")}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="genel" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="genel">Genel Bilgiler</TabsTrigger>
-          <TabsTrigger value="gsm">
-            GSM'ler ({musteri.gsmler?.length || 0})
-          </TabsTrigger>
-          <TabsTrigger value="adresler">
-            Adresler ({musteri.adresler?.length || 0})
-          </TabsTrigger>
-          <TabsTrigger value="notlar">
-            Notlar ({musteri.notlar?.length || 0})
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Genel Bilgiler */}
-        <TabsContent value="genel">
-          <Card>
-            <CardHeader>
-              <CardTitle>Genel Bilgiler</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Ad Soyad
-                  </p>
-                  <p className="mt-1">
-                    {musteri.ad} {musteri.soyad}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    TC Kimlik No
-                  </p>
-                  <p className="mt-1 font-mono">{musteri.tc || "-"}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    PIO (Potansiyel İş Ortağı)
-                  </p>
-                  <p className="mt-1">{musteri.pio ? "Evet" : "Hayır"}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Asli Müşteri
-                  </p>
-                  <p className="mt-1">{musteri.asli ? "Evet" : "Hayır"}</p>
-                </div>
-                {musteri.isArchived && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      Durum
-                    </p>
-                    <p className="mt-1">
-                      <Badge variant="destructive">Arşivlenmiş</Badge>
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {musteri.faaliyet && (
-                <>
-                  <Separator />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      Faaliyet
-                    </p>
-                    <div
-                      className="mt-2 prose prose-sm max-w-none dark:prose-invert"
-                      dangerouslySetInnerHTML={{ __html: musteri.faaliyet }}
-                    />
-                  </div>
-                </>
-              )}
-
-              <Separator />
-
-              {/* Log Bilgileri */}
-              <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex items-center gap-2">
+          {/* Sistem Bilgileri Modal */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Info className="h-4 w-4 mr-2" />
+                Bilgi
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Sistem Bilgileri</DialogTitle>
+                <DialogDescription>
+                  Müşteri kaydı ve güncellemeler hakkında teknik bilgiler
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
                     Oluşturulma
@@ -255,6 +157,7 @@ export default function MusteriDetayPage() {
                     </p>
                   )}
                 </div>
+                <Separator />
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
                     Son Güncelleme
@@ -267,25 +170,57 @@ export default function MusteriDetayPage() {
                   )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </DialogContent>
+          </Dialog>
 
-        {/* GSM'ler */}
-        <TabsContent value="gsm">
+          <Button onClick={() => setShowEditModal(true)}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Düzenle
+          </Button>
+        </div>
+      </div>
+
+      {/* Compact Stats */}
+      <div className="flex items-center gap-6 mb-6 p-4 bg-muted/50 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Phone className="h-4 w-4 text-blue-600" />
+          <span className="text-sm text-muted-foreground">GSM:</span>
+          <span className="font-semibold">{musteri.gsmler?.length || 0}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-green-600" />
+          <span className="text-sm text-muted-foreground">Adres:</span>
+          <span className="font-semibold">{musteri.adresler?.length || 0}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-orange-600" />
+          <span className="text-sm text-muted-foreground">Not:</span>
+          <span className="font-semibold">{musteri.notlar?.length || 0}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Üye:</span>
+          <span>{new Date(musteri.createdAt).toLocaleDateString("tr-TR")}</span>
+        </div>
+      </div>
+
+      {/* Main Content - 3 Column Layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        
+        {/* Sol Sütun - GSM ve Takipler */}
+        <div className="space-y-6">
           <MusteriGsmList musteriId={id} />
-        </TabsContent>
+        </div>
 
-        {/* Adresler */}
-        <TabsContent value="adresler">
+        {/* Orta Sütun - Adresler */}
+        <div className="space-y-6">
           <MusteriAdresList musteriId={id} />
-        </TabsContent>
+        </div>
 
-        {/* Notlar */}
-        <TabsContent value="notlar">
+        {/* Sağ Sütun - Notlar */}
+        <div className="space-y-6">
           <MusteriNotList musteriId={id} />
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
 
       {/* Edit Modal */}
       <MusteriFormModal

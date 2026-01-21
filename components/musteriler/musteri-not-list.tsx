@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Pencil, Trash2, FileText } from "lucide-react"
 import { useNotlarByMusteri, useCreateNot, useUpdateNot, useDeleteNot } from "@/hooks/use-not"
 
 import { Button } from "@/components/ui/button"
@@ -110,20 +110,26 @@ export function MusteriNotList({ musteriId }: MusteriNotListProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Notlar</CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setShowAddModal(true)
-            setIcerik("")
-            setError("")
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Not Ekle
-        </Button>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <FileText className="h-5 w-5 text-orange-600" />
+            Notlar
+            {notlar && notlar.length > 0 && (
+              <span className="text-sm font-normal text-muted-foreground">({notlar.length})</span>
+            )}
+          </CardTitle>
+          <Button
+            size="sm"
+            onClick={() => {
+              setShowAddModal(true)
+              setIcerik("")
+              setError("")
+            }}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Note List */}
@@ -136,35 +142,40 @@ export function MusteriNotList({ musteriId }: MusteriNotListProps) {
             {notlar.map((not) => (
               <li
                 key={not.id}
-                className="rounded-md border p-4"
+                className="rounded-xl border border-border/50 bg-card p-4 shadow-sm hover:shadow-md transition-all duration-200"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex gap-4">
+                  <div className="p-2 rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400 shrink-0 mt-0.5">
+                    <FileText className="h-4 w-4" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="whitespace-pre-wrap text-sm">{not.icerik}</p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <span>{formatDate(not.createdAt)}</span>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{not.icerik}</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">{formatDate(not.createdAt)}</span>
+                      </div>
                       {not.createdUser && (
                         <>
-                          <span>•</span>
-                          <span>{not.createdUser.ad} {not.createdUser.soyad}</span>
+                          <span className="text-muted-foreground/50">•</span>
+                          <span className="font-medium">{not.createdUser.ad} {not.createdUser.soyad}</span>
                         </>
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-1 shrink-0">
+                  <div className="flex flex-col gap-1 shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-8 w-8 hover:bg-blue-50 dark:hover:bg-blue-900/50"
                       onClick={() => openEditModal({ id: not.id, icerik: not.icerik })}
                       title="Düzenle"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-4 w-4 text-muted-foreground" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-red-50 dark:hover:bg-red-900/50"
                       onClick={() => setDeleteId(not.id)}
                       title="Sil"
                     >
