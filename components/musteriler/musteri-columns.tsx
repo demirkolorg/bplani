@@ -131,7 +131,7 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
         const sorted = [...gsmler].sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
         return (
           <div className="flex flex-col gap-0.5">
-            {sorted.slice(0, 2).map((gsm, index) => (
+            {sorted.map((gsm, index) => (
               <span
                 key={gsm.id}
                 className={`font-mono text-sm ${index > 0 ? "text-muted-foreground" : ""}`}
@@ -139,9 +139,6 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
                 {gsm.numara}
               </span>
             ))}
-            {sorted.length > 2 && (
-              <span className="text-xs text-muted-foreground">+{sorted.length - 2} daha</span>
-            )}
           </div>
         )
       },
@@ -154,17 +151,18 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
         if (!adresler || adresler.length === 0) {
           return <span className="text-muted-foreground">-</span>
         }
-        // Sort: primary first, show only first
+        // Sort: primary first
         const sorted = [...adresler].sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
-        const first = sorted[0]
         return (
           <div className="flex flex-col gap-0.5">
-            <span className="text-sm">
-              {first.mahalle.ilce.ad} / {first.mahalle.ilce.il.ad}
-            </span>
-            {sorted.length > 1 && (
-              <span className="text-xs text-muted-foreground">+{sorted.length - 1} daha</span>
-            )}
+            {sorted.map((adres, index) => (
+              <span
+                key={adres.id}
+                className={`text-sm ${index > 0 ? "text-muted-foreground" : ""}`}
+              >
+                {adres.mahalle.ad} / {adres.mahalle.ilce.ad} / {adres.mahalle.ilce.il.ad}
+              </span>
+            ))}
           </div>
         )
       },
