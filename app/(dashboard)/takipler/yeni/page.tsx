@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, X, User, Phone, Check, Search, CalendarIcon } fr
 import { format, parse, isValid } from "date-fns"
 import { tr } from "date-fns/locale"
 
-import { useAllGsmler, type GsmWithMusteri } from "@/hooks/use-gsm"
+import { useAllGsmler, type GsmWithKisi } from "@/hooks/use-gsm"
 import { useBulkCreateTakip } from "@/hooks/use-takip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -55,10 +55,10 @@ export default function YeniTakipPage() {
     if (!searchLeft.trim()) return availableGsmler
     const term = searchLeft.toLowerCase()
     return availableGsmler.filter((gsm) => {
-      const musteriName = gsm.musteri
-        ? `${gsm.musteri.ad} ${gsm.musteri.soyad}`.toLowerCase()
+      const kisiName = gsm.kisi
+        ? `${gsm.kisi.ad} ${gsm.kisi.soyad}`.toLowerCase()
         : ""
-      return gsm.numara.includes(term) || musteriName.includes(term)
+      return gsm.numara.includes(term) || kisiName.includes(term)
     })
   }, [availableGsmler, searchLeft])
 
@@ -66,10 +66,10 @@ export default function YeniTakipPage() {
     if (!searchRight.trim()) return selectedGsmler
     const term = searchRight.toLowerCase()
     return selectedGsmler.filter((gsm) => {
-      const musteriName = gsm.musteri
-        ? `${gsm.musteri.ad} ${gsm.musteri.soyad}`.toLowerCase()
+      const kisiName = gsm.kisi
+        ? `${gsm.kisi.ad} ${gsm.kisi.soyad}`.toLowerCase()
         : ""
-      return gsm.numara.includes(term) || musteriName.includes(term)
+      return gsm.numara.includes(term) || kisiName.includes(term)
     })
   }, [selectedGsmler, searchRight])
 
@@ -126,7 +126,7 @@ export default function YeniTakipPage() {
     onClick,
     actionIcon,
   }: {
-    gsm: GsmWithMusteri
+    gsm: GsmWithKisi
     onClick: () => void
     actionIcon: React.ReactNode
   }) => (
@@ -139,10 +139,10 @@ export default function YeniTakipPage() {
           <User className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="min-w-0">
-          {gsm.musteri ? (
+          {gsm.kisi ? (
             <>
               <p className="font-medium truncate">
-                {gsm.musteri.ad} {gsm.musteri.soyad}
+                {gsm.kisi.ad} {gsm.kisi.soyad}
               </p>
               <p className="text-sm text-muted-foreground font-mono">
                 {gsm.numara}

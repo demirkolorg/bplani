@@ -1,5 +1,9 @@
 import { z } from "zod"
 
+// KisiTip enum
+export const kisiTipValues = ["LEAD", "MUSTERI"] as const
+export type KisiTip = (typeof kisiTipValues)[number]
+
 // TC Kimlik No validation (11 digits, specific algorithm)
 const tcKimlikSchema = z.string()
   .length(11, "TC Kimlik No 11 haneli olmalıdır")
@@ -16,8 +20,9 @@ const tcKimlikSchema = z.string()
   .optional()
   .nullable()
 
-// Create Musteri schema
-export const createMusteriSchema = z.object({
+// Create Kisi schema
+export const createKisiSchema = z.object({
+  tip: z.enum(kisiTipValues).default("LEAD"),
   tc: tcKimlikSchema,
   ad: z.string().min(1, "Ad zorunludur").max(100, "Ad en fazla 100 karakter olabilir"),
   soyad: z.string().min(1, "Soyad zorunludur").max(100, "Soyad en fazla 100 karakter olabilir"),
@@ -27,14 +32,15 @@ export const createMusteriSchema = z.object({
   fotograf: z.string().max(500, "Fotoğraf yolu en fazla 500 karakter olabilir").optional().nullable(),
 })
 
-// Update Musteri schema (all fields optional)
-export const updateMusteriSchema = createMusteriSchema.partial()
+// Update Kisi schema (all fields optional)
+export const updateKisiSchema = createKisiSchema.partial()
 
 // List query params schema
-export const listMusteriQuerySchema = z.object({
+export const listKisiQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   search: z.string().optional(),
+  tip: z.enum(kisiTipValues).optional(),
   isArchived: z.coerce.boolean().optional(),
   pio: z.coerce.boolean().optional(),
   asli: z.coerce.boolean().optional(),
@@ -43,6 +49,12 @@ export const listMusteriQuerySchema = z.object({
 })
 
 // Types
-export type CreateMusteriInput = z.infer<typeof createMusteriSchema>
-export type UpdateMusteriInput = z.infer<typeof updateMusteriSchema>
-export type ListMusteriQuery = z.infer<typeof listMusteriQuerySchema>
+export type CreateKisiInput = z.infer<typeof createKisiSchema>
+export type UpdateKisiInput = z.infer<typeof updateKisiSchema>
+export type ListKisiQuery = z.infer<typeof listKisiQuerySchema>
+
+// Kisi tip labels for display
+export const kisiTipLabels: Record<KisiTip, string> = {
+  LEAD: "Lead",
+  MUSTERI: "Müşteri",
+}

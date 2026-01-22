@@ -36,6 +36,7 @@ interface LokasyonSelectorProps {
   required?: boolean
   className?: string
   defaultIlPlaka?: number // Varsayılan il plaka kodu (örn: 65 için Van)
+  compact?: boolean // Dikey düzen için kompakt mod
 }
 
 // Van'ın plaka kodu
@@ -49,6 +50,7 @@ export function LokasyonSelector({
   required,
   className,
   defaultIlPlaka = DEFAULT_IL_PLAKA,
+  compact = false,
 }: LokasyonSelectorProps) {
   const [selectedIlId, setSelectedIlId] = React.useState(value?.ilId || "")
   const [selectedIlceId, setSelectedIlceId] = React.useState(value?.ilceId || "")
@@ -114,10 +116,10 @@ export function LokasyonSelector({
   const selectedMahalle = mahalleler?.find((m) => m.id === selectedMahalleId)
 
   return (
-    <div className={cn("grid gap-4 sm:grid-cols-3", className)}>
+    <div className={cn(compact ? "space-y-2" : "grid gap-4 sm:grid-cols-3", className)}>
       {/* İl */}
-      <div className="space-y-2">
-        <Label>
+      <div className={compact ? "space-y-1" : "space-y-2"}>
+        <Label className={compact ? "text-xs" : ""}>
           İl {required && <span className="text-destructive">*</span>}
         </Label>
         <Popover open={ilOpen} onOpenChange={setIlOpen}>
@@ -128,6 +130,7 @@ export function LokasyonSelector({
               aria-expanded={ilOpen}
               className={cn(
                 "w-full justify-between font-normal",
+                compact && "h-9 text-sm",
                 error?.il && "border-destructive",
                 !selectedIl && "text-muted-foreground"
               )}
@@ -167,12 +170,12 @@ export function LokasyonSelector({
             </Command>
           </PopoverContent>
         </Popover>
-        {error?.il && <p className="text-sm text-destructive">{error.il}</p>}
+        {error?.il && <p className={cn(compact ? "text-xs" : "text-sm", "text-destructive")}>{error.il}</p>}
       </div>
 
       {/* İlçe */}
-      <div className="space-y-2">
-        <Label>
+      <div className={compact ? "space-y-1" : "space-y-2"}>
+        <Label className={compact ? "text-xs" : ""}>
           İlçe {required && <span className="text-destructive">*</span>}
         </Label>
         <Popover open={ilceOpen} onOpenChange={setIlceOpen}>
@@ -183,6 +186,7 @@ export function LokasyonSelector({
               aria-expanded={ilceOpen}
               className={cn(
                 "w-full justify-between font-normal",
+                compact && "h-9 text-sm",
                 error?.ilce && "border-destructive",
                 !selectedIlce && "text-muted-foreground"
               )}
@@ -224,12 +228,12 @@ export function LokasyonSelector({
             </Command>
           </PopoverContent>
         </Popover>
-        {error?.ilce && <p className="text-sm text-destructive">{error.ilce}</p>}
+        {error?.ilce && <p className={cn(compact ? "text-xs" : "text-sm", "text-destructive")}>{error.ilce}</p>}
       </div>
 
       {/* Mahalle */}
-      <div className="space-y-2">
-        <Label>
+      <div className={compact ? "space-y-1" : "space-y-2"}>
+        <Label className={compact ? "text-xs" : ""}>
           Mahalle {required && <span className="text-destructive">*</span>}
         </Label>
         <Popover open={mahalleOpen} onOpenChange={setMahalleOpen}>
@@ -240,6 +244,7 @@ export function LokasyonSelector({
               aria-expanded={mahalleOpen}
               className={cn(
                 "w-full justify-between font-normal",
+                compact && "h-9 text-sm",
                 error?.mahalle && "border-destructive",
                 !selectedMahalle && "text-muted-foreground"
               )}
@@ -281,7 +286,7 @@ export function LokasyonSelector({
             </Command>
           </PopoverContent>
         </Popover>
-        {error?.mahalle && <p className="text-sm text-destructive">{error.mahalle}</p>}
+        {error?.mahalle && <p className={cn(compact ? "text-xs" : "text-sm", "text-destructive")}>{error.mahalle}</p>}
       </div>
     </div>
   )

@@ -3,40 +3,40 @@ import prisma from "@/lib/prisma"
 import { createGsmSchema, updateGsmSchema, bulkCreateGsmSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 
-// GET /api/gsmler - List GSMs for a musteri, lead, or all
+// GET /api/gsmler - List GSMs for a kisi or all (for takip creation)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const musteriId = searchParams.get("musteriId")
-    const leadId = searchParams.get("leadId")
+    const kisiId = searchParams.get("kisiId")
     const all = searchParams.get("all")
     const search = searchParams.get("search")
 
-    // If all=true, return all GSMs with musteri info
+    // If all=true, return all GSMs with kisi info (for takip creation)
     if (all === "true") {
       const where: Record<string, unknown> = {}
 
-      // Filter to only müşteri GSMs (not leads)
-      where.musteriId = { not: null }
+      // Filter to only MÜŞTERİ kişi GSMs (leads can't have takip)
+      where.kisi = { tip: "MUSTERI" }
 
-      // Search by numara or musteri name
+      // Search by numara or kisi name
       if (search) {
         where.OR = [
           { numara: { contains: search, mode: "insensitive" } },
-          { musteri: { ad: { contains: search, mode: "insensitive" } } },
-          { musteri: { soyad: { contains: search, mode: "insensitive" } } },
+          { kisi: { ad: { contains: search, mode: "insensitive" } } },
+          { kisi: { soyad: { contains: search, mode: "insensitive" } } },
         ]
       }
 
       const gsmler = await prisma.gsm.findMany({
         where,
-        orderBy: [{ musteri: { ad: "asc" } }, { numara: "asc" }],
+        orderBy: [{ kisi: { ad: "asc" } }, { numara: "asc" }],
         include: {
-          musteri: {
+          kisi: {
             select: {
               id: true,
               ad: true,
               soyad: true,
+              tip: true,
             },
           },
         },
@@ -46,19 +46,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(gsmler)
     }
 
-    if (!musteriId && !leadId) {
+    if (!kisiId) {
       return NextResponse.json(
-        { error: "musteriId veya leadId parametresi gerekli" },
+        { error: "kisiId parametresi gerekli" },
         { status: 400 }
       )
     }
 
-    const where: Record<string, unknown> = {}
-    if (musteriId) where.musteriId = musteriId
-    if (leadId) where.leadId = leadId
-
     const gsmler = await prisma.gsm.findMany({
-      where,
+      where: { kisiId },
       orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
       include: {
         takipler: {
@@ -127,13 +123,13 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const { musteriId, leadId, gsmler } = validatedData.data
+      const { kisiId, gsmler } = validatedData.data
 
       // If any GSM is marked as primary, unset existing primaries first
       const hasPrimary = gsmler.some((g) => g.isPrimary)
       if (hasPrimary) {
         await prisma.gsm.updateMany({
-          where: musteriId ? { musteriId } : { leadId: leadId! },
+          where: { kisiId },
           data: { isPrimary: false },
         })
       }
@@ -141,8 +137,7 @@ export async function POST(request: NextRequest) {
       const createdGsmler = await prisma.gsm.createMany({
         data: gsmler.map((gsm) => ({
           ...gsm,
-          musteriId: musteriId ?? null,
-          leadId: leadId ?? null,
+          kisiId,
           createdUserId: validUserId,
           updatedUserId: validUserId,
         })),
@@ -162,9 +157,8 @@ export async function POST(request: NextRequest) {
 
     // If this GSM is primary, unset existing primaries
     if (validatedData.data.isPrimary) {
-      const { musteriId, leadId } = validatedData.data
       await prisma.gsm.updateMany({
-        where: musteriId ? { musteriId } : { leadId: leadId! },
+        where: { kisiId: validatedData.data.kisiId },
         data: { isPrimary: false },
       })
     }
@@ -223,9 +217,7 @@ export async function PUT(request: NextRequest) {
     // If setting as primary, unset existing primaries
     if (validatedData.data.isPrimary) {
       await prisma.gsm.updateMany({
-        where: existing.musteriId
-          ? { musteriId: existing.musteriId, id: { not: id } }
-          : { leadId: existing.leadId!, id: { not: id } },
+        where: { kisiId: existing.kisiId, id: { not: id } },
         data: { isPrimary: false },
       })
     }

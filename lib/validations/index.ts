@@ -1,4 +1,4 @@
-export * from "./musteri"
+export * from "./kisi"
 export * from "./gsm"
 export * from "./adres"
 export * from "./lokasyon"

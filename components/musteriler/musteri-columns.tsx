@@ -1,23 +1,15 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react"
-import Link from "next/link"
+import { ArrowUpDown } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import type { Musteri } from "@/hooks/use-musteriler"
+import type { Kisi } from "@/hooks/use-kisiler"
 import type { SortOption } from "@/components/shared/data-table"
 
-// Müşteri tablosu için özel sıralama seçenekleri
-export const musteriSortOptions: SortOption[] = [
+// Kişi tablosu için özel sıralama seçenekleri
+export const kisiSortOptions: SortOption[] = [
   { label: "Ad (A → Z)", value: "ad-asc", column: "ad", direction: "asc" },
   { label: "Ad (Z → A)", value: "ad-desc", column: "ad", direction: "desc" },
   { label: "Soyad (A → Z)", value: "soyad-asc", column: "soyad", direction: "asc" },
@@ -26,11 +18,7 @@ export const musteriSortOptions: SortOption[] = [
   { label: "TC (Büyük → Küçük)", value: "tc-desc", column: "tc", direction: "desc" },
 ]
 
-interface ColumnOptions {
-  onDelete?: (id: string) => void
-}
-
-export function getMusteriColumns({ onDelete }: ColumnOptions = {}): ColumnDef<Musteri>[] {
+export function getKisiColumns(): ColumnDef<Kisi>[] {
   return [
     // Hidden columns for sorting (date fields)
     {
@@ -56,12 +44,36 @@ export function getMusteriColumns({ onDelete }: ColumnOptions = {}): ColumnDef<M
     },
     // Visible columns
     {
+      id: "tip",
+      accessorKey: "tip",
+      header: "Tip",
+      cell: ({ row }) => {
+        const tip = row.original.tip
+        return (
+          <Badge
+            variant="outline"
+            className={
+              tip === "MUSTERI"
+                ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
+                : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
+            }
+          >
+            {tip === "MUSTERI" ? "Müşteri" : "Aday"}
+          </Badge>
+        )
+      },
+    },
+    {
       id: "tc",
       accessorKey: "tc",
       header: "TC Kimlik",
       cell: ({ row }) => {
         const tc = row.original.tc
-        return tc || <span className="text-muted-foreground">-</span>
+        return tc ? (
+          <span className="font-mono text-sm">{tc}</span>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )
       },
     },
     {
@@ -88,6 +100,26 @@ export function getMusteriColumns({ onDelete }: ColumnOptions = {}): ColumnDef<M
       },
     },
     {
+      id: "faaliyet",
+      header: "Faaliyet",
+      cell: ({ row }) => {
+        const faaliyet = row.original.faaliyet
+        if (!faaliyet) {
+          return <span className="text-muted-foreground">-</span>
+        }
+        // HTML taglerini temizle ve kısalt
+        const cleanText = faaliyet.replace(/<[^>]*>/g, "")
+        return (
+          <span
+            className="text-sm max-w-[200px] truncate block"
+            title={cleanText}
+          >
+            {cleanText.length > 40 ? cleanText.substring(0, 40) + "..." : cleanText}
+          </span>
+        )
+      },
+    },
+    {
       id: "gsm",
       header: "GSM",
       cell: ({ row }) => {
@@ -99,7 +131,7 @@ export function getMusteriColumns({ onDelete }: ColumnOptions = {}): ColumnDef<M
         const sorted = [...gsmler].sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
         return (
           <div className="flex flex-col gap-0.5">
-            {sorted.map((gsm, index) => (
+            {sorted.slice(0, 2).map((gsm, index) => (
               <span
                 key={gsm.id}
                 className={`font-mono text-sm ${index > 0 ? "text-muted-foreground" : ""}`}
@@ -107,6 +139,9 @@ export function getMusteriColumns({ onDelete }: ColumnOptions = {}): ColumnDef<M
                 {gsm.numara}
               </span>
             ))}
+            {sorted.length > 2 && (
+              <span className="text-xs text-muted-foreground">+{sorted.length - 2} daha</span>
+            )}
           </div>
         )
       },
@@ -119,18 +154,17 @@ export function getMusteriColumns({ onDelete }: ColumnOptions = {}): ColumnDef<M
         if (!adresler || adresler.length === 0) {
           return <span className="text-muted-foreground">-</span>
         }
-        // Sort: primary first
+        // Sort: primary first, show only first
         const sorted = [...adresler].sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
+        const first = sorted[0]
         return (
           <div className="flex flex-col gap-0.5">
-            {sorted.map((adres, index) => (
-              <span
-                key={adres.id}
-                className={`text-sm ${index > 0 ? "text-muted-foreground" : ""}`}
-              >
-                {adres.mahalle.ad} / {adres.mahalle.ilce.ad} / {adres.mahalle.ilce.il.ad}
-              </span>
-            ))}
+            <span className="text-sm">
+              {first.mahalle.ilce.ad} / {first.mahalle.ilce.il.ad}
+            </span>
+            {sorted.length > 1 && (
+              <span className="text-xs text-muted-foreground">+{sorted.length - 1} daha</span>
+            )}
           </div>
         )
       },
@@ -156,46 +190,6 @@ export function getMusteriColumns({ onDelete }: ColumnOptions = {}): ColumnDef<M
           <Badge variant="default">Evet</Badge>
         ) : (
           <Badge variant="secondary">Hayır</Badge>
-        )
-      },
-    },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => {
-        const musteri = row.original
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Menüyü aç</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/musteriler/${musteri.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Görüntüle
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/musteriler/${musteri.id}?edit=true`}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Düzenle
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => onDelete?.(musteri.id)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Sil
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         )
       },
     },

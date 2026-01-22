@@ -3,26 +3,21 @@ import prisma from "@/lib/prisma"
 import { createAdresSchema, updateAdresSchema, bulkCreateAdresSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 
-// GET /api/adresler - List addresses for a musteri or lead
+// GET /api/adresler - List addresses for a kisi
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const musteriId = searchParams.get("musteriId")
-    const leadId = searchParams.get("leadId")
+    const kisiId = searchParams.get("kisiId")
 
-    if (!musteriId && !leadId) {
+    if (!kisiId) {
       return NextResponse.json(
-        { error: "musteriId veya leadId parametresi gerekli" },
+        { error: "kisiId parametresi gerekli" },
         { status: 400 }
       )
     }
 
-    const where: Record<string, unknown> = {}
-    if (musteriId) where.musteriId = musteriId
-    if (leadId) where.leadId = leadId
-
     const adresler = await prisma.adres.findMany({
-      where,
+      where: { kisiId },
       orderBy: [{ isPrimary: "desc" }, { createdAt: "desc" }],
       include: {
         mahalle: {
@@ -74,13 +69,13 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const { musteriId, leadId, adresler } = validatedData.data
+      const { kisiId, adresler } = validatedData.data
 
       // If any address is marked as primary, unset existing primaries first
       const hasPrimary = adresler.some((a) => a.isPrimary)
       if (hasPrimary) {
         await prisma.adres.updateMany({
-          where: musteriId ? { musteriId } : { leadId: leadId! },
+          where: { kisiId },
           data: { isPrimary: false },
         })
       }
@@ -88,8 +83,7 @@ export async function POST(request: NextRequest) {
       const createdAdresler = await prisma.adres.createMany({
         data: adresler.map((adres) => ({
           ...adres,
-          musteriId: musteriId ?? null,
-          leadId: leadId ?? null,
+          kisiId,
           createdUserId: validUserId,
           updatedUserId: validUserId,
         })),
@@ -109,9 +103,8 @@ export async function POST(request: NextRequest) {
 
     // If this address is primary, unset existing primaries
     if (validatedData.data.isPrimary) {
-      const { musteriId, leadId } = validatedData.data
       await prisma.adres.updateMany({
-        where: musteriId ? { musteriId } : { leadId: leadId! },
+        where: { kisiId: validatedData.data.kisiId },
         data: { isPrimary: false },
       })
     }
@@ -181,9 +174,7 @@ export async function PUT(request: NextRequest) {
     // If setting as primary, unset existing primaries
     if (validatedData.data.isPrimary) {
       await prisma.adres.updateMany({
-        where: existing.musteriId
-          ? { musteriId: existing.musteriId, id: { not: id } }
-          : { leadId: existing.leadId!, id: { not: id } },
+        where: { kisiId: existing.kisiId, id: { not: id } },
         data: { isPrimary: false },
       })
     }

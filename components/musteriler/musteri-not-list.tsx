@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Plus, Pencil, Trash2, FileText, MoreHorizontal } from "lucide-react"
-import { useNotlarByMusteri, useCreateNot, useUpdateNot, useDeleteNot } from "@/hooks/use-not"
+import { useNotlarByKisi, useCreateNot, useUpdateNot, useDeleteNot } from "@/hooks/use-not"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,12 +25,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 
-interface MusteriNotListProps {
-  musteriId: string
+interface KisiNotListProps {
+  kisiId: string
 }
 
-export function MusteriNotList({ musteriId }: MusteriNotListProps) {
-  const { data: notlar, isLoading } = useNotlarByMusteri(musteriId)
+export function KisiNotList({ kisiId }: KisiNotListProps) {
+  const { data: notlar, isLoading } = useNotlarByKisi(kisiId)
   const createNot = useCreateNot()
   const updateNot = useUpdateNot()
   const deleteNot = useDeleteNot()
@@ -50,7 +50,7 @@ export function MusteriNotList({ musteriId }: MusteriNotListProps) {
     setError("")
     try {
       await createNot.mutateAsync({
-        musteriId,
+        kisiId,
         icerik: icerik.trim(),
       })
       setShowAddModal(false)
@@ -206,7 +206,7 @@ export function MusteriNotList({ musteriId }: MusteriNotListProps) {
             <DialogHeader>
               <DialogTitle>{isEditing ? "Notu Düzenle" : "Yeni Not"}</DialogTitle>
               <DialogDescription>
-                {isEditing ? "Not içeriğini güncelleyin." : "Müşteri için yeni bir not ekleyin."}
+                {isEditing ? "Not içeriğini güncelleyin." : "Kişi için yeni bir not ekleyin."}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">

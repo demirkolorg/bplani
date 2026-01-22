@@ -3,21 +3,21 @@ import prisma from "@/lib/prisma"
 import { createNotSchema, updateNotSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 
-// GET /api/notlar - List notes for a musteri
+// GET /api/notlar - List notes for a kisi
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const musteriId = searchParams.get("musteriId")
+    const kisiId = searchParams.get("kisiId")
 
-    if (!musteriId) {
+    if (!kisiId) {
       return NextResponse.json(
-        { error: "musteriId parametresi gerekli" },
+        { error: "kisiId parametresi gerekli" },
         { status: 400 }
       )
     }
 
     const notlar = await prisma.not.findMany({
-      where: { musteriId },
+      where: { kisiId },
       orderBy: { createdAt: "desc" },
       include: {
         createdUser: {

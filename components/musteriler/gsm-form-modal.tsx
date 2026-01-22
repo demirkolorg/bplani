@@ -19,11 +19,11 @@ import {
 interface GsmFormModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  musteriId: string
+  kisiId: string
   isFirstGsm?: boolean
 }
 
-export function GsmFormModal({ open, onOpenChange, musteriId, isFirstGsm }: GsmFormModalProps) {
+export function GsmFormModal({ open, onOpenChange, kisiId, isFirstGsm }: GsmFormModalProps) {
   const createGsm = useCreateGsm()
   const [numara, setNumara] = React.useState("")
   const [error, setError] = React.useState("")
@@ -40,7 +40,7 @@ export function GsmFormModal({ open, onOpenChange, musteriId, isFirstGsm }: GsmF
     try {
       await createGsm.mutateAsync({
         numara: numara.trim(),
-        musteriId,
+        kisiId,
         isPrimary: isFirstGsm ?? false,
       })
       setNumara("")
@@ -70,7 +70,7 @@ export function GsmFormModal({ open, onOpenChange, musteriId, isFirstGsm }: GsmF
               Yeni GSM Ekle
             </DialogTitle>
             <DialogDescription>
-              Müşteriye yeni bir GSM numarası ekleyin
+              Kişiye yeni bir GSM numarası ekleyin
             </DialogDescription>
           </DialogHeader>
 

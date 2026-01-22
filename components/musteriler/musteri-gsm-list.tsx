@@ -4,7 +4,7 @@ import * as React from "react"
 import { Plus, Star, StarOff, MoreHorizontal, Trash2, Phone, RefreshCw, PlusCircle, ChevronDown, ChevronRight, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
-import { useGsmlerByMusteri, useUpdateGsm, useDeleteGsm, type GsmWithTakipler, type GsmTakip } from "@/hooks/use-gsm"
+import { useGsmlerByKisi, useUpdateGsm, useDeleteGsm, type GsmWithTakipler, type GsmTakip } from "@/hooks/use-gsm"
 import { takipDurumLabels, type TakipDurum } from "@/lib/validations"
 
 import { Button } from "@/components/ui/button"
@@ -22,8 +22,8 @@ import { GsmFormModal } from "./gsm-form-modal"
 import { TakipDurumModal } from "./takip-durum-modal"
 import { TakipEkleModal } from "./takip-ekle-modal"
 
-interface MusteriGsmListProps {
-  musteriId: string
+interface KisiGsmListProps {
+  kisiId: string
 }
 
 const durumVariants: Record<TakipDurum, "default" | "secondary" | "destructive" | "outline"> = {
@@ -222,8 +222,8 @@ function GsmRow({
   )
 }
 
-export function MusteriGsmList({ musteriId }: MusteriGsmListProps) {
-  const { data: gsmler, isLoading } = useGsmlerByMusteri(musteriId)
+export function KisiGsmList({ kisiId }: KisiGsmListProps) {
+  const { data: gsmler, isLoading } = useGsmlerByKisi(kisiId)
   const updateGsm = useUpdateGsm()
   const deleteGsm = useDeleteGsm()
 
@@ -287,7 +287,7 @@ export function MusteriGsmList({ musteriId }: MusteriGsmListProps) {
       <GsmFormModal
         open={showGsmModal}
         onOpenChange={setShowGsmModal}
-        musteriId={musteriId}
+        kisiId={kisiId}
         isFirstGsm={!gsmler || gsmler.length === 0}
       />
 

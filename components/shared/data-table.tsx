@@ -150,6 +150,8 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean
   sortOptions?: SortOption[]
   defaultSort?: { column: string; direction: "asc" | "desc" }
+  onRowClick?: (row: TData) => void
+  rowWrapper?: (row: TData, children: React.ReactNode) => React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -161,6 +163,8 @@ export function DataTable<TData, TValue>({
   isLoading,
   sortOptions = [],
   defaultSort,
+  onRowClick,
+  rowWrapper,
 }: DataTableProps<TData, TValue>) {
   const styles = densityStyles[density]
 
@@ -498,19 +502,33 @@ export function DataTable<TData, TValue>({
                 </td>
               </tr>
             ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className={cn("align-middle [&:has([role=checkbox])]:pr-0", styles.cell)}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const cells = row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className={cn("align-middle [&:has([role=checkbox])]:pr-0", styles.cell)}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))
+
+                // If rowWrapper is provided, use it (for context menu support)
+                if (rowWrapper) {
+                  return rowWrapper(row.original, cells)
+                }
+
+                // Default row rendering
+                return (
+                  <tr
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={cn(
+                      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+                      onRowClick && "cursor-pointer"
+                    )}
+                    onClick={() => onRowClick?.(row.original)}
+                  >
+                    {cells}
+                  </tr>
+                )
+              })
             ) : (
               <tr>
                 <td colSpan={columns.length} className="h-24 text-center">

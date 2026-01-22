@@ -1,22 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { CreateGsmInput, UpdateGsmInput, BulkCreateGsmInput } from "@/lib/validations"
-import { musteriKeys } from "./use-musteriler"
+import type { CreateGsmInput, UpdateGsmInput, BulkCreateGsmInput, KisiTip } from "@/lib/validations"
+import { kisiKeys } from "./use-kisiler"
 
 export interface Gsm {
   id: string
   numara: string
   isPrimary: boolean
-  musteriId: string | null
-  leadId: string | null
+  kisiId: string
   createdAt: string
   updatedAt: string
 }
 
-export interface GsmWithMusteri extends Gsm {
-  musteri: {
+export interface GsmWithKisi extends Gsm {
+  kisi: {
     id: string
     ad: string
     soyad: string
+    tip: KisiTip
   } | null
 }
 
@@ -52,13 +52,12 @@ export interface GsmWithTakipler extends Gsm {
 // Query keys
 export const gsmKeys = {
   all: ["gsmler"] as const,
-  allWithMusteri: () => [...gsmKeys.all, "withMusteri"] as const,
-  byMusteri: (musteriId: string) => [...gsmKeys.all, "musteri", musteriId] as const,
-  byLead: (leadId: string) => [...gsmKeys.all, "lead", leadId] as const,
+  allWithKisi: () => [...gsmKeys.all, "withKisi"] as const,
+  byKisi: (kisiId: string) => [...gsmKeys.all, "kisi", kisiId] as const,
 }
 
 // Fetch functions
-async function fetchAllGsmler(): Promise<GsmWithMusteri[]> {
+async function fetchAllGsmler(): Promise<GsmWithKisi[]> {
   const response = await fetch("/api/gsmler?all=true")
   if (!response.ok) {
     const error = await response.json()
@@ -67,17 +66,8 @@ async function fetchAllGsmler(): Promise<GsmWithMusteri[]> {
   return response.json()
 }
 
-async function fetchGsmlerByMusteri(musteriId: string): Promise<GsmWithTakipler[]> {
-  const response = await fetch(`/api/gsmler?musteriId=${musteriId}`)
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || "GSM'ler yüklenirken hata oluştu")
-  }
-  return response.json()
-}
-
-async function fetchGsmlerByLead(leadId: string): Promise<Gsm[]> {
-  const response = await fetch(`/api/gsmler?leadId=${leadId}`)
+async function fetchGsmlerByKisi(kisiId: string): Promise<GsmWithTakipler[]> {
+  const response = await fetch(`/api/gsmler?kisiId=${kisiId}`)
   if (!response.ok) {
     const error = await response.json()
     throw new Error(error.error || "GSM'ler yüklenirken hata oluştu")
@@ -137,24 +127,16 @@ async function deleteGsm(id: string): Promise<void> {
 // Hooks
 export function useAllGsmler() {
   return useQuery({
-    queryKey: gsmKeys.allWithMusteri(),
+    queryKey: gsmKeys.allWithKisi(),
     queryFn: fetchAllGsmler,
   })
 }
 
-export function useGsmlerByMusteri(musteriId: string) {
+export function useGsmlerByKisi(kisiId: string) {
   return useQuery({
-    queryKey: gsmKeys.byMusteri(musteriId),
-    queryFn: () => fetchGsmlerByMusteri(musteriId),
-    enabled: !!musteriId,
-  })
-}
-
-export function useGsmlerByLead(leadId: string) {
-  return useQuery({
-    queryKey: gsmKeys.byLead(leadId),
-    queryFn: () => fetchGsmlerByLead(leadId),
-    enabled: !!leadId,
+    queryKey: gsmKeys.byKisi(kisiId),
+    queryFn: () => fetchGsmlerByKisi(kisiId),
+    enabled: !!kisiId,
   })
 }
 
@@ -164,13 +146,8 @@ export function useCreateGsm() {
   return useMutation({
     mutationFn: createGsm,
     onSuccess: (data) => {
-      if (data.musteriId) {
-        queryClient.invalidateQueries({ queryKey: gsmKeys.byMusteri(data.musteriId) })
-        queryClient.invalidateQueries({ queryKey: musteriKeys.detail(data.musteriId) })
-      }
-      if (data.leadId) {
-        queryClient.invalidateQueries({ queryKey: gsmKeys.byLead(data.leadId) })
-      }
+      queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(data.kisiId) })
+      queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
     },
   })
 }
@@ -181,13 +158,8 @@ export function useBulkCreateGsm() {
   return useMutation({
     mutationFn: bulkCreateGsm,
     onSuccess: (_, variables) => {
-      if (variables.musteriId) {
-        queryClient.invalidateQueries({ queryKey: gsmKeys.byMusteri(variables.musteriId) })
-        queryClient.invalidateQueries({ queryKey: musteriKeys.detail(variables.musteriId) })
-      }
-      if (variables.leadId) {
-        queryClient.invalidateQueries({ queryKey: gsmKeys.byLead(variables.leadId) })
-      }
+      queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(variables.kisiId) })
+      queryClient.invalidateQueries({ queryKey: kisiKeys.detail(variables.kisiId) })
     },
   })
 }
@@ -198,13 +170,8 @@ export function useUpdateGsm() {
   return useMutation({
     mutationFn: updateGsm,
     onSuccess: (data) => {
-      if (data.musteriId) {
-        queryClient.invalidateQueries({ queryKey: gsmKeys.byMusteri(data.musteriId) })
-        queryClient.invalidateQueries({ queryKey: musteriKeys.detail(data.musteriId) })
-      }
-      if (data.leadId) {
-        queryClient.invalidateQueries({ queryKey: gsmKeys.byLead(data.leadId) })
-      }
+      queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(data.kisiId) })
+      queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
     },
   })
 }
@@ -215,7 +182,7 @@ export function useDeleteGsm() {
   return useMutation({
     mutationFn: deleteGsm,
     onSuccess: () => {
-      // Invalidate all gsm queries since we don't know which customer/lead it belonged to
+      // Invalidate all gsm queries since we don't know which kisi it belonged to
       queryClient.invalidateQueries({ queryKey: gsmKeys.all })
     },
   })

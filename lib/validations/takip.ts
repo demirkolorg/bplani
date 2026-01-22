@@ -33,6 +33,7 @@ export const updateTakipSchema = z.object({
   baslamaTarihi: z.coerce.date().optional(),
   bitisTarihi: z.coerce.date().optional(),
   durum: takipDurumEnum.optional(),
+  isActive: z.boolean().optional(),
 }).refine((data) => {
   if (data.baslamaTarihi && data.bitisTarihi) {
     return data.bitisTarihi >= data.baslamaTarihi
@@ -49,7 +50,7 @@ export const listTakipQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(20),
   search: z.string().optional(),
   gsmId: z.string().cuid().optional(),
-  musteriId: z.string().cuid().optional(),
+  kisiId: z.string().cuid().optional(),
   durum: takipDurumEnum.optional(),
   bitisTarihiBaslangic: z.coerce.date().optional(),
   bitisTarihiBitis: z.coerce.date().optional(),

@@ -27,10 +27,8 @@ model Personel {
   updatedAt DateTime    @updatedAt
 
   // Iliskiler - olusturan/guncelleyen olarak
-  createdMusteriler Musteri[] @relation("MusteriCreatedBy")
-  updatedMusteriler Musteri[] @relation("MusteriUpdatedBy")
-  createdLeads      Lead[]    @relation("LeadCreatedBy")
-  updatedLeads      Lead[]    @relation("LeadUpdatedBy")
+  createdKisiler    Kisi[]    @relation("KisiCreatedBy")
+  updatedKisiler    Kisi[]    @relation("KisiUpdatedBy")
   createdGsmler     Gsm[]     @relation("GsmCreatedBy")
   updatedGsmler     Gsm[]     @relation("GsmUpdatedBy")
   createdAdresler   Adres[]   @relation("AdresCreatedBy")
@@ -52,74 +50,51 @@ model Personel {
   @@map("personeller")
 }
 
-// ==================== MUSTERI ====================
-model Musteri {
-  id         String  @id @default(cuid())
-  tc         String? @unique // TC Kimlik No
-  ad         String
-  soyad      String
-  faaliyet   String? // Richtext
-  pio        Boolean @default(false)
-  asli       Boolean @default(false)
-  fotograf   String? // URL/path
-  isArchived Boolean @default(false) // Arşivlenmiş mi?
-
-  // Loglama
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  createdUserId String?
-  updatedUserId String?
-  createdUser   Personel? @relation("MusteriCreatedBy", fields: [createdUserId], references: [id])
-  updatedUser   Personel? @relation("MusteriUpdatedBy", fields: [updatedUserId], references: [id])
-
-  // Iliskiler
-  gsmler   Gsm[]
-  adresler Adres[]
-  notlar   Not[]
-
-  @@index([ad, soyad])
-  @@index([tc])
-  @@map("musteriler")
+// ==================== KISI (Müşteri + Lead Birleşimi) ====================
+enum KisiTip {
+  LEAD
+  MUSTERI
 }
 
-// ==================== LEAD ====================
-model Lead {
-  id       String  @id @default(cuid())
-  tc       String?
-  ad       String
-  soyad    String
-  faaliyet String?
-  pio      Boolean @default(false)
-  asli     Boolean @default(false)
-  fotograf String?
-  isActive Boolean @default(true)
+model Kisi {
+  id         String   @id @default(cuid())
+  tip        KisiTip  @default(LEAD)
+  tc         String?  @unique // TC Kimlik No
+  ad         String
+  soyad      String
+  faaliyet   String?  // Richtext
+  pio        Boolean  @default(false)
+  asli       Boolean  @default(false)
+  fotograf   String?  // URL/path
+  isArchived Boolean  @default(false)
 
   // Loglama
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   createdUserId String?
   updatedUserId String?
-  createdUser   Personel? @relation("LeadCreatedBy", fields: [createdUserId], references: [id])
-  updatedUser   Personel? @relation("LeadUpdatedBy", fields: [updatedUserId], references: [id])
+  createdUser   Personel? @relation("KisiCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("KisiUpdatedBy", fields: [updatedUserId], references: [id])
 
   // Iliskiler
   gsmler       Gsm[]
   adresler     Adres[]
+  notlar       Not[]
   tanitimlar   TanitimKatilimci[]
 
   @@index([ad, soyad])
-  @@map("leadler")
+  @@index([tc])
+  @@index([tip])
+  @@map("kisiler")
 }
 
 // ==================== GSM ====================
 model Gsm {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   numara    String
-  musteriId String?
-  musteri   Musteri? @relation(fields: [musteriId], references: [id], onDelete: Cascade)
-  leadId    String?
-  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  isPrimary Boolean  @default(false)
+  kisiId    String
+  kisi      Kisi    @relation(fields: [kisiId], references: [id], onDelete: Cascade)
+  isPrimary Boolean @default(false)
 
   // Loglama
   createdAt     DateTime  @default(now())
@@ -133,8 +108,7 @@ model Gsm {
   takipler Takip[]
 
   @@index([numara])
-  @@index([musteriId])
-  @@index([leadId])
+  @@index([kisiId])
   @@map("gsmler")
 }
 
@@ -205,16 +179,14 @@ model Mahalle {
 
 // ==================== ADRES ====================
 model Adres {
-  id        String   @id @default(cuid())
-  ad        String?  // Adres adı (Ev, İş, vb.)
+  id        String  @id @default(cuid())
+  ad        String? // Adres adı (Ev, İş, vb.)
   mahalleId String
-  mahalle   Mahalle  @relation(fields: [mahalleId], references: [id])
-  detay     String?  // Detaylı adres bilgisi - kapi no, daire vs.
-  musteriId String?
-  musteri   Musteri? @relation(fields: [musteriId], references: [id], onDelete: Cascade)
-  leadId    String?
-  lead      Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  isPrimary Boolean  @default(false)
+  mahalle   Mahalle @relation(fields: [mahalleId], references: [id])
+  detay     String? // Detaylı adres bilgisi - kapi no, daire vs.
+  kisiId    String
+  kisi      Kisi    @relation(fields: [kisiId], references: [id], onDelete: Cascade)
+  isPrimary Boolean @default(false)
 
   // Loglama
   createdAt     DateTime  @default(now())
@@ -224,8 +196,7 @@ model Adres {
   createdUser   Personel? @relation("AdresCreatedBy", fields: [createdUserId], references: [id])
   updatedUser   Personel? @relation("AdresUpdatedBy", fields: [updatedUserId], references: [id])
 
-  @@index([musteriId])
-  @@index([leadId])
+  @@index([kisiId])
   @@map("adresler")
 }
 
@@ -296,14 +267,14 @@ model Alarm {
 // ==================== NOT ====================
 model Not {
   id            String    @id @default(cuid())
-  musteriId     String
-  musteri       Musteri   @relation(fields: [musteriId], references: [id], onDelete: Cascade)
+  kisiId        String
+  kisi          Kisi      @relation(fields: [kisiId], references: [id], onDelete: Cascade)
   icerik        String    // Richtext
   createdAt     DateTime  @default(now())
   createdUserId String?
   createdUser   Personel? @relation("NotCreatedBy", fields: [createdUserId], references: [id])
 
-  @@index([musteriId])
+  @@index([kisiId])
   @@map("notlar")
 }
 
@@ -333,10 +304,10 @@ model TanitimKatilimci {
   id        String   @id @default(cuid())
   tanitimId String
   tanitim   Tanitim  @relation(fields: [tanitimId], references: [id], onDelete: Cascade)
-  leadId    String?
-  lead      Lead?    @relation(fields: [leadId], references: [id])
+  kisiId    String?
+  kisi      Kisi?    @relation(fields: [kisiId], references: [id])
   gsmId     String?  // Hangi GSM ile iletisim kuruldu
 
-  @@unique([tanitimId, leadId])
+  @@unique([tanitimId, kisiId])
   @@map("tanitim_katilimcilari")
 }

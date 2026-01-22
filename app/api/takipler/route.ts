@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       limit,
       search,
       gsmId,
-      musteriId,
+      kisiId,
       durum,
       bitisTarihiBaslangic,
       bitisTarihiBitis,
@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
       where.gsmId = gsmId
     }
 
-    if (musteriId) {
-      where.gsm = { musteriId }
+    if (kisiId) {
+      where.gsm = { kisiId }
     }
 
     if (durum) {
@@ -56,12 +56,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Search by GSM number or customer name
+    // Search by GSM number or kisi name
     if (search) {
       where.OR = [
         { gsm: { numara: { contains: search, mode: "insensitive" } } },
-        { gsm: { musteri: { ad: { contains: search, mode: "insensitive" } } } },
-        { gsm: { musteri: { soyad: { contains: search, mode: "insensitive" } } } },
+        { gsm: { kisi: { ad: { contains: search, mode: "insensitive" } } } },
+        { gsm: { kisi: { soyad: { contains: search, mode: "insensitive" } } } },
       ]
     }
 
@@ -76,11 +76,13 @@ export async function GET(request: NextRequest) {
         include: {
           gsm: {
             include: {
-              musteri: {
+              kisi: {
                 select: {
                   id: true,
                   ad: true,
                   soyad: true,
+                  tip: true,
+                  fotograf: true,
                 },
               },
             },
@@ -202,6 +204,26 @@ export async function POST(request: NextRequest) {
         })),
       })
 
+      // LEAD → MUSTERI: Takip eklenen kişilerin tipini güncelle
+      const gsmlerWithKisi = await prisma.gsm.findMany({
+        where: { id: { in: gsmIds } },
+        select: { kisiId: true },
+      })
+      const kisiIds = [...new Set(gsmlerWithKisi.map(g => g.kisiId).filter(Boolean))] as string[]
+
+      if (kisiIds.length > 0) {
+        await prisma.kisi.updateMany({
+          where: {
+            id: { in: kisiIds },
+            tip: "LEAD",
+          },
+          data: {
+            tip: "MUSTERI",
+            updatedUserId: validUserId,
+          },
+        })
+      }
+
       return NextResponse.json({ count: createdTakipler.count }, { status: 201 })
     }
 
@@ -257,11 +279,12 @@ export async function POST(request: NextRequest) {
       include: {
         gsm: {
           include: {
-            musteri: {
+            kisi: {
               select: {
                 id: true,
                 ad: true,
                 soyad: true,
+                tip: true,
               },
             },
           },
@@ -282,6 +305,20 @@ export async function POST(request: NextRequest) {
         },
       },
     })
+
+    // LEAD → MUSTERI: Takip eklenen kişinin tipini güncelle
+    if (gsm.kisiId) {
+      await prisma.kisi.updateMany({
+        where: {
+          id: gsm.kisiId,
+          tip: "LEAD",
+        },
+        data: {
+          tip: "MUSTERI",
+          updatedUserId: validUserId,
+        },
+      })
+    }
 
     return NextResponse.json(takip, { status: 201 })
   } catch (error) {

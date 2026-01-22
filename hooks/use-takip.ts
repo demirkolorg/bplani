@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { CreateTakipInput, UpdateTakipInput, BulkCreateTakipInput, ListTakipQuery, TakipDurum } from "@/lib/validations"
+import type { CreateTakipInput, UpdateTakipInput, BulkCreateTakipInput, ListTakipQuery, TakipDurum, KisiTip } from "@/lib/validations"
 import { gsmKeys } from "./use-gsm"
 
 export interface Takip {
@@ -16,24 +16,20 @@ export interface Takip {
   gsm: {
     id: string
     numara: string
-    musteri: {
+    kisi: {
       id: string
       ad: string
       soyad: string
+      tip: KisiTip
       fotograf?: string | null
     } | null
   }
   alarmlar?: Array<{
     id: string
     tip: string
-    alarmTarihi: string
+    tetikTarihi: string
     mesaj: string | null
-    tetiklendi: boolean
-    createdUser: {
-      id: string
-      ad: string
-      soyad: string
-    } | null
+    durum: string
   }>
   createdUser: {
     id: string
@@ -68,7 +64,7 @@ export const takipKeys = {
   details: () => [...takipKeys.all, "detail"] as const,
   detail: (id: string) => [...takipKeys.details(), id] as const,
   byGsm: (gsmId: string) => [...takipKeys.all, "gsm", gsmId] as const,
-  byMusteri: (musteriId: string) => [...takipKeys.all, "musteri", musteriId] as const,
+  byKisi: (kisiId: string) => [...takipKeys.all, "kisi", kisiId] as const,
 }
 
 // Fetch functions
@@ -174,11 +170,11 @@ export function useTakiplerByGsm(gsmId: string) {
   })
 }
 
-export function useTakiplerByMusteri(musteriId: string) {
+export function useTakiplerByKisi(kisiId: string) {
   return useQuery({
-    queryKey: takipKeys.byMusteri(musteriId),
-    queryFn: () => fetchTakipler({ musteriId, limit: 100 }),
-    enabled: !!musteriId,
+    queryKey: takipKeys.byKisi(kisiId),
+    queryFn: () => fetchTakipler({ kisiId, limit: 100 }),
+    enabled: !!kisiId,
   })
 }
 
@@ -190,10 +186,10 @@ export function useCreateTakip() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: takipKeys.lists() })
       queryClient.invalidateQueries({ queryKey: takipKeys.byGsm(data.gsmId) })
-      if (data.gsm.musteri?.id) {
-        queryClient.invalidateQueries({ queryKey: takipKeys.byMusteri(data.gsm.musteri.id) })
+      if (data.gsm.kisi?.id) {
+        queryClient.invalidateQueries({ queryKey: takipKeys.byKisi(data.gsm.kisi.id) })
         // Invalidate GSM queries to refresh takip data in GSM list
-        queryClient.invalidateQueries({ queryKey: gsmKeys.byMusteri(data.gsm.musteri.id) })
+        queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(data.gsm.kisi.id) })
       }
     },
   })
@@ -219,10 +215,10 @@ export function useUpdateTakip() {
       queryClient.invalidateQueries({ queryKey: takipKeys.lists() })
       queryClient.invalidateQueries({ queryKey: takipKeys.detail(data.id) })
       queryClient.invalidateQueries({ queryKey: takipKeys.byGsm(data.gsmId) })
-      if (data.gsm.musteri?.id) {
-        queryClient.invalidateQueries({ queryKey: takipKeys.byMusteri(data.gsm.musteri.id) })
+      if (data.gsm.kisi?.id) {
+        queryClient.invalidateQueries({ queryKey: takipKeys.byKisi(data.gsm.kisi.id) })
         // Invalidate GSM queries to refresh takip data in GSM list
-        queryClient.invalidateQueries({ queryKey: gsmKeys.byMusteri(data.gsm.musteri.id) })
+        queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(data.gsm.kisi.id) })
       }
     },
   })

@@ -5,7 +5,6 @@ import {
   Home,
   Settings,
   Users,
-  UserPlus,
   CalendarClock,
   Megaphone,
   Bell,
@@ -33,14 +32,9 @@ const mainNavItems = [
     icon: Home,
   },
   {
-    title: "Müşteriler",
+    title: "Kişiler",
     url: "/musteriler",
     icon: Users,
-  },
-  {
-    title: "Leadler",
-    url: "/leadler",
-    icon: UserPlus,
   },
   {
     title: "Takipler",
@@ -96,7 +90,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">BPlanı</span>
-                  <span className="truncate text-xs">Müşteri Takip</span>
+                  <span className="truncate text-xs">Kişi Takip</span>
                 </div>
               </a>
             </SidebarMenuButton>

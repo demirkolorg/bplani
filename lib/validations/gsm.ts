@@ -11,16 +11,8 @@ const gsmNumaraSchema = z.string()
 // Create GSM schema
 export const createGsmSchema = z.object({
   numara: gsmNumaraSchema,
-  musteriId: z.string().cuid("Geçersiz müşteri ID").optional().nullable(),
-  leadId: z.string().cuid("Geçersiz lead ID").optional().nullable(),
+  kisiId: z.string().cuid("Geçersiz kişi ID"),
   isPrimary: z.boolean().default(false),
-}).refine((data) => {
-  // Must have either musteriId or leadId, but not both
-  const hasMusteriId = data.musteriId !== null && data.musteriId !== undefined
-  const hasLeadId = data.leadId !== null && data.leadId !== undefined
-  return (hasMusteriId || hasLeadId) && !(hasMusteriId && hasLeadId)
-}, {
-  message: "GSM kaydı ya bir müşteriye ya da bir lead'e ait olmalıdır",
 })
 
 // Update GSM schema
@@ -29,20 +21,13 @@ export const updateGsmSchema = z.object({
   isPrimary: z.boolean().optional(),
 })
 
-// Bulk create GSM schema (for adding multiple GSMs to a customer)
+// Bulk create GSM schema (for adding multiple GSMs to a kisi)
 export const bulkCreateGsmSchema = z.object({
-  musteriId: z.string().cuid("Geçersiz müşteri ID").optional().nullable(),
-  leadId: z.string().cuid("Geçersiz lead ID").optional().nullable(),
+  kisiId: z.string().cuid("Geçersiz kişi ID"),
   gsmler: z.array(z.object({
     numara: gsmNumaraSchema,
     isPrimary: z.boolean().default(false),
   })).min(1, "En az bir GSM numarası gereklidir"),
-}).refine((data) => {
-  const hasMusteriId = data.musteriId !== null && data.musteriId !== undefined
-  const hasLeadId = data.leadId !== null && data.leadId !== undefined
-  return (hasMusteriId || hasLeadId) && !(hasMusteriId && hasLeadId)
-}, {
-  message: "GSM kayıtları ya bir müşteriye ya da bir lead'e ait olmalıdır",
 })
 
 // Types

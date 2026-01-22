@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Pencil, User, Phone, MapPin, FileText, Info } from "lucide-react"
 
-import { useMusteri } from "@/hooks/use-musteriler"
+import { useKisi } from "@/hooks/use-kisiler"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -19,19 +19,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { MusteriFormModal } from "@/components/musteriler/musteri-form-modal"
-import { MusteriGsmList } from "@/components/musteriler/musteri-gsm-list"
-import { MusteriAdresList } from "@/components/musteriler/musteri-adres-list"
-import { MusteriNotList } from "@/components/musteriler/musteri-not-list"
+import { KisiFormModal } from "@/components/musteriler/musteri-form-modal"
+import { KisiGsmList } from "@/components/musteriler/musteri-gsm-list"
+import { KisiAdresList } from "@/components/musteriler/musteri-adres-list"
+import { KisiNotList } from "@/components/musteriler/musteri-not-list"
 
-export default function MusteriDetayPage() {
+export default function KisiDetayPage() {
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
 
   const [showEditModal, setShowEditModal] = React.useState(false)
 
-  const { data: musteri, isLoading, error } = useMusteri(id)
+  const { data: kisi, isLoading, error } = useKisi(id)
 
   if (isLoading) {
     return (
@@ -50,16 +50,16 @@ export default function MusteriDetayPage() {
     )
   }
 
-  if (error || !musteri) {
+  if (error || !kisi) {
     return (
       <div className="container mx-auto py-6">
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">
-              {error instanceof Error ? error.message : "Müşteri bulunamadı"}
+              {error instanceof Error ? error.message : "Kişi bulunamadı"}
             </p>
             <Button asChild className="mt-4">
-              <Link href="/musteriler">Müşterilere Dön</Link>
+              <Link href="/musteriler">Kişilere Dön</Link>
             </Button>
           </CardContent>
         </Card>
@@ -90,10 +90,10 @@ export default function MusteriDetayPage() {
 
           {/* Avatar */}
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted overflow-hidden">
-            {musteri.fotograf ? (
+            {kisi.fotograf ? (
               <img
-                src={musteri.fotograf}
-                alt={`${musteri.ad} ${musteri.soyad}`}
+                src={kisi.fotograf}
+                alt={`${kisi.ad} ${kisi.soyad}`}
                 className="h-16 w-16 object-cover"
               />
             ) : (
@@ -103,26 +103,24 @@ export default function MusteriDetayPage() {
 
           <div>
             <h1 className="text-2xl font-bold">
-              {musteri.ad} {musteri.soyad}
+              {kisi.ad} {kisi.soyad}
             </h1>
             <div className="flex flex-wrap items-center gap-2 mt-1">
-              {musteri.tc && (
+              {kisi.tc && (
                 <span className="text-sm text-muted-foreground font-mono">
-                  TC: {musteri.tc}
+                  TC: {kisi.tc}
                 </span>
               )}
-              {musteri.isArchived && (
+              {kisi.isArchived && (
                 <Badge variant="destructive">Arşivlenmiş</Badge>
               )}
-              {musteri.pio && <Badge variant="secondary">PIO</Badge>}
-              {musteri.asli && <Badge variant="secondary">Asli</Badge>}
-              {musteri.faaliyet && (
-                <Badge 
-                  variant="outline" 
-                  className="bg-blue-50 text-blue-700 border-blue-300 max-w-xs truncate"
-                  title={musteri.faaliyet.replace(/<[^>]*>/g, '')}
+              {kisi.faaliyet && (
+                <Badge
+                  variant="outline"
+                  className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700 max-w-xs truncate"
+                  title={kisi.faaliyet.replace(/<[^>]*>/g, '')}
                 >
-                  {musteri.faaliyet.replace(/<[^>]*>/g, '').substring(0, 30)}{musteri.faaliyet.replace(/<[^>]*>/g, '').length > 30 ? '...' : ''}
+                  {kisi.faaliyet.replace(/<[^>]*>/g, '').substring(0, 30)}{kisi.faaliyet.replace(/<[^>]*>/g, '').length > 30 ? '...' : ''}
                 </Badge>
               )}
             </div>
@@ -142,7 +140,7 @@ export default function MusteriDetayPage() {
               <DialogHeader>
                 <DialogTitle>Sistem Bilgileri</DialogTitle>
                 <DialogDescription>
-                  Müşteri kaydı ve güncellemeler hakkında teknik bilgiler
+                  Kişi kaydı ve güncellemeler hakkında teknik bilgiler
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -150,10 +148,10 @@ export default function MusteriDetayPage() {
                   <p className="text-sm font-medium text-muted-foreground">
                     Oluşturulma
                   </p>
-                  <p className="mt-1">{formatDate(musteri.createdAt)}</p>
-                  {musteri.createdUser && (
+                  <p className="mt-1">{formatDate(kisi.createdAt)}</p>
+                  {kisi.createdUser && (
                     <p className="text-sm text-muted-foreground">
-                      {musteri.createdUser.ad} {musteri.createdUser.soyad}
+                      {kisi.createdUser.ad} {kisi.createdUser.soyad}
                     </p>
                   )}
                 </div>
@@ -162,10 +160,10 @@ export default function MusteriDetayPage() {
                   <p className="text-sm font-medium text-muted-foreground">
                     Son Güncelleme
                   </p>
-                  <p className="mt-1">{formatDate(musteri.updatedAt)}</p>
-                  {musteri.updatedUser && (
+                  <p className="mt-1">{formatDate(kisi.updatedAt)}</p>
+                  {kisi.updatedUser && (
                     <p className="text-sm text-muted-foreground">
-                      {musteri.updatedUser.ad} {musteri.updatedUser.soyad}
+                      {kisi.updatedUser.ad} {kisi.updatedUser.soyad}
                     </p>
                   )}
                 </div>
@@ -182,59 +180,90 @@ export default function MusteriDetayPage() {
 
       {/* Compact Stats */}
       <div className="flex items-center gap-6 mb-6 p-4 bg-muted/50 rounded-lg">
+        {/* Tip */}
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4 text-purple-600" />
+          <span className="text-sm text-muted-foreground">Tip:</span>
+          <Badge
+            variant="outline"
+            className={
+              kisi.tip === "MUSTERI"
+                ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
+                : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
+            }
+          >
+            {kisi.tip === "MUSTERI" ? "Müşteri" : "Aday"}
+          </Badge>
+        </div>
+        {/* PIO */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">PIO:</span>
+          <Badge variant={kisi.pio ? "default" : "secondary"}>
+            {kisi.pio ? "Evet" : "Hayır"}
+          </Badge>
+        </div>
+        {/* Asli */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Asli:</span>
+          <Badge variant={kisi.asli ? "default" : "secondary"}>
+            {kisi.asli ? "Evet" : "Hayır"}
+          </Badge>
+        </div>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* GSM */}
         <div className="flex items-center gap-2">
           <Phone className="h-4 w-4 text-blue-600" />
           <span className="text-sm text-muted-foreground">GSM:</span>
-          <span className="font-semibold">{musteri.gsmler?.length || 0}</span>
+          <span className="font-semibold">{kisi.gsmler?.length || 0}</span>
         </div>
+        {/* Adres */}
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-green-600" />
           <span className="text-sm text-muted-foreground">Adres:</span>
-          <span className="font-semibold">{musteri.adresler?.length || 0}</span>
+          <span className="font-semibold">{kisi.adresler?.length || 0}</span>
         </div>
+        {/* Not */}
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-orange-600" />
           <span className="text-sm text-muted-foreground">Not:</span>
-          <span className="font-semibold">{musteri.notlar?.length || 0}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Üye:</span>
-          <span>{new Date(musteri.createdAt).toLocaleDateString("tr-TR")}</span>
+          <span className="font-semibold">{kisi.notlar?.length || 0}</span>
         </div>
       </div>
 
       {/* Main Content - 3 Column Layout */}
       <div className="grid gap-6 lg:grid-cols-3">
-        
+
         {/* Sol Sütun - GSM ve Takipler */}
         <div className="space-y-6">
-          <MusteriGsmList musteriId={id} />
+          <KisiGsmList kisiId={id} />
         </div>
 
         {/* Orta Sütun - Adresler */}
         <div className="space-y-6">
-          <MusteriAdresList musteriId={id} />
+          <KisiAdresList kisiId={id} />
         </div>
 
         {/* Sağ Sütun - Notlar */}
         <div className="space-y-6">
-          <MusteriNotList musteriId={id} />
+          <KisiNotList kisiId={id} />
         </div>
       </div>
 
       {/* Edit Modal */}
-      <MusteriFormModal
+      <KisiFormModal
         open={showEditModal}
         onOpenChange={setShowEditModal}
         initialData={{
-          id: musteri.id,
-          tc: musteri.tc,
-          ad: musteri.ad,
-          soyad: musteri.soyad,
-          faaliyet: musteri.faaliyet,
-          pio: musteri.pio,
-          asli: musteri.asli,
-          fotograf: musteri.fotograf,
+          id: kisi.id,
+          tc: kisi.tc,
+          ad: kisi.ad,
+          soyad: kisi.soyad,
+          faaliyet: kisi.faaliyet,
+          pio: kisi.pio,
+          asli: kisi.asli,
+          fotograf: kisi.fotograf,
         }}
       />
     </div>

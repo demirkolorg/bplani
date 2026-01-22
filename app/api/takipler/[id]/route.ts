@@ -17,11 +17,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       include: {
         gsm: {
           include: {
-            musteri: {
+            kisi: {
               select: {
                 id: true,
                 ad: true,
                 soyad: true,
+                tip: true,
                 fotograf: true,
               },
             },
@@ -71,8 +72,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const session = await getSession()
     const userId = session?.id || null
 
-    // Check if takip exists
-    const existing = await prisma.takip.findUnique({ where: { id } })
+    // Check if takip exists with GSM info
+    const existing = await prisma.takip.findUnique({
+      where: { id },
+      include: {
+        gsm: {
+          select: { kisiId: true },
+        },
+      },
+    })
     if (!existing) {
       return NextResponse.json(
         { error: "Takip bulunamadı" },
@@ -114,11 +122,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       include: {
         gsm: {
           include: {
-            musteri: {
+            kisi: {
               select: {
                 id: true,
                 ad: true,
                 soyad: true,
+                tip: true,
               },
             },
           },
@@ -140,6 +149,31 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       },
     })
 
+    // MUSTERI → LEAD: Takip pasife alındıysa, aktif takip kalmadıysa kişiyi LEAD'e düşür
+    const kisiId = existing.gsm.kisiId
+    if (kisiId && validatedData.data.isActive === false && existing.isActive === true) {
+      // Kişinin diğer aktif takiplerini kontrol et
+      const remainingActiveTakipler = await prisma.takip.count({
+        where: {
+          gsm: { kisiId },
+          isActive: true,
+        },
+      })
+
+      if (remainingActiveTakipler === 0) {
+        await prisma.kisi.updateMany({
+          where: {
+            id: kisiId,
+            tip: "MUSTERI",
+          },
+          data: {
+            tip: "LEAD",
+            updatedUserId: validUserId,
+          },
+        })
+      }
+    }
+
     return NextResponse.json(takip)
   } catch (error) {
     console.error("Error updating takip:", error)
@@ -154,10 +188,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
+    const session = await getSession()
+    const userId = session?.id || null
 
     const existing = await prisma.takip.findUnique({
       where: { id },
       include: {
+        gsm: {
+          select: { kisiId: true },
+        },
         _count: {
           select: { alarmlar: true },
         },
@@ -171,8 +210,46 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    const kisiId = existing.gsm.kisiId
+
     // Delete takip (alarms will be cascade deleted)
     await prisma.takip.delete({ where: { id } })
+
+    // MUSTERI → LEAD: Aktif takip kalmadıysa kişiyi LEAD'e düşür
+    if (kisiId) {
+      // Validate user exists for log
+      let validUserId: string | null = null
+      if (userId) {
+        const userExists = await prisma.personel.findUnique({
+          where: { id: userId },
+          select: { id: true },
+        })
+        if (userExists) {
+          validUserId = userId
+        }
+      }
+
+      // Kişinin diğer aktif takiplerini kontrol et
+      const remainingActiveTakipler = await prisma.takip.count({
+        where: {
+          gsm: { kisiId },
+          isActive: true,
+        },
+      })
+
+      if (remainingActiveTakipler === 0) {
+        await prisma.kisi.updateMany({
+          where: {
+            id: kisiId,
+            tip: "MUSTERI",
+          },
+          data: {
+            tip: "LEAD",
+            updatedUserId: validUserId,
+          },
+        })
+      }
+    }
 
     return NextResponse.json({ message: "Takip başarıyla silindi" })
   } catch (error) {

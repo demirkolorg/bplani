@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateNotInput, UpdateNotInput } from "@/lib/validations"
-import { musteriKeys } from "./use-musteriler"
+import { kisiKeys } from "./use-kisiler"
 
 export interface Not {
   id: string
-  musteriId: string
+  kisiId: string
   icerik: string
   createdAt: string
   createdUserId: string | null
@@ -18,12 +18,12 @@ export interface Not {
 // Query keys
 export const notKeys = {
   all: ["notlar"] as const,
-  byMusteri: (musteriId: string) => [...notKeys.all, "musteri", musteriId] as const,
+  byKisi: (kisiId: string) => [...notKeys.all, "kisi", kisiId] as const,
 }
 
 // Fetch functions
-async function fetchNotlarByMusteri(musteriId: string): Promise<Not[]> {
-  const response = await fetch(`/api/notlar?musteriId=${musteriId}`)
+async function fetchNotlarByKisi(kisiId: string): Promise<Not[]> {
+  const response = await fetch(`/api/notlar?kisiId=${kisiId}`)
   if (!response.ok) {
     const error = await response.json()
     throw new Error(error.error || "Notlar yüklenirken hata oluştu")
@@ -68,11 +68,11 @@ async function deleteNot(id: string): Promise<void> {
 }
 
 // Hooks
-export function useNotlarByMusteri(musteriId: string) {
+export function useNotlarByKisi(kisiId: string) {
   return useQuery({
-    queryKey: notKeys.byMusteri(musteriId),
-    queryFn: () => fetchNotlarByMusteri(musteriId),
-    enabled: !!musteriId,
+    queryKey: notKeys.byKisi(kisiId),
+    queryFn: () => fetchNotlarByKisi(kisiId),
+    enabled: !!kisiId,
   })
 }
 
@@ -82,8 +82,8 @@ export function useCreateNot() {
   return useMutation({
     mutationFn: createNot,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: notKeys.byMusteri(data.musteriId) })
-      queryClient.invalidateQueries({ queryKey: musteriKeys.detail(data.musteriId) })
+      queryClient.invalidateQueries({ queryKey: notKeys.byKisi(data.kisiId) })
+      queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
     },
   })
 }
@@ -94,8 +94,8 @@ export function useUpdateNot() {
   return useMutation({
     mutationFn: updateNot,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: notKeys.byMusteri(data.musteriId) })
-      queryClient.invalidateQueries({ queryKey: musteriKeys.detail(data.musteriId) })
+      queryClient.invalidateQueries({ queryKey: notKeys.byKisi(data.kisiId) })
+      queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
     },
   })
 }
@@ -106,7 +106,7 @@ export function useDeleteNot() {
   return useMutation({
     mutationFn: deleteNot,
     onSuccess: () => {
-      // Invalidate all not queries since we don't know which customer it belonged to
+      // Invalidate all not queries since we don't know which kisi it belonged to
       queryClient.invalidateQueries({ queryKey: notKeys.all })
     },
   })

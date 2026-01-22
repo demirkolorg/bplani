@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { MusteriForm } from "./musteri-form"
-import type { CreateMusteriInput } from "@/lib/validations"
+import { KisiForm } from "./musteri-form"
+import type { CreateKisiInput } from "@/lib/validations"
 
 interface GsmItem {
   id?: string
@@ -25,21 +25,21 @@ interface AdresItem {
   lokasyonText?: string
 }
 
-interface MusteriFormModalProps {
+interface KisiFormModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  initialData?: Partial<CreateMusteriInput> & {
+  initialData?: Partial<CreateKisiInput> & {
     id?: string
     gsmler?: GsmItem[]
     adresler?: AdresItem[]
   }
 }
 
-export function MusteriFormModal({
+export function KisiFormModal({
   open,
   onOpenChange,
   initialData,
-}: MusteriFormModalProps) {
+}: KisiFormModalProps) {
   const isEditing = !!initialData?.id
 
   return (
@@ -47,15 +47,15 @@ export function MusteriFormModal({
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Müşteri Düzenle" : "Yeni Müşteri"}
+            {isEditing ? "Kişi Düzenle" : "Yeni Kişi"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Müşteri bilgilerini güncelleyin."
-              : "Yeni bir müşteri eklemek için aşağıdaki formu doldurun."}
+              ? "Kişi bilgilerini güncelleyin."
+              : "Yeni bir kişi eklemek için aşağıdaki formu doldurun."}
           </DialogDescription>
         </DialogHeader>
-        <MusteriForm
+        <KisiForm
           initialData={initialData}
           onSuccess={() => onOpenChange(false)}
           onCancel={() => onOpenChange(false)}

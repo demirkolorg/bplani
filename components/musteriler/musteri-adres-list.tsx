@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Plus, Trash2, Star, StarOff, MapPin, MoreHorizontal } from "lucide-react"
-import { useAdreslerByMusteri, useCreateAdres, useUpdateAdres, useDeleteAdres } from "@/hooks/use-adres"
+import { useAdreslerByKisi, useCreateAdres, useUpdateAdres, useDeleteAdres } from "@/hooks/use-adres"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,12 +26,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-interface MusteriAdresListProps {
-  musteriId: string
+interface KisiAdresListProps {
+  kisiId: string
 }
 
-export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
-  const { data: adresler, isLoading } = useAdreslerByMusteri(musteriId)
+export function KisiAdresList({ kisiId }: KisiAdresListProps) {
+  const { data: adresler, isLoading } = useAdreslerByKisi(kisiId)
   const createAdres = useCreateAdres()
   const updateAdres = useUpdateAdres()
   const deleteAdres = useDeleteAdres()
@@ -59,7 +59,7 @@ export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
         ad: adresAd || null,
         mahalleId: lokasyon.mahalleId,
         detay: detay || null,
-        musteriId,
+        kisiId,
         isPrimary: !adresler || adresler.length === 0,
       })
       setShowAddModal(false)
@@ -220,7 +220,7 @@ export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
         <DialogHeader>
           <DialogTitle>Yeni Adres Ekle</DialogTitle>
           <DialogDescription>
-            Müşteri için yeni bir adres ekleyin.
+            Kişi için yeni bir adres ekleyin.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

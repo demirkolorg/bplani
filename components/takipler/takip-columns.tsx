@@ -63,17 +63,17 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
     },
     // Visible columns
     {
-      id: "musteri",
-      header: "Müşteri",
+      id: "kisi",
+      header: "Kişi",
       cell: ({ row }) => {
-        const musteri = row.original.gsm.musteri
-        if (!musteri) return <span className="text-muted-foreground">-</span>
+        const kisi = row.original.gsm.kisi
+        if (!kisi) return <span className="text-muted-foreground">-</span>
         return (
           <Link
-            href={`/musteriler/${musteri.id}`}
+            href={`/musteriler/${kisi.id}`}
             className="font-medium hover:underline"
           >
-            {musteri.ad} {musteri.soyad}
+            {kisi.ad} {kisi.soyad}
           </Link>
         )
       },

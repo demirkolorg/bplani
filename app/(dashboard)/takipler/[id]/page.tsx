@@ -127,8 +127,8 @@ export default function TakipDetayPage() {
               </Badge>
             </div>
             <p className="text-muted-foreground mt-1">
-              {takip.gsm.musteri
-                ? `${takip.gsm.musteri.ad} ${takip.gsm.musteri.soyad} - ${takip.gsm.numara}`
+              {takip.gsm.kisi
+                ? `${takip.gsm.kisi.ad} ${takip.gsm.kisi.soyad} - ${takip.gsm.numara}`
                 : takip.gsm.numara}
             </p>
           </div>
@@ -203,22 +203,22 @@ export default function TakipDetayPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Müşteri Bilgileri */}
-        {takip.gsm.musteri && (
+        {/* Kişi Bilgileri */}
+        {takip.gsm.kisi && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Müşteri Bilgileri
+                Kişi Bilgileri
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted overflow-hidden">
-                  {takip.gsm.musteri.fotograf ? (
+                  {takip.gsm.kisi.fotograf ? (
                     <img
-                      src={takip.gsm.musteri.fotograf}
-                      alt={`${takip.gsm.musteri.ad} ${takip.gsm.musteri.soyad}`}
+                      src={takip.gsm.kisi.fotograf}
+                      alt={`${takip.gsm.kisi.ad} ${takip.gsm.kisi.soyad}`}
                       className="h-16 w-16 object-cover"
                     />
                   ) : (
@@ -227,14 +227,14 @@ export default function TakipDetayPage() {
                 </div>
                 <div>
                   <p className="text-lg font-semibold">
-                    {takip.gsm.musteri.ad} {takip.gsm.musteri.soyad}
+                    {takip.gsm.kisi.ad} {takip.gsm.kisi.soyad}
                   </p>
                   <p className="text-sm text-muted-foreground font-mono">
                     {takip.gsm.numara}
                   </p>
                   <Button asChild variant="link" className="p-0 h-auto mt-1">
-                    <Link href={`/musteriler/${takip.gsm.musteri.id}`}>
-                      Müşteri Detayına Git →
+                    <Link href={`/musteriler/${takip.gsm.kisi.id}`}>
+                      Kişi Detayına Git →
                     </Link>
                   </Button>
                 </div>
@@ -295,13 +295,13 @@ export default function TakipDetayPage() {
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={alarm.tetiklendi ? "secondary" : "default"}>
+                      <Badge variant={alarm.durum === "TETIKLENDI" ? "secondary" : "default"}>
                         {alarm.tip}
                       </Badge>
                       <span className="text-sm font-medium">
-                        {formatDate(alarm.alarmTarihi)}
+                        {formatDate(alarm.tetikTarihi)}
                       </span>
-                      {alarm.tetiklendi && (
+                      {alarm.durum === "TETIKLENDI" && (
                         <Badge variant="outline">Tetiklendi</Badge>
                       )}
                     </div>

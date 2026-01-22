@@ -1,14 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateAdresInput, UpdateAdresInput, BulkCreateAdresInput } from "@/lib/validations"
-import { musteriKeys } from "./use-musteriler"
+import { kisiKeys } from "./use-kisiler"
 
 export interface Adres {
   id: string
   ad: string | null  // Adres adı (Ev, İş, vb.)
   detay: string | null
   isPrimary: boolean
-  musteriId: string | null
-  leadId: string | null
+  kisiId: string
   mahalleId: string
   mahalle: {
     id: string
@@ -30,22 +29,12 @@ export interface Adres {
 // Query keys
 export const adresKeys = {
   all: ["adresler"] as const,
-  byMusteri: (musteriId: string) => [...adresKeys.all, "musteri", musteriId] as const,
-  byLead: (leadId: string) => [...adresKeys.all, "lead", leadId] as const,
+  byKisi: (kisiId: string) => [...adresKeys.all, "kisi", kisiId] as const,
 }
 
 // Fetch functions
-async function fetchAdreslerByMusteri(musteriId: string): Promise<Adres[]> {
-  const response = await fetch(`/api/adresler?musteriId=${musteriId}`)
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || "Adresler yüklenirken hata oluştu")
-  }
-  return response.json()
-}
-
-async function fetchAdreslerByLead(leadId: string): Promise<Adres[]> {
-  const response = await fetch(`/api/adresler?leadId=${leadId}`)
+async function fetchAdreslerByKisi(kisiId: string): Promise<Adres[]> {
+  const response = await fetch(`/api/adresler?kisiId=${kisiId}`)
   if (!response.ok) {
     const error = await response.json()
     throw new Error(error.error || "Adresler yüklenirken hata oluştu")
@@ -103,19 +92,11 @@ async function deleteAdres(id: string): Promise<void> {
 }
 
 // Hooks
-export function useAdreslerByMusteri(musteriId: string) {
+export function useAdreslerByKisi(kisiId: string) {
   return useQuery({
-    queryKey: adresKeys.byMusteri(musteriId),
-    queryFn: () => fetchAdreslerByMusteri(musteriId),
-    enabled: !!musteriId,
-  })
-}
-
-export function useAdreslerByLead(leadId: string) {
-  return useQuery({
-    queryKey: adresKeys.byLead(leadId),
-    queryFn: () => fetchAdreslerByLead(leadId),
-    enabled: !!leadId,
+    queryKey: adresKeys.byKisi(kisiId),
+    queryFn: () => fetchAdreslerByKisi(kisiId),
+    enabled: !!kisiId,
   })
 }
 
@@ -125,13 +106,8 @@ export function useCreateAdres() {
   return useMutation({
     mutationFn: createAdres,
     onSuccess: (data) => {
-      if (data.musteriId) {
-        queryClient.invalidateQueries({ queryKey: adresKeys.byMusteri(data.musteriId) })
-        queryClient.invalidateQueries({ queryKey: musteriKeys.detail(data.musteriId) })
-      }
-      if (data.leadId) {
-        queryClient.invalidateQueries({ queryKey: adresKeys.byLead(data.leadId) })
-      }
+      queryClient.invalidateQueries({ queryKey: adresKeys.byKisi(data.kisiId) })
+      queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
     },
   })
 }
@@ -142,13 +118,8 @@ export function useBulkCreateAdres() {
   return useMutation({
     mutationFn: bulkCreateAdres,
     onSuccess: (_, variables) => {
-      if (variables.musteriId) {
-        queryClient.invalidateQueries({ queryKey: adresKeys.byMusteri(variables.musteriId) })
-        queryClient.invalidateQueries({ queryKey: musteriKeys.detail(variables.musteriId) })
-      }
-      if (variables.leadId) {
-        queryClient.invalidateQueries({ queryKey: adresKeys.byLead(variables.leadId) })
-      }
+      queryClient.invalidateQueries({ queryKey: adresKeys.byKisi(variables.kisiId) })
+      queryClient.invalidateQueries({ queryKey: kisiKeys.detail(variables.kisiId) })
     },
   })
 }
@@ -159,13 +130,8 @@ export function useUpdateAdres() {
   return useMutation({
     mutationFn: updateAdres,
     onSuccess: (data) => {
-      if (data.musteriId) {
-        queryClient.invalidateQueries({ queryKey: adresKeys.byMusteri(data.musteriId) })
-        queryClient.invalidateQueries({ queryKey: musteriKeys.detail(data.musteriId) })
-      }
-      if (data.leadId) {
-        queryClient.invalidateQueries({ queryKey: adresKeys.byLead(data.leadId) })
-      }
+      queryClient.invalidateQueries({ queryKey: adresKeys.byKisi(data.kisiId) })
+      queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
     },
   })
 }
