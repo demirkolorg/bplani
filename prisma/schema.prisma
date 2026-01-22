@@ -244,6 +244,7 @@ model Takip {
   baslamaTarihi DateTime   @default(now())
   bitisTarihi   DateTime   // Default: baslamaTarihi + 90 gun
   durum         TakipDurum @default(UZATILACAK)
+  isActive      Boolean    @default(true) // Her GSM için sadece 1 aktif takip olabilir
 
   // Loglama
   createdAt     DateTime  @default(now())
@@ -257,6 +258,7 @@ model Takip {
   alarmlar Alarm[]
 
   @@index([gsmId])
+  @@index([isActive])
   @@index([bitisTarihi])
   @@map("takipler")
 }

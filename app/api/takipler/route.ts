@@ -176,13 +176,14 @@ export async function POST(request: NextRequest) {
       const baslamaTarihi = inputBaslama || new Date()
       const bitisTarihi = inputBitis || new Date(baslamaTarihi.getTime() + 90 * 24 * 60 * 60 * 1000)
 
-      // Find existing active takips for these GSMs and mark them as UZATILDI
+      // Find existing active takips for these GSMs and mark them as inactive
       await prisma.takip.updateMany({
         where: {
           gsmId: { in: gsmIds },
-          durum: { not: "UZATILDI" },
+          isActive: true,
         },
         data: {
+          isActive: false,
           durum: "UZATILDI",
           updatedUserId: validUserId,
         },
@@ -195,6 +196,7 @@ export async function POST(request: NextRequest) {
           baslamaTarihi,
           bitisTarihi,
           durum: "UZATILACAK",
+          isActive: true,
           createdUserId: validUserId,
           updatedUserId: validUserId,
         })),
@@ -229,13 +231,14 @@ export async function POST(request: NextRequest) {
     const baslamaTarihi = validatedData.data.baslamaTarihi || new Date()
     const bitisTarihi = validatedData.data.bitisTarihi || new Date(baslamaTarihi.getTime() + 90 * 24 * 60 * 60 * 1000) // +90 days
 
-    // Find existing active takips for this GSM and mark them as UZATILDI
+    // Find existing active takips for this GSM and mark them as inactive
     await prisma.takip.updateMany({
       where: {
         gsmId: validatedData.data.gsmId,
-        durum: { not: "UZATILDI" },
+        isActive: true,
       },
       data: {
+        isActive: false,
         durum: "UZATILDI",
         updatedUserId: validUserId,
       },
@@ -247,6 +250,7 @@ export async function POST(request: NextRequest) {
         baslamaTarihi,
         bitisTarihi,
         durum: validatedData.data.durum,
+        isActive: true,
         createdUserId: validUserId,
         updatedUserId: validUserId,
       },

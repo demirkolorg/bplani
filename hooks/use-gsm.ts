@@ -25,6 +25,7 @@ export interface GsmTakip {
   baslamaTarihi: string
   bitisTarihi: string
   durum: "UZATILACAK" | "DEVAM_EDECEK" | "SONLANDIRILACAK" | "UZATILDI"
+  isActive: boolean
   createdAt: string
   updatedAt: string
   createdUser: {

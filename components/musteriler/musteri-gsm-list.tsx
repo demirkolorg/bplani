@@ -78,7 +78,7 @@ function TakipRow({
 
       <KalanGunBadge kalanGun={kalanGun} />
 
-      {isActive && onDurumChange && takip.durum !== "UZATILDI" && (
+      {isActive && onDurumChange && (
         <Button
           variant="ghost"
           size="sm"
@@ -108,8 +108,8 @@ function GsmRow({
   isUpdating: boolean
 }) {
   const [isExpanded, setIsExpanded] = React.useState(false)
-  const activeTakip = gsm.takipler.find((t) => t.durum !== "UZATILDI")
-  const pastTakipler = gsm.takipler.filter((t) => t.durum === "UZATILDI")
+  const activeTakip = gsm.takipler.find((t) => t.isActive)
+  const pastTakipler = gsm.takipler.filter((t) => !t.isActive)
   const hasPastTakipler = pastTakipler.length > 0
 
   return (

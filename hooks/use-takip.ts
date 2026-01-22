@@ -8,6 +8,7 @@ export interface Takip {
   baslamaTarihi: string
   bitisTarihi: string
   durum: TakipDurum
+  isActive: boolean
   createdAt: string
   updatedAt: string
   createdUserId: string | null
