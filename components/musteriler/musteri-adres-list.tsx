@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Trash2, Star, StarOff, MapPin } from "lucide-react"
+import { Plus, Trash2, Star, StarOff, MapPin, MoreHorizontal } from "lucide-react"
 import { useAdreslerByMusteri, useCreateAdres, useUpdateAdres, useDeleteAdres } from "@/hooks/use-adres"
 
 import { Button } from "@/components/ui/button"
@@ -17,8 +17,14 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface MusteriAdresListProps {
   musteriId: string
@@ -159,31 +165,34 @@ export function MusteriAdresList({ musteriId }: MusteriAdresListProps) {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-amber-50 dark:hover:bg-amber-900/50"
-                    onClick={() => handleSetPrimary(adres.id)}
-                    disabled={adres.isPrimary || updateAdres.isPending}
-                    title={adres.isPrimary ? "Zaten birincil" : "Birincil yap"}
-                  >
-                    {adres.isPrimary ? (
-                      <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                    ) : (
-                      <StarOff className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-red-50 dark:hover:bg-red-900/50"
-                    onClick={() => setDeleteId(adres.id)}
-                    title="Sil"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => handleSetPrimary(adres.id)}
+                      disabled={adres.isPrimary || updateAdres.isPending}
+                    >
+                      {adres.isPrimary ? (
+                        <Star className="mr-2 h-4 w-4 fill-amber-500 text-amber-500" />
+                      ) : (
+                        <StarOff className="mr-2 h-4 w-4" />
+                      )}
+                      {adres.isPrimary ? "Zaten Birincil" : "Birincil Yap"}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => setDeleteId(adres.id)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Sil
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </li>
             ))}
           </ul>

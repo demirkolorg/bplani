@@ -25,10 +25,11 @@ import { TakipFormModal } from "@/components/takipler/takip-form-modal"
 import { takipDurumLabels, type TakipDurum } from "@/lib/validations"
 
 // Durum badge variant mapping
-const durumVariants: Record<TakipDurum, "default" | "secondary" | "destructive"> = {
+const durumVariants: Record<TakipDurum, "default" | "secondary" | "destructive" | "outline"> = {
   UZATILACAK: "default",
   DEVAM_EDECEK: "secondary",
   SONLANDIRILACAK: "destructive",
+  UZATILDI: "outline",
 }
 
 export default function TakipDetayPage() {

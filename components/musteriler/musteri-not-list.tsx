@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Pencil, Trash2, FileText } from "lucide-react"
+import { Plus, Pencil, Trash2, FileText, MoreHorizontal } from "lucide-react"
 import { useNotlarByMusteri, useCreateNot, useUpdateNot, useDeleteNot } from "@/hooks/use-not"
 
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 
 interface MusteriNotListProps {
@@ -162,26 +169,27 @@ export function MusteriNotList({ musteriId }: MusteriNotListProps) {
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 hover:bg-blue-50 dark:hover:bg-blue-900/50"
-                      onClick={() => openEditModal({ id: not.id, icerik: not.icerik })}
-                      title="Düzenle"
-                    >
-                      <Pencil className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-red-50 dark:hover:bg-red-900/50"
-                      onClick={() => setDeleteId(not.id)}
-                      title="Sil"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => openEditModal({ id: not.id, icerik: not.icerik })}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Düzenle
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => setDeleteId(not.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Sil
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </li>
             ))}

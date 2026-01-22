@@ -28,7 +28,10 @@
       "Bash(npm ls:*)",
       "Bash(git remote add:*)",
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Complete application with Müşteri, Takip, Lokasyon modules\n\n- Add authentication system with session-based login\n- Implement Müşteri \\(Customer\\) module with CRUD operations\n  - Customer list with DataTable, search, pagination\n  - Customer detail page with GSM, Adres, Not sections\n  - Photo upload support\n- Implement GSM management with takip \\(follow-up\\) tracking\n  - GSM list with compact UI showing takip status\n  - Modal-based GSM add, takip status update, takip add\n  - Auto +90 days calculation for bitiş tarihi\n  - UZATILDI status for historical takips\n- Implement Takip module with full CRUD\n  - Calendar + input date picker for date selection\n  - Status management \\(UZATILACAK, DEVAM_EDECEK, SONLANDIRILACAK, UZATILDI\\)\n  - Kalan gün \\(remaining days\\) display with color coding\n- Implement Lokasyon module \\(İl, İlçe, Mahalle\\)\n  - Full CRUD with soft delete support\n  - Cascade filtering \\(İl -> İlçe -> Mahalle\\)\n  - User audit logging \\(createdUser, updatedUser\\)\n- Add shadcn/ui components \\(Calendar, Collapsible, etc.\\)\n- Add Docker support for development and production\n- Set up Prisma ORM with PostgreSQL\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

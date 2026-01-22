@@ -29,15 +29,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         },
         alarmlar: {
           orderBy: { tetikTarihi: "asc" },
-          include: {
-            createdUser: {
-              select: {
-                id: true,
-                ad: true,
-                soyad: true,
-              },
-            },
-          },
         },
         createdUser: {
           select: {
