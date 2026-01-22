@@ -147,10 +147,16 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
       header: "Durum",
       cell: ({ row }) => {
         const durum = row.original.durum as TakipDurum
+        const isActive = row.original.isActive
         return (
-          <Badge variant={durumVariants[durum]}>
-            {takipDurumLabels[durum]}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={durumVariants[durum]}>
+              {takipDurumLabels[durum]}
+            </Badge>
+            {isActive && (
+              <span className="inline-flex items-center justify-center w-2 h-2 bg-green-500 rounded-full" title="Aktif takip" />
+            )}
+          </div>
         )
       },
     },

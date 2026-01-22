@@ -9,6 +9,9 @@ import { useCreateTakip, useUpdateTakip } from "@/hooks/use-takip"
 import { useAllGsmler } from "@/hooks/use-gsm"
 import { createTakipSchema, takipDurumLabels, type TakipDurum } from "@/lib/validations"
 
+// Kullanıcı tarafından seçilebilir durumlar (UZATILDI hariç - o otomatik atanır)
+const selectableDurumOptions: TakipDurum[] = ["UZATILACAK", "DEVAM_EDECEK", "SONLANDIRILACAK"]
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -254,7 +257,7 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
             <SelectValue placeholder="Durum seçin" />
           </SelectTrigger>
           <SelectContent>
-            {(Object.keys(takipDurumLabels) as TakipDurum[]).map((durum) => (
+            {selectableDurumOptions.map((durum) => (
               <SelectItem key={durum} value={durum}>
                 {takipDurumLabels[durum]}
               </SelectItem>
