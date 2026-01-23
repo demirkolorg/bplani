@@ -20,6 +20,31 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ALTAY",
   description: "Analiz Takip Yönetimi",
+  icons: [
+    {
+      rel: "icon",
+      url: "/favicon/favicon.svg",
+      type: "image/svg+xml",
+    },
+    {
+      rel: "icon",
+      url: "/favicon/favicon.ico",
+      sizes: "any",
+    },
+    {
+      rel: "icon",
+      type: "image/png",
+      sizes: "192x192",
+      url: "/favicon/web-app-manifest-192x192.png",
+    },
+    {
+      rel: "icon",
+      type: "image/png",
+      sizes: "512x512",
+      url: "/favicon/web-app-manifest-512x512.png",
+    },
+  ],
+  manifest: "/favicon/site.webmanifest",
 };
 
 export default function RootLayout({
