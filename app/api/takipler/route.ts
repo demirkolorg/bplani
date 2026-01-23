@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { createTakipSchema, bulkCreateTakipSchema, listTakipQuerySchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
+import { getAyarlar } from "@/lib/ayarlar"
+import { logList, logCreate, logBulkCreate } from "@/lib/logger"
 
 // GET /api/takipler - List takipler with filters and pagination
 export async function GET(request: NextRequest) {
@@ -111,6 +113,8 @@ export async function GET(request: NextRequest) {
       prisma.takip.count({ where }),
     ])
 
+    await logList("Takip", { page, limit, search, gsmId, kisiId, durum, bitisTarihiBaslangic, bitisTarihiBitis, sortBy, sortOrder }, takipler.length)
+
     return NextResponse.json({
       data: takipler,
       pagination: {
@@ -149,6 +153,12 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
+    // Sistem ayarlarını al
+    const ayarlar = await getAyarlar()
+    const takipVarsayilanSure = ayarlar.takip_varsayilan_sure
+    const alarmGunOnce1 = ayarlar.alarm_gun_once_1
+    const alarmGunOnce2 = ayarlar.alarm_gun_once_2
+
     // Check if it's a bulk create request
     if (body.gsmIds && Array.isArray(body.gsmIds)) {
       const validatedData = bulkCreateTakipSchema.safeParse(body)
@@ -174,9 +184,9 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Set default dates
+      // Set default dates (ayarlardan takip varsayılan süresini kullan)
       const baslamaTarihi = inputBaslama || new Date()
-      const bitisTarihi = inputBitis || new Date(baslamaTarihi.getTime() + 90 * 24 * 60 * 60 * 1000)
+      const bitisTarihi = inputBitis || new Date(baslamaTarihi.getTime() + takipVarsayilanSure * 24 * 60 * 60 * 1000)
 
       // Find existing active takips for these GSMs and mark them as inactive
       await prisma.takip.updateMany({
@@ -204,6 +214,55 @@ export async function POST(request: NextRequest) {
         })),
       })
 
+      // Yeni oluşturulan takipler için otomatik alarm oluştur (bitiş tarihinden 20 gün önce)
+      const newTakipler = await prisma.takip.findMany({
+        where: {
+          gsmId: { in: gsmIds },
+          isActive: true,
+          baslamaTarihi,
+          bitisTarihi,
+        },
+        select: { id: true, bitisTarihi: true },
+      })
+
+      if (newTakipler.length > 0) {
+        // Her takip için ayarlardaki gün sayılarına göre alarm oluştur
+        const alarmlar = newTakipler.flatMap((takip) => {
+          const tetikTarihi1 = new Date(takip.bitisTarihi)
+          tetikTarihi1.setDate(tetikTarihi1.getDate() - alarmGunOnce1)
+
+          const tetikTarihi2 = new Date(takip.bitisTarihi)
+          tetikTarihi2.setDate(tetikTarihi2.getDate() - alarmGunOnce2)
+
+          return [
+            {
+              takipId: takip.id,
+              tip: "TAKIP_BITIS" as const,
+              baslik: `Takip Bitiş Hatırlatması (${alarmGunOnce1} gün)`,
+              mesaj: `Takip süresi ${alarmGunOnce1} gün içinde sona erecek`,
+              tetikTarihi: tetikTarihi1,
+              gunOnce: alarmGunOnce1,
+              durum: "BEKLIYOR" as const,
+              createdUserId: validUserId,
+            },
+            {
+              takipId: takip.id,
+              tip: "TAKIP_BITIS" as const,
+              baslik: `Takip Bitiş Hatırlatması (${alarmGunOnce2} gün)`,
+              mesaj: `Takip süresi ${alarmGunOnce2} gün içinde sona erecek`,
+              tetikTarihi: tetikTarihi2,
+              gunOnce: alarmGunOnce2,
+              durum: "BEKLIYOR" as const,
+              createdUserId: validUserId,
+            },
+          ]
+        })
+
+        await prisma.alarm.createMany({
+          data: alarmlar,
+        })
+      }
+
       // LEAD → MUSTERI: Takip eklenen kişilerin tipini güncelle
       const gsmlerWithKisi = await prisma.gsm.findMany({
         where: { id: { in: gsmIds } },
@@ -223,6 +282,10 @@ export async function POST(request: NextRequest) {
           },
         })
       }
+
+      // Log toplu oluşturma
+      const takipIds = newTakipler.map(t => t.id)
+      await logBulkCreate("Takip", createdTakipler.count, takipIds, session)
 
       return NextResponse.json({ count: createdTakipler.count }, { status: 201 })
     }
@@ -249,9 +312,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Set default dates if not provided
+    // Set default dates if not provided (ayarlardan takip varsayılan süresini kullan)
     const baslamaTarihi = validatedData.data.baslamaTarihi || new Date()
-    const bitisTarihi = validatedData.data.bitisTarihi || new Date(baslamaTarihi.getTime() + 90 * 24 * 60 * 60 * 1000) // +90 days
+    const bitisTarihi = validatedData.data.bitisTarihi || new Date(baslamaTarihi.getTime() + takipVarsayilanSure * 24 * 60 * 60 * 1000)
 
     // Find existing active takips for this GSM and mark them as inactive
     await prisma.takip.updateMany({
@@ -306,6 +369,38 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Otomatik alarm oluştur (ayarlardaki gün sayılarına göre)
+    const tetikTarihi1 = new Date(bitisTarihi)
+    tetikTarihi1.setDate(tetikTarihi1.getDate() - alarmGunOnce1)
+
+    const tetikTarihi2 = new Date(bitisTarihi)
+    tetikTarihi2.setDate(tetikTarihi2.getDate() - alarmGunOnce2)
+
+    await prisma.alarm.createMany({
+      data: [
+        {
+          takipId: takip.id,
+          tip: "TAKIP_BITIS",
+          baslik: `Takip Bitiş Hatırlatması (${alarmGunOnce1} gün)`,
+          mesaj: `Takip süresi ${alarmGunOnce1} gün içinde sona erecek`,
+          tetikTarihi: tetikTarihi1,
+          gunOnce: alarmGunOnce1,
+          durum: "BEKLIYOR",
+          createdUserId: validUserId,
+        },
+        {
+          takipId: takip.id,
+          tip: "TAKIP_BITIS",
+          baslik: `Takip Bitiş Hatırlatması (${alarmGunOnce2} gün)`,
+          mesaj: `Takip süresi ${alarmGunOnce2} gün içinde sona erecek`,
+          tetikTarihi: tetikTarihi2,
+          gunOnce: alarmGunOnce2,
+          durum: "BEKLIYOR",
+          createdUserId: validUserId,
+        },
+      ],
+    })
+
     // LEAD → MUSTERI: Takip eklenen kişinin tipini güncelle
     if (gsm.kisiId) {
       await prisma.kisi.updateMany({
@@ -319,6 +414,15 @@ export async function POST(request: NextRequest) {
         },
       })
     }
+
+    // Log oluşturma
+    await logCreate(
+      "Takip",
+      takip.id,
+      takip as unknown as Record<string, unknown>,
+      `${takip.gsm.kisi?.ad} ${takip.gsm.kisi?.soyad} - ${takip.gsm.numara}`,
+      session
+    )
 
     return NextResponse.json(takip, { status: 201 })
   } catch (error) {

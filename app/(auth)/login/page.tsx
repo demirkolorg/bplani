@@ -12,9 +12,9 @@ export default function LoginPage() {
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="/" className="flex items-center gap-2 font-medium">
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md text-sm font-bold">
-              B
+              A
             </div>
-            BPlanı
+            ALTAY
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -37,8 +37,8 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-background" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center p-8">
-            <div className="text-6xl font-bold text-primary/20 mb-4">BPlanı</div>
-            <p className="text-muted-foreground text-lg">İş Yönetim Platformu</p>
+            <div className="text-6xl font-bold text-primary/20 mb-4">ALTAY</div>
+            <p className="text-muted-foreground text-lg">Analiz Takip Yönetimi</p>
           </div>
         </div>
       </div>

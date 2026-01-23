@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { updateMahalleSchema } from "@/lib/validations"
-import { getSession } from "@/lib/auth"
+import { getSession, canManageLokasyon } from "@/lib/auth"
+import { logView, logUpdate, logDelete } from "@/lib/logger"
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -33,6 +34,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    await logView("Mahalle", id, mahalle.ad)
+
     return NextResponse.json(mahalle)
   } catch (error) {
     console.error("Error fetching mahalle:", error)
@@ -46,8 +49,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PUT /api/lokasyon/mahalleler/[id] - Update a neighborhood
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = await params
     const session = await getSession()
+
+    // Yetki kontrolü: Sadece ADMIN ve YONETICI
+    if (!canManageLokasyon(session)) {
+      return NextResponse.json(
+        { error: "Bu işlem için yetkiniz yok" },
+        { status: 403 }
+      )
+    }
+
+    const { id } = await params
     const userId = session?.id || null
 
     const body = await request.json()
@@ -97,6 +109,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       },
     })
 
+    await logUpdate("Mahalle", id, existing as unknown as Record<string, unknown>, mahalle as unknown as Record<string, unknown>, mahalle.ad, session)
+
     return NextResponse.json(mahalle)
   } catch (error) {
     console.error("Error updating mahalle:", error)
@@ -118,6 +132,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // DELETE /api/lokasyon/mahalleler/[id] - Delete a neighborhood
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const session = await getSession()
+
+    // Yetki kontrolü: Sadece ADMIN ve YONETICI
+    if (!canManageLokasyon(session)) {
+      return NextResponse.json(
+        { error: "Bu işlem için yetkiniz yok" },
+        { status: 403 }
+      )
+    }
+
     const { id } = await params
 
     const existing = await prisma.mahalle.findUnique({
@@ -142,6 +166,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     await prisma.mahalle.delete({
       where: { id },
     })
+
+    await logDelete("Mahalle", id, existing as unknown as Record<string, unknown>, existing.ad, session)
 
     return NextResponse.json({ message: "Mahalle başarıyla silindi" })
   } catch (error) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { createKisiSchema, listKisiQuerySchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
+import { logList, logCreate } from "@/lib/logger"
 
 // GET /api/kisiler - List all kisiler with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -75,8 +76,18 @@ export async function GET(request: NextRequest) {
         },
         createdUser: { select: { ad: true, soyad: true } },
         updatedUser: { select: { ad: true, soyad: true } },
+        _count: {
+          select: {
+            gsmler: true,
+            adresler: true,
+            notlar: true,
+            tanitimlar: true,
+          },
+        },
       },
     })
+
+    await logList("Kişi", { page, limit, search, tip, isArchived, pio, asli, sortBy, sortOrder }, kisiler.length)
 
     return NextResponse.json({
       data: kisiler,
@@ -134,6 +145,15 @@ export async function POST(request: NextRequest) {
         updatedUser: { select: { ad: true, soyad: true } },
       },
     })
+
+    // Log oluştur
+    await logCreate(
+      "Kisi",
+      kisi.id,
+      kisi as unknown as Record<string, unknown>,
+      `${kisi.ad} ${kisi.soyad}`,
+      session
+    )
 
     return NextResponse.json(kisi, { status: 201 })
   } catch (error) {

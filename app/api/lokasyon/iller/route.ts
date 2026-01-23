@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { createIlSchema } from "@/lib/validations"
-import { getSession } from "@/lib/auth"
+import { getSession, canManageLokasyon } from "@/lib/auth"
+import { logList, logCreate } from "@/lib/logger"
 
 // GET /api/lokasyon/iller - List all provinces
 export async function GET() {
@@ -14,6 +15,8 @@ export async function GET() {
         updatedUser: { select: { ad: true, soyad: true } },
       },
     })
+
+    await logList("İl", {}, iller.length)
 
     return NextResponse.json(iller)
   } catch (error) {
@@ -29,8 +32,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
-    const userId = session?.id || null
 
+    // Yetki kontrolü: Sadece ADMIN ve YONETICI
+    if (!canManageLokasyon(session)) {
+      return NextResponse.json(
+        { error: "Bu işlem için yetkiniz yok" },
+        { status: 403 }
+      )
+    }
+
+    const userId = session?.id || null
     const body = await request.json()
 
     const validatedData = createIlSchema.safeParse(body)
@@ -61,6 +72,8 @@ export async function POST(request: NextRequest) {
         updatedUser: { select: { ad: true, soyad: true } },
       },
     })
+
+    await logCreate("İl", il.id, il as unknown as Record<string, unknown>, il.ad, session)
 
     return NextResponse.json(il, { status: 201 })
   } catch (error) {

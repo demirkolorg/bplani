@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { updateKisiSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
+import { logView, logUpdate, logDelete } from "@/lib/logger"
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -53,6 +54,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         { status: 404 }
       )
     }
+
+    await logView("Kişi", id, `${kisi.ad} ${kisi.soyad}`)
 
     return NextResponse.json(kisi)
   } catch (error) {
@@ -125,6 +128,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       },
     })
 
+    // Log güncelleme
+    await logUpdate(
+      "Kisi",
+      kisi.id,
+      existing as unknown as Record<string, unknown>,
+      kisi as unknown as Record<string, unknown>,
+      `${kisi.ad} ${kisi.soyad}`,
+      session
+    )
+
     return NextResponse.json(kisi)
   } catch (error) {
     console.error("Error updating kisi:", error)
@@ -146,6 +159,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // DELETE /api/kisiler/[id] - Delete a kisi
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const session = await getSession()
     const { id } = await params
 
     const existing = await prisma.kisi.findUnique({ where: { id } })
@@ -159,6 +173,15 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     await prisma.kisi.delete({
       where: { id },
     })
+
+    // Log silme
+    await logDelete(
+      "Kisi",
+      id,
+      existing as unknown as Record<string, unknown>,
+      `${existing.ad} ${existing.soyad}`,
+      session
+    )
 
     return NextResponse.json({ message: "Kişi başarıyla silindi" })
   } catch (error) {

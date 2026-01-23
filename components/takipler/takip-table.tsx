@@ -38,6 +38,16 @@ export function TakipTable() {
         isLoading={isLoading}
         sortOptions={takipSortOptions}
         defaultSort={{ column: "bitisTarihi", direction: "asc" }}
+        columnVisibilityLabels={{
+          kisi: "Kişi",
+          gsm: "GSM",
+          baslamaTarihiDisplay: "Başlama",
+          bitisTarihiDisplay: "Bitiş",
+          kalanGun: "Kalan Gün",
+          durum: "Durum",
+          alarmlar: "Alarm",
+          actions: "İşlemler",
+        }}
       />
 
       {/* Edit Modal */}

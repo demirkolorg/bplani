@@ -22,7 +22,12 @@ export interface Kisi {
   notlar?: Not[]
   createdUser?: { ad: string; soyad: string } | null
   updatedUser?: { ad: string; soyad: string } | null
-  _count?: { gsmler: number; adresler: number }
+  _count?: {
+    gsmler: number
+    adresler: number
+    notlar: number
+    tanitimlar: number
+  }
 }
 
 export interface Gsm {

@@ -233,7 +233,7 @@ export default function TakipDetayPage() {
                     {takip.gsm.numara}
                   </p>
                   <Button asChild variant="link" className="p-0 h-auto mt-1">
-                    <Link href={`/musteriler/${takip.gsm.kisi.id}`}>
+                    <Link href={`/kisiler/${takip.gsm.kisi.id}`}>
                       Kişi Detayına Git →
                     </Link>
                   </Button>

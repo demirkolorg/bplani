@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { NavUser } from "@/components/nav-user"
+import { AlarmBell } from "@/components/alarm-bell"
 
 const SIDEBAR_STORAGE_KEY = "sidebar_open"
 
@@ -38,8 +39,9 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
-          <span className="font-medium">BPlanı</span>
+          <span className="font-medium">ALTAY</span>
           <div className="ml-auto flex items-center gap-2">
+            <AlarmBell />
             <ThemeToggle />
             <NavUser />
           </div>

@@ -14,7 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Check, ChevronsUpDown, Filter, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Check, ChevronsUpDown, Filter, X, Columns3 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,6 +38,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 
 // Deep search function for nested objects
@@ -53,7 +61,9 @@ function deepSearch(obj: unknown, searchTerm: string): boolean {
   }
 
   if (typeof obj === "boolean") {
-    return false
+    // Boolean için evet/hayır, aktif/pasif araması
+    const boolText = obj ? "evet aktif var" : "hayır pasif yok"
+    return boolText.includes(searchTerm)
   }
 
   if (Array.isArray(obj)) {
@@ -61,10 +71,14 @@ function deepSearch(obj: unknown, searchTerm: string): boolean {
   }
 
   if (typeof obj === "object") {
-    // Skip internal fields and dates
-    const skipKeys = ["id", "createdAt", "updatedAt", "createdUserId", "updatedUserId", "_count"]
+    // Skip only ID fields and timestamps
+    const skipKeys = ["id", "createdAt", "updatedAt", "createdUserId", "updatedUserId"]
     return Object.entries(obj).some(([key, value]) => {
       if (skipKeys.includes(key)) return false
+      // _count objelerini de ara (sayısal değerler)
+      if (key === "_count" && typeof value === "object" && value !== null) {
+        return Object.values(value).some(v => String(v).includes(searchTerm))
+      }
       return deepSearch(value, searchTerm)
     })
   }
@@ -72,15 +86,46 @@ function deepSearch(obj: unknown, searchTerm: string): boolean {
   return false
 }
 
+// Enum/label mappings
+const labelMaps = {
+  // Takip durumları
+  durum: {
+    UZATILACAK: "uzatılacak",
+    DEVAM_EDECEK: "devam edecek",
+    SONLANDIRILACAK: "sonlandırılacak",
+    UZATILDI: "uzatıldı",
+    BEKLIYOR: "bekliyor",
+    TETIKLENDI: "tetiklendi",
+    GORULDU: "görüldü",
+    IPTAL: "iptal",
+  } as Record<string, string>,
+  // Kişi tipleri
+  tip: {
+    MUSTERI: "müşteri",
+    LEAD: "aday",
+    TAKIP_BITIS: "takip bitiş",
+    ODEME_HATIRLATMA: "ödeme hatırlatma",
+    OZEL: "özel",
+  } as Record<string, string>,
+  // Personel rolleri
+  rol: {
+    ADMIN: "admin yönetici",
+    YONETICI: "yönetici",
+    PERSONEL: "personel",
+  } as Record<string, string>,
+}
+
 // Search computed/formatted values (dates, calculated fields, enums)
 function searchComputedValues(obj: Record<string, unknown>, searchTerm: string): boolean {
   // Format and search date fields
-  const dateFields = ["baslamaTarihi", "bitisTarihi"]
+  const dateFields = ["baslamaTarihi", "bitisTarihi", "tarih", "tetikTarihi", "lastLoginAt"]
   for (const field of dateFields) {
     if (obj[field]) {
       const date = new Date(obj[field] as string)
-      const formatted = date.toLocaleDateString("tr-TR")
-      if (formatted.includes(searchTerm)) return true
+      if (!isNaN(date.getTime())) {
+        const formatted = date.toLocaleDateString("tr-TR")
+        if (formatted.includes(searchTerm)) return true
+      }
     }
   }
 
@@ -90,20 +135,72 @@ function searchComputedValues(obj: Record<string, unknown>, searchTerm: string):
     const now = new Date()
     const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     const daysStr = String(daysLeft)
-    const searchText = daysLeft <= 0 ? "süresi doldu" : `${daysLeft} gün`
+    const searchText = daysLeft <= 0 ? "süresi doldu geçti" : `${daysLeft} gün kaldı`
     if (daysStr.includes(searchTerm) || searchText.includes(searchTerm)) return true
   }
 
-  // Search durum with Turkish labels
-  if (obj.durum) {
-    const durumMap: Record<string, string> = {
-      UZATILACAK: "uzatılacak",
-      DEVAM_EDECEK: "devam edecek",
-      SONLANDIRILACAK: "sonlandırılacak",
-      UZATILDI: "uzatıldı",
+  // Search enum fields with Turkish labels
+  for (const [field, map] of Object.entries(labelMaps)) {
+    if (obj[field]) {
+      const labelText = map[obj[field] as string] || String(obj[field]).toLowerCase()
+      if (labelText.includes(searchTerm)) return true
     }
-    const durumText = durumMap[obj.durum as string] || String(obj.durum).toLowerCase()
-    if (durumText.includes(searchTerm)) return true
+  }
+
+  // Search boolean fields with Turkish labels
+  const boolFields = ["isActive", "isPaused", "isPrimary", "pio", "asli"]
+  for (const field of boolFields) {
+    if (field in obj) {
+      const val = obj[field] as boolean
+      const labels: Record<string, string> = {
+        isActive: val ? "aktif" : "pasif",
+        isPaused: val ? "duraklatılmış duraklı" : "aktif",
+        isPrimary: val ? "birincil ana" : "ikincil",
+        pio: val ? "evet pio" : "hayır",
+        asli: val ? "evet asli" : "hayır",
+      }
+      if (labels[field]?.includes(searchTerm)) return true
+    }
+  }
+
+  // Search nested kisi (takip, alarm, numara tablolarında)
+  const gsm = obj.gsm as Record<string, unknown> | undefined
+  const kisi = (gsm?.kisi || obj.kisi) as Record<string, unknown> | undefined
+  if (kisi) {
+    const fullName = `${kisi.ad || ""} ${kisi.soyad || ""}`.toLowerCase()
+    if (fullName.includes(searchTerm)) return true
+    if (kisi.tc && String(kisi.tc).includes(searchTerm)) return true
+  }
+
+  // Search createdUser/olusturan
+  const createdUser = obj.createdUser as Record<string, unknown> | undefined
+  if (createdUser) {
+    const userName = `${createdUser.ad || ""} ${createdUser.soyad || ""}`.toLowerCase()
+    if (userName.includes(searchTerm)) return true
+  }
+
+  // Search katilimcilar (tanitim tablosu)
+  const katilimcilar = obj.katilimcilar as Array<Record<string, unknown>> | undefined
+  if (katilimcilar && Array.isArray(katilimcilar)) {
+    for (const k of katilimcilar) {
+      const kisiData = k.kisi as Record<string, unknown> | undefined
+      if (kisiData) {
+        const name = `${kisiData.ad || ""} ${kisiData.soyad || ""}`.toLowerCase()
+        if (name.includes(searchTerm)) return true
+      }
+    }
+  }
+
+  // Search mahalle/ilce/il (adres, tanitim tablolarında)
+  const mahalle = obj.mahalle as Record<string, unknown> | undefined
+  if (mahalle) {
+    if (deepSearch(mahalle.ad, searchTerm)) return true
+    const ilce = mahalle.ilce as Record<string, unknown> | undefined
+    if (ilce) {
+      if (deepSearch(ilce.ad, searchTerm)) return true
+      const il = ilce.il as Record<string, unknown> | undefined
+      if (il && deepSearch(il.ad, searchTerm)) return true
+    }
   }
 
   return false
@@ -141,6 +238,10 @@ export const commonSortOptions: SortOption[] = [
   { label: "Güncelleme (Eski → Yeni)", value: "updatedAt-asc", column: "updatedAt", direction: "asc" },
 ]
 
+export interface ColumnVisibilityLabels {
+  [key: string]: string
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -152,6 +253,8 @@ interface DataTableProps<TData, TValue> {
   defaultSort?: { column: string; direction: "asc" | "desc" }
   onRowClick?: (row: TData) => void
   rowWrapper?: (row: TData, children: React.ReactNode) => React.ReactNode
+  columnVisibilityLabels?: ColumnVisibilityLabels
+  defaultColumnVisibility?: VisibilityState
 }
 
 export function DataTable<TData, TValue>({
@@ -165,30 +268,31 @@ export function DataTable<TData, TValue>({
   defaultSort,
   onRowClick,
   rowWrapper,
+  columnVisibilityLabels = {},
+  defaultColumnVisibility,
 }: DataTableProps<TData, TValue>) {
   const styles = densityStyles[density]
 
   // Combine common and custom sort options
   const allSortOptions = [...sortOptions, ...commonSortOptions]
 
-  // Initialize sorting state with default sort
+  // Initialize sorting state with default sort (only if provided)
   const initialSort: SortingState = defaultSort
     ? [{ id: defaultSort.column, desc: defaultSort.direction === "desc" }]
-    : [{ id: "createdAt", desc: true }]
+    : []
 
   const [sorting, setSorting] = React.useState<SortingState>(initialSort)
   const [selectedSort, setSelectedSort] = React.useState<string>(
     defaultSort
       ? `${defaultSort.column}-${defaultSort.direction}`
-      : "createdAt-desc"
+      : ""
   )
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  // Hide sort-only columns (date fields, ad, soyad) by default
+  // Hide sort-only columns (date fields) by default, merge with provided defaults
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     createdAt: false,
     updatedAt: false,
-    ad: false,
-    soyad: false,
+    ...defaultColumnVisibility,
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [globalFilterInput, setGlobalFilterInput] = React.useState("")
@@ -227,7 +331,9 @@ export function DataTable<TData, TValue>({
     }
   }
 
-  const selectedSortLabel = allSortOptions.find((opt) => opt.value === selectedSort)?.label || "Sıralama"
+  const selectedSortLabel = selectedSort
+    ? allSortOptions.find((opt) => opt.value === selectedSort)?.label || "Sıralama"
+    : "Sıralama"
 
   const table = useReactTable({
     data,
@@ -264,69 +370,312 @@ export function DataTable<TData, TValue>({
         let matched = false
 
         // Handle specific columns
-        if (columnId === "gsm") {
-          // Müşteri tablosu: gsmler array, Takip tablosu: gsm object
-          if (original.gsmler) {
-            matched = deepSearch(original.gsmler, term)
-          } else if (original.gsm) {
-            matched = deepSearch(original.gsm, term)
-          }
-        } else if (columnId === "adres" && original.adresler) {
-          matched = deepSearch(original.adresler, term)
-        } else if (columnId === "adSoyad") {
-          const fullName = `${original.ad || ""} ${original.soyad || ""}`.toLowerCase()
-          matched = fullName.includes(term)
-        } else if (columnId === "musteri") {
-          // Takip tablosu: gsm.musteri
-          const gsm = original.gsm as Record<string, unknown> | undefined
-          const musteri = gsm?.musteri as Record<string, unknown> | undefined
-          if (musteri) {
-            const fullName = `${musteri.ad || ""} ${musteri.soyad || ""}`.toLowerCase()
+        switch (columnId) {
+          // GSM columns
+          case "gsm":
+          case "numara":
+            if (original.gsmler) {
+              matched = deepSearch(original.gsmler, term)
+            } else if (original.gsm) {
+              matched = deepSearch(original.gsm, term)
+            } else if (original.numara) {
+              matched = String(original.numara).includes(term)
+            }
+            break
+
+          // Adres columns
+          case "adres":
+            if (original.adresler) {
+              matched = deepSearch(original.adresler, term)
+            } else if (original.mahalle) {
+              matched = deepSearch(original.mahalle, term)
+            } else if (original.adresDetay) {
+              matched = deepSearch(original.adresDetay, term)
+            }
+            break
+
+          // Ad Soyad columns
+          case "adSoyad":
+            const fullName = `${original.ad || ""} ${original.soyad || ""}`.toLowerCase()
             matched = fullName.includes(term)
+            break
+
+          // Kişi columns (takip, alarm, numara tablolarında)
+          case "kisi":
+          case "kisiAdSoyad":
+          case "musteri": {
+            const gsm = original.gsm as Record<string, unknown> | undefined
+            const kisi = (gsm?.kisi || original.kisi) as Record<string, unknown> | undefined
+            if (kisi) {
+              const kisiName = `${kisi.ad || ""} ${kisi.soyad || ""}`.toLowerCase()
+              matched = kisiName.includes(term)
+              if (!matched && kisi.tc) {
+                matched = String(kisi.tc).includes(term)
+              }
+            }
+            break
           }
-        } else if (columnId === "tc" && original.tc) {
-          matched = String(original.tc).toLowerCase().includes(term)
-        } else if (columnId === "pio") {
-          const pioVal = original.pio ? "evet" : "hayır"
-          matched = pioVal.includes(term)
-        } else if (columnId === "asli") {
-          const asliVal = original.asli ? "evet" : "hayır"
-          matched = asliVal.includes(term)
-        } else if (columnId === "baslamaTarihiDisplay" && original.baslamaTarihi) {
-          // Tarih formatı: DD.MM.YYYY
-          const date = new Date(original.baslamaTarihi as string)
-          const formatted = date.toLocaleDateString("tr-TR")
-          matched = formatted.includes(term)
-        } else if (columnId === "bitisTarihiDisplay" && original.bitisTarihi) {
-          const date = new Date(original.bitisTarihi as string)
-          const formatted = date.toLocaleDateString("tr-TR")
-          matched = formatted.includes(term)
-        } else if (columnId === "kalanGun" && original.bitisTarihi) {
-          const date = new Date(original.bitisTarihi as string)
-          const now = new Date()
-          const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-          // "90", "90 gün", "süresi doldu" gibi aramalara izin ver
-          const daysStr = String(daysLeft)
-          const searchText = daysLeft <= 0 ? "süresi doldu" : `${daysLeft} gün`
-          matched = daysStr.includes(term) || searchText.includes(term)
-        } else if (columnId === "durum" && original.durum) {
-          // Durum araması: UZATILACAK -> "Uzatılacak" vb.
-          const durumMap: Record<string, string> = {
-            UZATILACAK: "uzatılacak",
-            DEVAM_EDECEK: "devam edecek",
-            SONLANDIRILACAK: "sonlandırılacak",
-            UZATILDI: "uzatıldı",
+
+          // TC column
+          case "tc":
+            matched = original.tc ? String(original.tc).includes(term) : false
+            break
+
+          // Boolean columns
+          case "pio":
+          case "asli":
+          case "isActive":
+          case "isPaused":
+          case "takipVar": {
+            const boolVal = original[columnId] as boolean | undefined
+            // takipVar özel: takipler array'inin varlığına bakar
+            const checkVal = columnId === "takipVar"
+              ? Boolean((original.takipler as unknown[])?.length)
+              : boolVal
+            const boolText = checkVal ? "evet var aktif" : "hayır yok pasif"
+            matched = boolText.includes(term)
+            break
           }
-          const durumText = durumMap[original.durum as string] || String(original.durum).toLowerCase()
-          matched = durumText.includes(term)
-        } else if (columnId === "alarmlar") {
-          // Alarm sayısı araması
-          const count = (original._count as Record<string, number>)?.alarmlar || 0
-          matched = String(count).includes(term)
-        } else {
-          // Generic: try to get value directly
-          const val = original[columnId]
-          matched = deepSearch(val, term)
+
+          // Date display columns
+          case "baslamaTarihiDisplay":
+          case "baslamaTarihi": {
+            const dateField = original.baslamaTarihi || (original.takipler as Array<Record<string, unknown>>)?.[0]?.baslamaTarihi
+            if (dateField) {
+              const date = new Date(dateField as string)
+              if (!isNaN(date.getTime())) {
+                matched = date.toLocaleDateString("tr-TR").includes(term)
+              }
+            }
+            break
+          }
+
+          case "bitisTarihiDisplay":
+          case "bitisTarihi": {
+            const dateField = original.bitisTarihi || (original.takipler as Array<Record<string, unknown>>)?.[0]?.bitisTarihi
+            if (dateField) {
+              const date = new Date(dateField as string)
+              if (!isNaN(date.getTime())) {
+                matched = date.toLocaleDateString("tr-TR").includes(term)
+              }
+            }
+            break
+          }
+
+          case "tarih":
+          case "tetikTarihi": {
+            const dateVal = original[columnId] as string | undefined
+            if (dateVal) {
+              const date = new Date(dateVal)
+              if (!isNaN(date.getTime())) {
+                matched = date.toLocaleDateString("tr-TR").includes(term)
+              }
+            }
+            break
+          }
+
+          case "sonGiris": {
+            const lastLogin = original.lastLoginAt as string | undefined
+            if (lastLogin) {
+              const date = new Date(lastLogin)
+              if (!isNaN(date.getTime())) {
+                matched = date.toLocaleDateString("tr-TR").includes(term)
+              }
+            } else {
+              matched = "hiç giriş yapmadı".includes(term)
+            }
+            break
+          }
+
+          // Kalan gün column
+          case "kalanGun": {
+            const bitisTarihi = original.bitisTarihi || (original.takipler as Array<Record<string, unknown>>)?.[0]?.bitisTarihi
+            if (bitisTarihi) {
+              const date = new Date(bitisTarihi as string)
+              const now = new Date()
+              const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+              const daysStr = String(daysLeft)
+              const searchText = daysLeft <= 0 ? "süresi doldu geçti" : `${daysLeft} gün kaldı`
+              matched = daysStr.includes(term) || searchText.includes(term)
+            }
+            break
+          }
+
+          // Durum column
+          case "durum": {
+            const durumVal = original.durum as string | undefined
+            if (durumVal) {
+              const durumText = labelMaps.durum[durumVal] || durumVal.toLowerCase()
+              matched = durumText.includes(term)
+            }
+            break
+          }
+
+          // Tip column (kisi, alarm)
+          case "tip":
+          case "kisiTip": {
+            let tipVal = original.tip as string | undefined
+            // numara tablosu için kisi.tip
+            if (columnId === "kisiTip") {
+              const kisi = original.kisi as Record<string, unknown> | undefined
+              tipVal = kisi?.tip as string | undefined
+            }
+            if (tipVal) {
+              const tipText = labelMaps.tip[tipVal] || tipVal.toLowerCase()
+              matched = tipText.includes(term)
+            }
+            break
+          }
+
+          // Rol column (personel)
+          case "rol": {
+            const rolVal = original.rol as string | undefined
+            if (rolVal) {
+              const rolText = labelMaps.rol[rolVal] || rolVal.toLowerCase()
+              matched = rolText.includes(term)
+            }
+            break
+          }
+
+          // Count columns
+          case "alarmlar":
+          case "tanitim":
+          case "not":
+          case "aktivite":
+          case "ilceSayisi":
+          case "mahalleSayisi":
+          case "adresSayisi":
+          case "katilimciSayisi": {
+            const countObj = original._count as Record<string, number> | undefined
+            let countVal = 0
+            if (columnId === "katilimciSayisi") {
+              countVal = (original.katilimcilar as unknown[])?.length || 0
+            } else if (countObj) {
+              // Map column to _count field
+              const countField = columnId === "tanitim" ? "tanitimlar"
+                : columnId === "not" ? "notlar"
+                : columnId === "ilceSayisi" ? "ilceler"
+                : columnId === "mahalleSayisi" ? "mahalleler"
+                : columnId === "adresSayisi" ? "adresler"
+                : columnId
+              countVal = countObj[countField] || 0
+            }
+            // aktivite için tüm sayıları topla
+            if (columnId === "aktivite" && countObj) {
+              const total = Object.values(countObj).reduce((a, b) => a + b, 0)
+              matched = String(total).includes(term)
+            } else {
+              matched = String(countVal).includes(term)
+            }
+            break
+          }
+
+          // Katılımcılar column (tanitim)
+          case "katilimcilar": {
+            const katilimcilar = original.katilimcilar as Array<Record<string, unknown>> | undefined
+            if (katilimcilar) {
+              for (const k of katilimcilar) {
+                const kisiData = k.kisi as Record<string, unknown> | undefined
+                if (kisiData) {
+                  const name = `${kisiData.ad || ""} ${kisiData.soyad || ""}`.toLowerCase()
+                  if (name.includes(term)) {
+                    matched = true
+                    break
+                  }
+                }
+              }
+            }
+            break
+          }
+
+          // Oluşturan column (alarm)
+          case "olusturan": {
+            const createdUser = original.createdUser as Record<string, unknown> | undefined
+            if (createdUser) {
+              const userName = `${createdUser.ad || ""} ${createdUser.soyad || ""}`.toLowerCase()
+              matched = userName.includes(term)
+            } else {
+              matched = "sistem".includes(term)
+            }
+            break
+          }
+
+          // Başlık/Mesaj column (alarm)
+          case "baslik": {
+            const baslik = (original.baslik as string)?.toLowerCase() || ""
+            const mesaj = (original.mesaj as string)?.toLowerCase() || ""
+            matched = baslik.includes(term) || mesaj.includes(term)
+            break
+          }
+
+          // Gün önce column (alarm)
+          case "gunOnce": {
+            const gunOnce = original.gunOnce as number | undefined
+            if (gunOnce !== undefined) {
+              matched = String(gunOnce).includes(term) || `${gunOnce} gün`.includes(term)
+            }
+            break
+          }
+
+          // visibleId column (personel)
+          case "visibleId": {
+            matched = original.visibleId ? String(original.visibleId).includes(term) : false
+            break
+          }
+
+          // Faaliyet column (kişi)
+          case "faaliyet": {
+            const faaliyet = original.faaliyet as string | undefined
+            if (faaliyet) {
+              // HTML taglerini temizle
+              const cleanText = faaliyet.replace(/<[^>]*>/g, "").toLowerCase()
+              matched = cleanText.includes(term)
+            }
+            break
+          }
+
+          // Notlar column (tanitim)
+          case "notlar": {
+            const notlar = original.notlar as string | undefined
+            if (notlar) {
+              const cleanText = notlar.replace(/<[^>]*>/g, "").toLowerCase()
+              matched = cleanText.includes(term)
+            }
+            break
+          }
+
+          // Lokasyon columns
+          case "plaka": {
+            const plaka = original.plaka as number | undefined
+            matched = plaka ? String(plaka).padStart(2, "0").includes(term) : false
+            break
+          }
+
+          case "il": {
+            const il = original.il as Record<string, unknown> | undefined
+            const ilce = original.ilce as Record<string, unknown> | undefined
+            const targetIl = il || (ilce?.il as Record<string, unknown>)
+            if (targetIl) {
+              const ilAd = (targetIl.ad as string)?.toLowerCase() || ""
+              const plaka = targetIl.plaka as number | undefined
+              matched = ilAd.includes(term) || (plaka ? String(plaka).includes(term) : false)
+            }
+            break
+          }
+
+          case "ilce": {
+            const ilce = original.ilce as Record<string, unknown> | undefined
+            if (ilce) {
+              matched = ((ilce.ad as string)?.toLowerCase() || "").includes(term)
+            }
+            break
+          }
+
+          // Default: generic search
+          default: {
+            const val = original[columnId]
+            matched = deepSearch(val, term)
+          }
         }
 
         if (!matched) return false
@@ -352,19 +701,26 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      {/* Search, Filter Toggle and Sort */}
+      {/* Search and Controls */}
       <div className="flex items-center justify-between gap-4 py-4">
+        <Input
+          placeholder={searchPlaceholder}
+          value={globalFilterInput}
+          onChange={(e) => setGlobalFilterInput(e.target.value)}
+          className="max-w-sm"
+        />
         <div className="flex items-center gap-2">
-          <Input
-            placeholder={searchPlaceholder}
-            value={globalFilterInput}
-            onChange={(e) => setGlobalFilterInput(e.target.value)}
-            className="max-w-sm"
-          />
+          {/* Column Filter Toggle */}
           <Button
             variant={showColumnFilters ? "default" : "outline"}
             size="icon"
-            onClick={() => setShowColumnFilters(!showColumnFilters)}
+            onClick={() => {
+              if (showColumnFilters) {
+                // Kapanırken filtreleri temizle
+                clearAllColumnFilters()
+              }
+              setShowColumnFilters(!showColumnFilters)
+            }}
             className="relative"
             title="Kolon filtreleri"
           >
@@ -373,41 +729,77 @@ export function DataTable<TData, TValue>({
               <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-destructive" />
             )}
           </Button>
-          {hasActiveColumnFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearAllColumnFilters}
-              className="h-8 px-2 text-xs"
-            >
-              <X className="mr-1 h-3 w-3" />
-              Temizle
-            </Button>
-          )}
-        </div>
-        <Popover open={sortOpen} onOpenChange={setSortOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={sortOpen}
-              className="w-[240px] justify-between"
-            >
-              <div className="flex items-center gap-2 truncate">
-                <ArrowUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="truncate">{selectedSortLabel}</span>
-              </div>
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[240px] p-0" align="end">
-            <Command>
-              <CommandInput placeholder="Sıralama ara..." />
-              <CommandList>
-                <CommandEmpty>Sıralama bulunamadı.</CommandEmpty>
-                {sortOptions.length > 0 && (
-                  <CommandGroup heading="Alana Göre">
-                    {sortOptions.map((option) => (
+
+          {/* Column Visibility Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" title="Kolonları göster/gizle">
+                <Columns3 className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px]">
+              <DropdownMenuLabel>Görünür Kolonlar</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {table
+                .getAllColumns()
+                .filter((column) => {
+                  // Filter out internal columns (those without proper headers or hidden by design)
+                  const columnId = column.id
+                  // Skip internal columns that shouldn't be toggled
+                  if (["createdAt", "updatedAt", "lastLoginAt", "ad", "soyad"].includes(columnId)) {
+                    return false
+                  }
+                  // Only show columns that have a defined label or can be toggled
+                  return column.getCanHide()
+                })
+                .map((column) => {
+                  const label = columnVisibilityLabels[column.id] || column.id
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    >
+                      {label}
+                    </DropdownMenuCheckboxItem>
+                  )
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Sort Dropdown */}
+          <Popover open={sortOpen} onOpenChange={setSortOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" title={selectedSortLabel || "Sıralama"}>
+                <ArrowUpDown className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[240px] p-0" align="end">
+              <Command>
+                <CommandInput placeholder="Sıralama ara..." />
+                <CommandList>
+                  <CommandEmpty>Sıralama bulunamadı.</CommandEmpty>
+                  {sortOptions.length > 0 && (
+                    <CommandGroup heading="Alana Göre">
+                      {sortOptions.map((option) => (
+                        <CommandItem
+                          key={option.value}
+                          value={option.value}
+                          onSelect={handleSortChange}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedSort === option.value ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {option.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                  <CommandGroup heading="Tarihe Göre">
+                    {commonSortOptions.map((option) => (
                       <CommandItem
                         key={option.value}
                         value={option.value}
@@ -423,28 +815,11 @@ export function DataTable<TData, TValue>({
                       </CommandItem>
                     ))}
                   </CommandGroup>
-                )}
-                <CommandGroup heading="Tarihe Göre">
-                  {commonSortOptions.map((option) => (
-                    <CommandItem
-                      key={option.value}
-                      value={option.value}
-                      onSelect={handleSortChange}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          selectedSort === option.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {option.label}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Table */}

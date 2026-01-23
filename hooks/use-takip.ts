@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateTakipInput, UpdateTakipInput, BulkCreateTakipInput, ListTakipQuery, TakipDurum, KisiTip } from "@/lib/validations"
 import { gsmKeys } from "./use-gsm"
+import { alarmKeys } from "./use-alarmlar"
 
 export interface Takip {
   id: string
@@ -186,6 +187,8 @@ export function useCreateTakip() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: takipKeys.lists() })
       queryClient.invalidateQueries({ queryKey: takipKeys.byGsm(data.gsmId) })
+      // Invalidate alarm queries (takip oluşturulunca otomatik alarm oluşuyor)
+      queryClient.invalidateQueries({ queryKey: alarmKeys.all })
       if (data.gsm.kisi?.id) {
         queryClient.invalidateQueries({ queryKey: takipKeys.byKisi(data.gsm.kisi.id) })
         // Invalidate GSM queries to refresh takip data in GSM list
@@ -202,6 +205,8 @@ export function useBulkCreateTakip() {
     mutationFn: bulkCreateTakip,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: takipKeys.all })
+      // Invalidate alarm queries (takip oluşturulunca otomatik alarm oluşuyor)
+      queryClient.invalidateQueries({ queryKey: alarmKeys.all })
     },
   })
 }
@@ -215,6 +220,8 @@ export function useUpdateTakip() {
       queryClient.invalidateQueries({ queryKey: takipKeys.lists() })
       queryClient.invalidateQueries({ queryKey: takipKeys.detail(data.id) })
       queryClient.invalidateQueries({ queryKey: takipKeys.byGsm(data.gsmId) })
+      // Invalidate alarm queries (takip güncellenince alarm tarihleri değişebilir)
+      queryClient.invalidateQueries({ queryKey: alarmKeys.all })
       if (data.gsm.kisi?.id) {
         queryClient.invalidateQueries({ queryKey: takipKeys.byKisi(data.gsm.kisi.id) })
         // Invalidate GSM queries to refresh takip data in GSM list
@@ -231,6 +238,8 @@ export function useDeleteTakip() {
     mutationFn: deleteTakip,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: takipKeys.all })
+      // Invalidate alarm queries (takip silinince alarmlar da siliniyor)
+      queryClient.invalidateQueries({ queryKey: alarmKeys.all })
     },
   })
 }

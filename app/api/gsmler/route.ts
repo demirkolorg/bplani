@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { createGsmSchema, updateGsmSchema, bulkCreateGsmSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
+import { logList, logCreate, logUpdate, logDelete, logBulkCreate } from "@/lib/logger"
 
 // GET /api/gsmler - List GSMs for a kisi or all (for takip creation)
 export async function GET(request: NextRequest) {
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest) {
         take: 100, // Limit for performance
       })
 
+      await logList("Gsm", { all: true, search }, gsmler.length)
       return NextResponse.json(gsmler)
     }
 
@@ -86,6 +88,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    await logList("Gsm", { kisiId }, gsmler.length)
     return NextResponse.json(gsmler)
   } catch (error) {
     console.error("Error fetching gsmler:", error)
@@ -143,6 +146,7 @@ export async function POST(request: NextRequest) {
         })),
       })
 
+      await logBulkCreate("Gsm", createdGsmler.count, [], session)
       return NextResponse.json(createdGsmler, { status: 201 })
     }
 
@@ -171,6 +175,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    await logCreate("Gsm", gsm.id, gsm as unknown as Record<string, unknown>, gsm.numara, session)
     return NextResponse.json(gsm, { status: 201 })
   } catch (error) {
     console.error("Error creating gsm:", error)
@@ -239,6 +244,7 @@ export async function PUT(request: NextRequest) {
       },
     })
 
+    await logUpdate("Gsm", gsm.id, existing as unknown as Record<string, unknown>, gsm as unknown as Record<string, unknown>, gsm.numara, session)
     return NextResponse.json(gsm)
   } catch (error) {
     console.error("Error updating gsm:", error)
@@ -252,6 +258,7 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/gsmler?id=xxx - Delete a GSM
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getSession()
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
 
@@ -272,6 +279,7 @@ export async function DELETE(request: NextRequest) {
 
     await prisma.gsm.delete({ where: { id } })
 
+    await logDelete("Gsm", id, existing as unknown as Record<string, unknown>, existing.numara, session)
     return NextResponse.json({ message: "GSM başarıyla silindi" })
   } catch (error) {
     console.error("Error deleting gsm:", error)

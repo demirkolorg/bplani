@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { createMahalleSchema } from "@/lib/validations"
-import { getSession } from "@/lib/auth"
+import { getSession, canManageLokasyon } from "@/lib/auth"
+import { logList, logCreate } from "@/lib/logger"
 
 // GET /api/lokasyon/mahalleler - List neighborhoods (optionally filtered by ilce or il)
 export async function GET(request: NextRequest) {
@@ -35,6 +36,8 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    await logList("Mahalle", { ilceId, ilId }, mahalleler.length)
+
     return NextResponse.json(mahalleler)
   } catch (error) {
     console.error("Error fetching mahalleler:", error)
@@ -49,8 +52,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
-    const userId = session?.id || null
 
+    // Yetki kontrolü: Sadece ADMIN ve YONETICI
+    if (!canManageLokasyon(session)) {
+      return NextResponse.json(
+        { error: "Bu işlem için yetkiniz yok" },
+        { status: 403 }
+      )
+    }
+
+    const userId = session?.id || null
     const body = await request.json()
 
     const validatedData = createMahalleSchema.safeParse(body)
@@ -99,6 +110,8 @@ export async function POST(request: NextRequest) {
         updatedUser: { select: { ad: true, soyad: true } },
       },
     })
+
+    await logCreate("Mahalle", mahalle.id, mahalle as unknown as Record<string, unknown>, mahalle.ad, session)
 
     return NextResponse.json(mahalle, { status: 201 })
   } catch (error) {

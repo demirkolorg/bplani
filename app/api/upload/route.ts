@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import { existsSync } from "fs"
 import path from "path"
+import { getSession } from "@/lib/auth"
+import { logCreate } from "@/lib/logger"
 
 // Allowed file types
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
@@ -9,6 +11,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession()
     const formData = await request.formData()
     const file = formData.get("file") as File | null
 
@@ -55,6 +58,8 @@ export async function POST(request: NextRequest) {
 
     // Return the public URL
     const url = `/uploads/${filename}`
+
+    await logCreate("Dosya", filename, { filename, originalName: file.name, size: file.size, type: file.type, url }, file.name, session)
 
     return NextResponse.json({ url }, { status: 201 })
   } catch (error) {

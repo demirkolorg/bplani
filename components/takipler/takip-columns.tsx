@@ -70,7 +70,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
         if (!kisi) return <span className="text-muted-foreground">-</span>
         return (
           <Link
-            href={`/musteriler/${kisi.id}`}
+            href={`/kisiler/${kisi.id}`}
             className="font-medium hover:underline"
           >
             {kisi.ad} {kisi.soyad}
@@ -120,9 +120,10 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
         const isExpired = daysLeft <= 0
 
         if (isExpired) {
+          const daysPassed = Math.abs(daysLeft)
           return (
             <Badge variant="destructive" className="text-xs">
-              Süresi Doldu
+              {daysPassed} gün geçti
             </Badge>
           )
         }

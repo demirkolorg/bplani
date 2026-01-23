@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { createNotSchema, updateNotSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
+import { logList, logCreate, logUpdate, logDelete } from "@/lib/logger"
 
 // GET /api/notlar - List notes for a kisi
 export async function GET(request: NextRequest) {
@@ -30,6 +31,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    await logList("Not", { kisiId }, notlar.length)
     return NextResponse.json(notlar)
   } catch (error) {
     console.error("Error fetching notlar:", error)
@@ -84,6 +86,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    await logCreate("Not", not.id, not as unknown as Record<string, unknown>, not.icerik.substring(0, 50), session)
     return NextResponse.json(not, { status: 201 })
   } catch (error) {
     console.error("Error creating not:", error)
@@ -97,6 +100,7 @@ export async function POST(request: NextRequest) {
 // PUT /api/notlar?id=xxx - Update a note
 export async function PUT(request: NextRequest) {
   try {
+    const session = await getSession()
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
 
@@ -139,6 +143,7 @@ export async function PUT(request: NextRequest) {
       },
     })
 
+    await logUpdate("Not", not.id, existing as unknown as Record<string, unknown>, not as unknown as Record<string, unknown>, not.icerik.substring(0, 50), session)
     return NextResponse.json(not)
   } catch (error) {
     console.error("Error updating not:", error)
@@ -152,6 +157,7 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/notlar?id=xxx - Delete a note
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getSession()
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
 
@@ -172,6 +178,7 @@ export async function DELETE(request: NextRequest) {
 
     await prisma.not.delete({ where: { id } })
 
+    await logDelete("Not", id, existing as unknown as Record<string, unknown>, existing.icerik.substring(0, 50), session)
     return NextResponse.json({ message: "Not başarıyla silindi" })
   } catch (error) {
     console.error("Error deleting not:", error)

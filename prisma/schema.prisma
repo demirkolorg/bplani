@@ -15,16 +15,17 @@ enum PersonelRol {
 }
 
 model Personel {
-  id        String      @id @default(cuid())
-  visibleId String      @unique // 6 haneli kimlik
-  ad        String
-  soyad     String
-  parola    String
-  rol       PersonelRol @default(PERSONEL)
-  fotograf  String?     // Profil fotoğrafı URL
-  isActive  Boolean     @default(true)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id          String      @id @default(cuid())
+  visibleId   String      @unique // 6 haneli kimlik
+  ad          String
+  soyad       String
+  parola      String
+  rol         PersonelRol @default(PERSONEL)
+  fotograf    String?     // Profil fotoğrafı URL
+  isActive    Boolean     @default(true)
+  lastLoginAt DateTime?   // Son giriş zamanı
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   // Iliskiler - olusturan/guncelleyen olarak
   createdKisiler    Kisi[]    @relation("KisiCreatedBy")
@@ -38,6 +39,8 @@ model Personel {
   createdNotlar     Not[]     @relation("NotCreatedBy")
   createdTanitimlar Tanitim[] @relation("TanitimCreatedBy")
   updatedTanitimlar Tanitim[] @relation("TanitimUpdatedBy")
+  createdOperasyonlar Operasyon[] @relation("OperasyonCreatedBy")
+  updatedOperasyonlar Operasyon[] @relation("OperasyonUpdatedBy")
 
   // Lokasyon iliskileri
   createdIller      Il[]      @relation("IlCreatedBy")
@@ -46,6 +49,20 @@ model Personel {
   updatedIlceler    Ilce[]    @relation("IlceUpdatedBy")
   createdMahalleler Mahalle[] @relation("MahalleCreatedBy")
   updatedMahalleler Mahalle[] @relation("MahalleUpdatedBy")
+
+  // Alarm iliskileri
+  createdAlarmlar Alarm[] @relation("AlarmCreatedBy")
+
+  // Araç tanımları iliskileri
+  createdMarkalar Marka[] @relation("MarkaCreatedBy")
+  updatedMarkalar Marka[] @relation("MarkaUpdatedBy")
+  createdModeller Model[] @relation("ModelCreatedBy")
+  updatedModeller Model[] @relation("ModelUpdatedBy")
+  createdAraclar  Arac[]  @relation("AracCreatedBy")
+  updatedAraclar  Arac[]  @relation("AracUpdatedBy")
+
+  // Log iliskileri
+  loglar Log[] @relation("LogUser")
 
   @@map("personeller")
 }
@@ -81,6 +98,8 @@ model Kisi {
   adresler     Adres[]
   notlar       Not[]
   tanitimlar   TanitimKatilimci[]
+  operasyonlar OperasyonKatilimci[]
+  araclar      AracKisi[]
 
   @@index([ad, soyad])
   @@index([tc])
@@ -171,7 +190,9 @@ model Mahalle {
   updatedUser   Personel? @relation("MahalleUpdatedBy", fields: [updatedUserId], references: [id])
 
   // Iliskiler
-  adresler Adres[]
+  adresler    Adres[]
+  tanitimlar  Tanitim[]
+  operasyonlar Operasyon[]
 
   @@unique([ilceId, ad])
   @@map("mahalleler")
@@ -244,7 +265,7 @@ enum AlarmTip {
 enum AlarmDurum {
   BEKLIYOR
   TETIKLENDI
-  ONAYLANDI
+  GORULDU
   IPTAL
 }
 
@@ -253,15 +274,36 @@ model Alarm {
   takipId     String?
   takip       Takip?     @relation(fields: [takipId], references: [id], onDelete: Cascade)
   tip         AlarmTip
-  tetikTarihi DateTime
-  mesaj       String?
+  baslik      String?    // Alarm başlığı
+  mesaj       String?    // Detaylı mesaj
+  tetikTarihi DateTime   // Alarmın tetikleneceği tarih
+  gunOnce     Int        @default(20) // Bitiş tarihinden kaç gün önce
+  isPaused    Boolean    @default(false) // Duraklatılmış mı
   durum       AlarmDurum @default(BEKLIYOR)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  createdUser   Personel? @relation("AlarmCreatedBy", fields: [createdUserId], references: [id])
 
   @@index([tetikTarihi])
   @@index([durum])
+  @@index([isPaused])
   @@map("alarmlar")
+}
+
+// ==================== ALARM AYARLARI ====================
+model AlarmAyar {
+  id                   String  @id @default(cuid())
+  key                  String  @unique // Ayar anahtarı (örn: "default_gun_once")
+  value                String  // Ayar değeri
+  aciklama             String? // Ayar açıklaması
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("alarm_ayarlari")
 }
 
 // ==================== NOT ====================
@@ -280,10 +322,13 @@ model Not {
 
 // ==================== TANITIM ====================
 model Tanitim {
-  id     String   @id @default(cuid())
-  tarih  DateTime @default(now())
-  adres  String?  // Tanitim yapilan adres
-  notlar String?
+  id         String   @id @default(cuid())
+  tarih      DateTime @default(now())
+  saat       String?  // Opsiyonel saat bilgisi "HH:mm" formatında
+  mahalleId  String?
+  mahalle    Mahalle? @relation(fields: [mahalleId], references: [id])
+  adresDetay String?  // Sokak, bina no, daire vs.
+  notlar     String?
 
   // Loglama
   createdAt     DateTime  @default(now())
@@ -297,6 +342,7 @@ model Tanitim {
   katilimcilar TanitimKatilimci[]
 
   @@index([tarih])
+  @@index([mahalleId])
   @@map("tanitimlar")
 }
 
@@ -310,4 +356,198 @@ model TanitimKatilimci {
 
   @@unique([tanitimId, kisiId])
   @@map("tanitim_katilimcilari")
+}
+
+// ==================== OPERASYON ====================
+model Operasyon {
+  id         String   @id @default(cuid())
+  tarih      DateTime @default(now())
+  saat       String?  // Opsiyonel saat bilgisi "HH:mm" formatında
+  mahalleId  String?
+  mahalle    Mahalle? @relation(fields: [mahalleId], references: [id])
+  adresDetay String?  // Sokak, bina no, daire vs.
+  notlar     String?
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("OperasyonCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("OperasyonUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Coklu katilimci iliskisi
+  katilimcilar OperasyonKatilimci[]
+
+  @@index([tarih])
+  @@index([mahalleId])
+  @@map("operasyonlar")
+}
+
+model OperasyonKatilimci {
+  id          String     @id @default(cuid())
+  operasyonId String
+  operasyon   Operasyon  @relation(fields: [operasyonId], references: [id], onDelete: Cascade)
+  kisiId      String?
+  kisi        Kisi?      @relation(fields: [kisiId], references: [id])
+  gsmId       String?    // Hangi GSM ile iletisim kuruldu
+
+  @@unique([operasyonId, kisiId])
+  @@map("operasyon_katilimcilari")
+}
+
+// ==================== ARAÇ TANIMLARI ====================
+model Marka {
+  id String @id @default(cuid())
+  ad String @unique
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("MarkaCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("MarkaUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  modeller Model[]
+
+  @@map("markalar")
+}
+
+model Model {
+  id      String @id @default(cuid())
+  ad      String
+  markaId String
+  marka   Marka  @relation(fields: [markaId], references: [id])
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("ModelCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("ModelUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Iliskiler
+  araclar Arac[]
+
+  @@unique([markaId, ad])
+  @@index([markaId])
+  @@map("modeller")
+}
+
+// ==================== ARAÇLAR (Vehicles) ====================
+enum AracRenk {
+  BEYAZ
+  SIYAH
+  GRI
+  GUMUS
+  KIRMIZI
+  MAVI
+  LACIVERT
+  YESIL
+  SARI
+  TURUNCU
+  KAHVERENGI
+  BEJ
+  BORDO
+  MOR
+  PEMBE
+  ALTIN
+  BRONZ
+  DIGER
+}
+
+model Arac {
+  id      String    @id @default(cuid())
+  modelId String
+  model   Model     @relation(fields: [modelId], references: [id])
+  renk    AracRenk?
+  plaka   String    @unique
+
+  // Loglama
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("AracCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("AracUpdatedBy", fields: [updatedUserId], references: [id])
+
+  // Many-to-many with Kisi
+  kisiler AracKisi[]
+
+  @@index([modelId])
+  @@index([plaka])
+  @@map("araclar")
+}
+
+model AracKisi {
+  id      String @id @default(cuid())
+  aracId  String
+  arac    Arac   @relation(fields: [aracId], references: [id], onDelete: Cascade)
+  kisiId  String
+  kisi    Kisi   @relation(fields: [kisiId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([aracId, kisiId])
+  @@index([aracId])
+  @@index([kisiId])
+  @@map("arac_kisileri")
+}
+
+// ==================== AKTIVITE LOG ====================
+enum LogIslem {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  LOGIN
+  LOGOUT
+  LOGIN_FAIL
+  BULK_CREATE
+  BULK_UPDATE
+  BULK_DELETE
+  STATUS_CHANGE
+  EXPORT
+}
+
+model Log {
+  id          String    @id @default(cuid())
+
+  // Kim yaptı
+  userId      String?
+  user        Personel? @relation("LogUser", fields: [userId], references: [id])
+  userAd      String?   // Snapshot: Kullanıcı adı
+  userSoyad   String?   // Snapshot: Kullanıcı soyadı
+
+  // Ne yapıldı
+  islem       LogIslem
+  aciklama    String?   // İşlem açıklaması
+
+  // Hangi veri etkilendi
+  entityType  String?   // Tablo/Model adı (Kisi, Takip, Gsm, vs.)
+  entityId    String?   // Etkilenen kaydın ID'si
+  entityAd    String?   // Snapshot: Etkilenen kaydın adı/başlığı
+
+  // Değişiklik detayları
+  oncekiVeri  Json?     // Önceki veri (UPDATE ve DELETE için)
+  yeniVeri    Json?     // Yeni veri (CREATE ve UPDATE için)
+  degisiklikler Json?   // Sadece değişen alanlar
+
+  // Ek bilgiler
+  ipAdresi    String?
+  userAgent   String?
+  metadata    Json?     // Ek bilgiler
+
+  // Zaman
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([islem])
+  @@index([createdAt])
+  @@map("loglar")
 }

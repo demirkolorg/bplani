@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { Check, ChevronsUpDown, X, Pencil, Trash2 } from "lucide-react"
 import { useMahalleler, useDeleteMahalle, useIller, useIlceler, type Mahalle } from "@/hooks/use-lokasyon"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
@@ -23,6 +23,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 
 export function MahalleTable() {
   const [selectedIlId, setSelectedIlId] = React.useState<string | undefined>()
@@ -39,13 +46,7 @@ export function MahalleTable() {
   const { data: ilceler } = useIlceler(selectedIlId)
   const deleteMahalle = useDeleteMahalle()
 
-  const columns = React.useMemo(
-    () => getMahalleColumns({
-      onEdit: setEditingMahalle,
-      onDelete: setDeleteId,
-    }),
-    []
-  )
+  const columns = React.useMemo(() => getMahalleColumns(), [])
 
   const handleIlChange = (ilId: string) => {
     setSelectedIlId(ilId)
@@ -60,6 +61,30 @@ export function MahalleTable() {
 
   const selectedIl = iller?.find((il) => il.id === selectedIlId)
   const selectedIlce = ilceler?.find((ilce) => ilce.id === selectedIlceId)
+
+  const rowWrapper = (row: Mahalle, children: React.ReactNode) => (
+    <ContextMenu key={row.id}>
+      <ContextMenuTrigger asChild>
+        <tr className="border-b transition-colors hover:bg-muted/50 cursor-pointer">
+          {children}
+        </tr>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-48">
+        <ContextMenuItem onClick={() => setEditingMahalle(row)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Düzenle
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          className="text-destructive focus:text-destructive"
+          onClick={() => setDeleteId(row.id)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Sil
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  )
 
   return (
     <>
@@ -181,6 +206,13 @@ export function MahalleTable() {
         data={data || []}
         searchPlaceholder="Mahalle adı ile ara..."
         isLoading={isLoading}
+        rowWrapper={rowWrapper}
+        columnVisibilityLabels={{
+          ad: "Mahalle Adı",
+          ilce: "İlçe",
+          il: "İl",
+          adresSayisi: "Adres Sayısı",
+        }}
       />
 
       <MahalleFormModal

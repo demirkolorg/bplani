@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { updateTakipSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
+import { logView, logUpdate, logDelete } from "@/lib/logger"
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -54,6 +55,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         { status: 404 }
       )
     }
+
+    await logView("Takip", id, `${takip.gsm.kisi?.ad} ${takip.gsm.kisi?.soyad} - ${takip.gsm.numara}`)
 
     return NextResponse.json(takip)
   } catch (error) {
@@ -149,6 +152,45 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       },
     })
 
+    // Eğer bitisTarihi güncellendiyse, BEKLIYOR durumundaki TAKIP_BITIS alarmlarının tetikTarihi'ni güncelle
+    if (validatedData.data.bitisTarihi && validatedData.data.bitisTarihi.getTime() !== existing.bitisTarihi.getTime()) {
+      const newBitisTarihi = validatedData.data.bitisTarihi
+
+      // Bekleyen tüm TAKIP_BITIS alarmlarını al
+      const bekleyenAlarmlar = await prisma.alarm.findMany({
+        where: {
+          takipId: id,
+          tip: "TAKIP_BITIS",
+          durum: "BEKLIYOR",
+        },
+        select: { id: true, gunOnce: true },
+      })
+
+      // Her alarmın tetik tarihini kendi gunOnce değerine göre güncelle
+      for (const alarm of bekleyenAlarmlar) {
+        const newTetikTarihi = new Date(newBitisTarihi)
+        newTetikTarihi.setDate(newTetikTarihi.getDate() - alarm.gunOnce)
+
+        await prisma.alarm.update({
+          where: { id: alarm.id },
+          data: { tetikTarihi: newTetikTarihi },
+        })
+      }
+    }
+
+    // Eğer takip pasife alındıysa, BEKLIYOR durumundaki alarmları iptal et
+    if (validatedData.data.isActive === false && existing.isActive === true) {
+      await prisma.alarm.updateMany({
+        where: {
+          takipId: id,
+          durum: "BEKLIYOR",
+        },
+        data: {
+          durum: "IPTAL",
+        },
+      })
+    }
+
     // MUSTERI → LEAD: Takip pasife alındıysa, aktif takip kalmadıysa kişiyi LEAD'e düşür
     const kisiId = existing.gsm.kisiId
     if (kisiId && validatedData.data.isActive === false && existing.isActive === true) {
@@ -173,6 +215,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         })
       }
     }
+
+    // Log güncelleme
+    await logUpdate(
+      "Takip",
+      takip.id,
+      existing as unknown as Record<string, unknown>,
+      takip as unknown as Record<string, unknown>,
+      `${takip.gsm.kisi?.ad} ${takip.gsm.kisi?.soyad} - ${takip.gsm.numara}`,
+      session
+    )
 
     return NextResponse.json(takip)
   } catch (error) {
@@ -250,6 +302,15 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         })
       }
     }
+
+    // Log silme
+    await logDelete(
+      "Takip",
+      id,
+      existing as unknown as Record<string, unknown>,
+      `GSM: ${existing.gsmId}`,
+      session
+    )
 
     return NextResponse.json({ message: "Takip başarıyla silindi" })
   } catch (error) {

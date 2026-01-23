@@ -4,7 +4,7 @@ export default function Page() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Hoş Geldiniz</h1>
         <p className="text-muted-foreground">
-          BPlanı iş yönetim platformuna hoş geldiniz.
+          ALTAY - Analiz Takip Yönetimi platformuna hoş geldiniz.
         </p>
       </div>
 

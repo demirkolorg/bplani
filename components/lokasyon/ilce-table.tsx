@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { Check, ChevronsUpDown, X, Pencil, Trash2 } from "lucide-react"
 import { useIlceler, useDeleteIlce, useIller, type Ilce } from "@/hooks/use-lokasyon"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
@@ -23,6 +23,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 
 export function IlceTable() {
   const [selectedIlId, setSelectedIlId] = React.useState<string | undefined>()
@@ -34,13 +41,7 @@ export function IlceTable() {
   const { data: iller } = useIller()
   const deleteIlce = useDeleteIlce()
 
-  const columns = React.useMemo(
-    () => getIlceColumns({
-      onEdit: setEditingIlce,
-      onDelete: setDeleteId,
-    }),
-    []
-  )
+  const columns = React.useMemo(() => getIlceColumns(), [])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -49,6 +50,30 @@ export function IlceTable() {
   }
 
   const selectedIl = iller?.find((il) => il.id === selectedIlId)
+
+  const rowWrapper = (row: Ilce, children: React.ReactNode) => (
+    <ContextMenu key={row.id}>
+      <ContextMenuTrigger asChild>
+        <tr className="border-b transition-colors hover:bg-muted/50 cursor-pointer">
+          {children}
+        </tr>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-48">
+        <ContextMenuItem onClick={() => setEditingIlce(row)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Düzenle
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          className="text-destructive focus:text-destructive"
+          onClick={() => setDeleteId(row.id)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Sil
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  )
 
   return (
     <>
@@ -114,6 +139,12 @@ export function IlceTable() {
         data={data || []}
         searchPlaceholder="İlçe adı ile ara..."
         isLoading={isLoading}
+        rowWrapper={rowWrapper}
+        columnVisibilityLabels={{
+          ad: "İlçe Adı",
+          il: "İl",
+          mahalleSayisi: "Mahalle Sayısı",
+        }}
       />
 
       <IlceFormModal

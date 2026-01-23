@@ -7,7 +7,7 @@ const JWT_SECRET = new TextEncoder().encode(
 )
 
 const TOKEN_NAME = 'auth-token'
-const TOKEN_MAX_AGE = 60 * 60 * 24 * 7 // 7 gün
+const TOKEN_MAX_AGE = 60 * 60 * 24 // 1 gün
 
 export interface JWTPayload {
   id: string
@@ -22,7 +22,7 @@ export async function createToken(payload: JWTPayload): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime('1d')
     .sign(JWT_SECRET)
 }
 
@@ -58,4 +58,22 @@ export async function setAuthCookie(token: string): Promise<void> {
 export async function removeAuthCookie(): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.delete(TOKEN_NAME)
+}
+
+// Yetki kontrol fonksiyonları
+export function isAdmin(session: JWTPayload | null): boolean {
+  return session?.rol === 'ADMIN'
+}
+
+export function isYonetici(session: JWTPayload | null): boolean {
+  return session?.rol === 'YONETICI'
+}
+
+export function isAdminOrYonetici(session: JWTPayload | null): boolean {
+  return session?.rol === 'ADMIN' || session?.rol === 'YONETICI'
+}
+
+export function canManageLokasyon(session: JWTPayload | null): boolean {
+  // Lokasyon yönetimi sadece ADMIN ve YONETICI yapabilir
+  return isAdminOrYonetici(session)
 }

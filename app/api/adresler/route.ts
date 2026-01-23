@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { createAdresSchema, updateAdresSchema, bulkCreateAdresSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
+import { logList, logCreate, logUpdate, logDelete, logBulkCreate } from "@/lib/logger"
 
 // GET /api/adresler - List addresses for a kisi
 export async function GET(request: NextRequest) {
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    await logList("Adres", { kisiId }, adresler.length)
     return NextResponse.json(adresler)
   } catch (error) {
     console.error("Error fetching adresler:", error)
@@ -89,6 +91,7 @@ export async function POST(request: NextRequest) {
         })),
       })
 
+      await logBulkCreate("Adres", createdAdresler.count, [], session)
       return NextResponse.json(createdAdresler, { status: 201 })
     }
 
@@ -128,6 +131,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    await logCreate("Adres", adres.id, adres as unknown as Record<string, unknown>, adres.ad || undefined, session)
     return NextResponse.json(adres, { status: 201 })
   } catch (error) {
     console.error("Error creating adres:", error)
@@ -207,6 +211,7 @@ export async function PUT(request: NextRequest) {
       },
     })
 
+    await logUpdate("Adres", adres.id, existing as unknown as Record<string, unknown>, adres as unknown as Record<string, unknown>, adres.ad || undefined, session)
     return NextResponse.json(adres)
   } catch (error) {
     console.error("Error updating adres:", error)
@@ -220,6 +225,7 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/adresler?id=xxx - Delete an address
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getSession()
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
 
@@ -240,6 +246,7 @@ export async function DELETE(request: NextRequest) {
 
     await prisma.adres.delete({ where: { id } })
 
+    await logDelete("Adres", id, existing as unknown as Record<string, unknown>, existing.ad || undefined, session)
     return NextResponse.json({ message: "Adres başarıyla silindi" })
   } catch (error) {
     console.error("Error deleting adres:", error)

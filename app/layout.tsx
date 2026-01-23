@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BPlanı",
-  description: "İş Yönetim Platformu",
+  title: "ALTAY",
+  description: "Analiz Takip Yönetimi",
 };
 
 export default function RootLayout({

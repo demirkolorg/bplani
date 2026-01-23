@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { createIlceSchema } from "@/lib/validations"
-import { getSession } from "@/lib/auth"
+import { getSession, canManageLokasyon } from "@/lib/auth"
+import { logList, logCreate } from "@/lib/logger"
 
 // GET /api/lokasyon/ilceler - List districts (optionally filtered by il)
 export async function GET(request: NextRequest) {
@@ -25,6 +26,8 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    await logList("İlçe", { ilId }, ilceler.length)
+
     return NextResponse.json(ilceler)
   } catch (error) {
     console.error("Error fetching ilceler:", error)
@@ -39,8 +42,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
-    const userId = session?.id || null
 
+    // Yetki kontrolü: Sadece ADMIN ve YONETICI
+    if (!canManageLokasyon(session)) {
+      return NextResponse.json(
+        { error: "Bu işlem için yetkiniz yok" },
+        { status: 403 }
+      )
+    }
+
+    const userId = session?.id || null
     const body = await request.json()
 
     const validatedData = createIlceSchema.safeParse(body)
@@ -83,6 +94,8 @@ export async function POST(request: NextRequest) {
         updatedUser: { select: { ad: true, soyad: true } },
       },
     })
+
+    await logCreate("İlçe", ilce.id, ilce as unknown as Record<string, unknown>, ilce.ad, session)
 
     return NextResponse.json(ilce, { status: 201 })
   } catch (error) {
