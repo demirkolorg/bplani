@@ -32,6 +32,7 @@ interface KisiInfo {
 
 interface AracKisiInfo {
   kisi: KisiInfo
+  aciklama?: string | null
 }
 
 export interface Arac {

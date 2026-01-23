@@ -483,11 +483,12 @@ model Arac {
 }
 
 model AracKisi {
-  id      String @id @default(cuid())
-  aracId  String
-  arac    Arac   @relation(fields: [aracId], references: [id], onDelete: Cascade)
-  kisiId  String
-  kisi    Kisi   @relation(fields: [kisiId], references: [id], onDelete: Cascade)
+  id       String  @id @default(cuid())
+  aracId   String
+  arac     Arac    @relation(fields: [aracId], references: [id], onDelete: Cascade)
+  kisiId   String
+  kisi     Kisi    @relation(fields: [kisiId], references: [id], onDelete: Cascade)
+  aciklama String? // Neden bu araç bu kişiye eklendi
 
   createdAt DateTime @default(now())
 

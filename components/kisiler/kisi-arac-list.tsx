@@ -42,6 +42,8 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { AracForm } from "@/components/araclar/vehicles"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 
 interface KisiAracListProps {
   kisiId: string
@@ -56,6 +58,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
   const [isNewAracDialogOpen, setIsNewAracDialogOpen] = React.useState(false)
   const [selectedAracId, setSelectedAracId] = React.useState("")
+  const [aciklama, setAciklama] = React.useState("")
   const [aracOpen, setAracOpen] = React.useState(false)
   const [removingArac, setRemovingArac] = React.useState<Arac | null>(null)
 
@@ -73,9 +76,10 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
     try {
       await addKisiToArac.mutateAsync({
         aracId: selectedAracId,
-        data: { kisiId },
+        data: { kisiId, aciklama: aciklama || null },
       })
       setSelectedAracId("")
+      setAciklama("")
       setIsAddDialogOpen(false)
     } catch {
       // Error handled by mutation
@@ -98,7 +102,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Car className="h-5 w-5" />
@@ -117,7 +121,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
 
   return (
     <>
-      <Card>
+      <Card className="w-full">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -160,6 +164,15 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
                       {arac.model.marka.ad} {arac.model.ad}
                       {arac.renk && ` - ${aracRenkLabels[arac.renk as AracRenk] || arac.renk}`}
                     </div>
+                    {/* Açıklama - bu kişi için */}
+                    {(() => {
+                      const currentKisiRelation = arac.kisiler.find(ak => ak.kisi.id === kisiId)
+                      return currentKisiRelation?.aciklama ? (
+                        <p className="text-xs text-muted-foreground mt-1 italic">
+                          {currentKisiRelation.aciklama}
+                        </p>
+                      ) : null
+                    })()}
                     {arac.kisiler.length > 1 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {arac.kisiler
@@ -194,7 +207,13 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
       </Card>
 
       {/* Add Araç Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+        setIsAddDialogOpen(open)
+        if (!open) {
+          setSelectedAracId("")
+          setAciklama("")
+        }
+      }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Araç Ekle</DialogTitle>
@@ -204,63 +223,80 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
             {/* Existing Araç Selection */}
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Mevcut araçlardan seç</p>
-              <div className="flex gap-2">
-                <Popover open={aracOpen} onOpenChange={setAracOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={aracOpen}
-                      className="flex-1 justify-between"
-                    >
-                      {selectedAracId
-                        ? availableAraclar.find(a => a.id === selectedAracId)?.plaka
-                        : "Araç seçin..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[300px] p-0">
-                    <Command>
-                      <CommandInput placeholder="Plaka ara..." />
-                      <CommandList>
-                        <CommandEmpty>Araç bulunamadı.</CommandEmpty>
-                        <CommandGroup>
-                          {availableAraclar.map((arac) => (
-                            <CommandItem
-                              key={arac.id}
-                              value={arac.plaka}
-                              onSelect={() => {
-                                setSelectedAracId(arac.id)
-                                setAracOpen(false)
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  selectedAracId === arac.id ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              <div>
-                                <span className="font-mono">{arac.plaka}</span>
-                                <span className="text-muted-foreground text-sm ml-2">
-                                  {arac.model.marka.ad} {arac.model.ad}
-                                </span>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <Button
-                  onClick={handleAddExisting}
-                  disabled={!selectedAracId || addKisiToArac.isPending}
-                >
-                  {addKisiToArac.isPending ? "Ekleniyor..." : "Ekle"}
-                </Button>
-              </div>
+              <Popover open={aracOpen} onOpenChange={setAracOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={aracOpen}
+                    className="w-full justify-between"
+                  >
+                    {selectedAracId
+                      ? availableAraclar.find(a => a.id === selectedAracId)?.plaka
+                      : "Araç seçin..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Plaka ara..." />
+                    <CommandList>
+                      <CommandEmpty>Araç bulunamadı.</CommandEmpty>
+                      <CommandGroup>
+                        {availableAraclar.map((arac) => (
+                          <CommandItem
+                            key={arac.id}
+                            value={arac.plaka}
+                            onSelect={() => {
+                              setSelectedAracId(arac.id)
+                              setAracOpen(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedAracId === arac.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div>
+                              <span className="font-mono">{arac.plaka}</span>
+                              <span className="text-muted-foreground text-sm ml-2">
+                                {arac.model.marka.ad} {arac.model.ad}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
+
+            {/* Açıklama */}
+            {selectedAracId && (
+              <div className="space-y-2">
+                <Label htmlFor="aciklama">Açıklama (İsteğe bağlı)</Label>
+                <Textarea
+                  id="aciklama"
+                  placeholder="Bu araç neden bu kişiye ekleniyor?"
+                  value={aciklama}
+                  onChange={(e) => setAciklama(e.target.value)}
+                  rows={2}
+                />
+              </div>
+            )}
+
+            {/* Ekle Butonu */}
+            {selectedAracId && (
+              <Button
+                onClick={handleAddExisting}
+                disabled={!selectedAracId || addKisiToArac.isPending}
+                className="w-full"
+              >
+                {addKisiToArac.isPending ? "Ekleniyor..." : "Ekle"}
+              </Button>
+            )}
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

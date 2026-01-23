@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       kisiler?: { some: { kisiId: string } }
       modelId?: string
       model?: { markaId: string }
-      OR?: Array<{ plaka: { contains: string; mode: "insensitive" } } | { renk: { contains: string; mode: "insensitive" } }>
+      OR?: Array<{ plaka: { contains: string; mode: "insensitive" } }>
     } = {}
 
     if (kisiId) {
@@ -53,7 +53,6 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { plaka: { contains: search, mode: "insensitive" } },
-        { renk: { contains: search, mode: "insensitive" } },
       ]
     }
 

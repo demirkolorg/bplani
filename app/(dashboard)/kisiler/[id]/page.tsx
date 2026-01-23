@@ -3,7 +3,22 @@
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Pencil, User, Phone, MapPin, FileText, Info, Megaphone, Car, Workflow } from "lucide-react"
+import {
+  ArrowLeft,
+  Pencil,
+  User,
+  Phone,
+  MapPin,
+  FileText,
+  Info,
+  Megaphone,
+  Car,
+  Workflow,
+  LayoutGrid,
+  List,
+  Minimize2,
+  PanelTop
+} from "lucide-react"
 
 import { useKisi } from "@/hooks/use-kisiler"
 import { Button } from "@/components/ui/button"
@@ -11,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -19,6 +35,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group"
 import { KisiFormModal } from "@/components/kisiler/musteri-form-modal"
 import { KisiGsmList } from "@/components/kisiler/musteri-gsm-list"
 import { KisiAdresList } from "@/components/kisiler/musteri-adres-list"
@@ -30,12 +50,15 @@ import { useTanitimlarByKisi } from "@/hooks/use-tanitimlar"
 import { useOperasyonlarByKisi } from "@/hooks/use-operasyonlar"
 import { useAraclarByKisi } from "@/hooks/use-araclar-vehicles"
 
+type ViewMode = "kart" | "liste" | "compact" | "tab"
+
 export default function KisiDetayPage() {
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
 
   const [showEditModal, setShowEditModal] = React.useState(false)
+  const [viewMode, setViewMode] = React.useState<ViewMode>("kart")
 
   const { data: kisi, isLoading, error } = useKisi(id)
   const { data: tanitimlar } = useTanitimlarByKisi(id)
@@ -85,6 +108,111 @@ export default function KisiDetayPage() {
       minute: "2-digit",
     })
   }
+
+  // Kart Görünümü - Mevcut 3 sütunlu layout
+  const KartView = () => (
+    <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6">
+        <KisiGsmList kisiId={id} />
+        <KisiAdresList kisiId={id} />
+        <KisiAracList kisiId={id} />
+      </div>
+      <div className="space-y-6">
+        <KisiTanitimList kisiId={id} />
+        <KisiOperasyonList kisiId={id} />
+      </div>
+      <div className="space-y-6">
+        <KisiNotList kisiId={id} />
+      </div>
+    </div>
+  )
+
+  // Liste Görünümü - Tek sütun, tüm bileşenler alt alta
+  const ListeView = () => (
+    <div className="space-y-6 max-w-4xl">
+      <KisiGsmList kisiId={id} />
+      <KisiAdresList kisiId={id} />
+      <KisiAracList kisiId={id} />
+      <KisiTanitimList kisiId={id} />
+      <KisiOperasyonList kisiId={id} />
+      <KisiNotList kisiId={id} />
+    </div>
+  )
+
+  // Compact Görünümü - 2 sütun, daha sıkışık
+  const CompactView = () => (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="space-y-4">
+        <KisiGsmList kisiId={id} />
+        <KisiAdresList kisiId={id} />
+        <KisiAracList kisiId={id} />
+      </div>
+      <div className="space-y-4">
+        <KisiTanitimList kisiId={id} />
+        <KisiOperasyonList kisiId={id} />
+        <KisiNotList kisiId={id} />
+      </div>
+    </div>
+  )
+
+  // Tab Görünümü - Dikey tablar solda, içerik sağda
+  const TabView = () => (
+    <Tabs defaultValue="gsm" className="w-full gap-6" orientation="vertical">
+      {/* Sol taraf - Dikey Tab Listesi */}
+      <TabsList className="flex flex-col h-fit w-[160px] shrink-0 bg-muted/50 p-2 rounded-lg">
+        <TabsTrigger value="gsm" className="w-full justify-start gap-2 px-3 py-2.5">
+          <Phone className="h-4 w-4" />
+          <span>GSM</span>
+          <Badge variant="secondary" className="ml-auto h-5 px-1.5">{kisi.gsmler?.length || 0}</Badge>
+        </TabsTrigger>
+        <TabsTrigger value="adres" className="w-full justify-start gap-2 px-3 py-2.5">
+          <MapPin className="h-4 w-4" />
+          <span>Adres</span>
+          <Badge variant="secondary" className="ml-auto h-5 px-1.5">{kisi.adresler?.length || 0}</Badge>
+        </TabsTrigger>
+        <TabsTrigger value="arac" className="w-full justify-start gap-2 px-3 py-2.5">
+          <Car className="h-4 w-4" />
+          <span>Araç</span>
+          <Badge variant="secondary" className="ml-auto h-5 px-1.5">{araclarData?.data?.length || 0}</Badge>
+        </TabsTrigger>
+        <TabsTrigger value="tanitim" className="w-full justify-start gap-2 px-3 py-2.5">
+          <Megaphone className="h-4 w-4" />
+          <span>Tanıtım</span>
+          <Badge variant="secondary" className="ml-auto h-5 px-1.5">{tanitimlar?.length || 0}</Badge>
+        </TabsTrigger>
+        <TabsTrigger value="operasyon" className="w-full justify-start gap-2 px-3 py-2.5">
+          <Workflow className="h-4 w-4" />
+          <span>Operasyon</span>
+          <Badge variant="secondary" className="ml-auto h-5 px-1.5">{operasyonlar?.length || 0}</Badge>
+        </TabsTrigger>
+        <TabsTrigger value="not" className="w-full justify-start gap-2 px-3 py-2.5">
+          <FileText className="h-4 w-4" />
+          <span>Not</span>
+          <Badge variant="secondary" className="ml-auto h-5 px-1.5">{kisi.notlar?.length || 0}</Badge>
+        </TabsTrigger>
+      </TabsList>
+
+      {/* Sağ taraf - İçerik (tam genişlik) */}
+      <TabsContent value="gsm" className="mt-0 flex-1 [&>div]:w-full">
+        <KisiGsmList kisiId={id} />
+      </TabsContent>
+      <TabsContent value="adres" className="mt-0 flex-1 [&>div]:w-full">
+        <KisiAdresList kisiId={id} />
+      </TabsContent>
+      <TabsContent value="arac" className="mt-0 flex-1 [&>div]:w-full">
+        <KisiAracList kisiId={id} />
+      </TabsContent>
+      <TabsContent value="tanitim" className="mt-0 flex-1 [&>div]:w-full">
+        <KisiTanitimList kisiId={id} />
+      </TabsContent>
+      <TabsContent value="operasyon" className="mt-0 flex-1 [&>div]:w-full">
+        <KisiOperasyonList kisiId={id} />
+      </TabsContent>
+      <TabsContent value="not" className="mt-0 flex-1 [&>div]:w-full">
+        <KisiNotList kisiId={id} />
+      </TabsContent>
+    </Tabs>
+  )
 
   return (
     <div className="container mx-auto py-6">
@@ -188,7 +316,7 @@ export default function KisiDetayPage() {
       </div>
 
       {/* Compact Stats */}
-      <div className="flex items-center gap-6 mb-6 p-4 bg-muted/50 rounded-lg">
+      <div className="flex flex-wrap items-center gap-4 sm:gap-6 mb-6 p-4 bg-muted/50 rounded-lg">
         {/* Tip */}
         <div className="flex items-center gap-2">
           <User className="h-4 w-4 text-purple-600" />
@@ -219,7 +347,7 @@ export default function KisiDetayPage() {
           </Badge>
         </div>
 
-        <Separator orientation="vertical" className="h-6" />
+        <Separator orientation="vertical" className="h-6 hidden sm:block" />
 
         {/* GSM */}
         <div className="flex items-center gap-2">
@@ -259,27 +387,39 @@ export default function KisiDetayPage() {
         </div>
       </div>
 
-      {/* Main Content - 3 Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-3">
-
-        {/* Sol Sütun - GSM, Adresler ve Araçlar */}
-        <div className="space-y-6">
-          <KisiGsmList kisiId={id} />
-          <KisiAdresList kisiId={id} />
-          <KisiAracList kisiId={id} />
-        </div>
-
-        {/* Orta Sütun - Tanıtımlar ve Operasyonlar */}
-        <div className="space-y-6">
-          <KisiTanitimList kisiId={id} />
-          <KisiOperasyonList kisiId={id} />
-        </div>
-
-        {/* Sağ Sütun - Notlar */}
-        <div className="space-y-6">
-          <KisiNotList kisiId={id} />
-        </div>
+      {/* View Mode Selector */}
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-sm text-muted-foreground">Görünüm:</span>
+        <ToggleGroup
+          type="single"
+          value={viewMode}
+          onValueChange={(value) => value && setViewMode(value as ViewMode)}
+          className="bg-muted p-1 rounded-lg"
+        >
+          <ToggleGroupItem value="kart" aria-label="Kart görünümü" className="data-[state=on]:bg-background">
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Kart
+          </ToggleGroupItem>
+          <ToggleGroupItem value="liste" aria-label="Liste görünümü" className="data-[state=on]:bg-background">
+            <List className="h-4 w-4 mr-2" />
+            Liste
+          </ToggleGroupItem>
+          <ToggleGroupItem value="compact" aria-label="Compact görünümü" className="data-[state=on]:bg-background">
+            <Minimize2 className="h-4 w-4 mr-2" />
+            Compact
+          </ToggleGroupItem>
+          <ToggleGroupItem value="tab" aria-label="Tab görünümü" className="data-[state=on]:bg-background">
+            <PanelTop className="h-4 w-4 mr-2" />
+            Tab
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
+
+      {/* Main Content - View Based */}
+      {viewMode === "kart" && <KartView />}
+      {viewMode === "liste" && <ListeView />}
+      {viewMode === "compact" && <CompactView />}
+      {viewMode === "tab" && <TabView />}
 
       {/* Edit Modal */}
       <KisiFormModal

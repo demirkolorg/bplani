@@ -42,7 +42,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     await logList("AracKisi", { aracId: id }, kisiler.length)
 
-    return NextResponse.json(kisiler.map(ak => ak.kisi))
+    return NextResponse.json(kisiler.map(ak => ({
+      ...ak.kisi,
+      aciklama: ak.aciklama,
+    })))
   } catch (error) {
     console.error("Error fetching arac kisiler:", error)
     return NextResponse.json(
@@ -121,6 +124,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       data: {
         aracId: id,
         kisiId: validatedData.data.kisiId,
+        aciklama: validatedData.data.aciklama,
       },
       include: {
         kisi: {

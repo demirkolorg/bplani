@@ -84,10 +84,12 @@ export const listAracQuerySchema = z.object({
 // ==================== ARAÇ-KİŞİ İLİŞKİSİ ====================
 export const addKisiToAracSchema = z.object({
   kisiId: z.string().cuid("Geçersiz kişi ID"),
+  aciklama: z.string().max(500, "Açıklama en fazla 500 karakter olabilir").optional().nullable(),
 })
 
 export const addAracToKisiSchema = z.object({
   aracId: z.string().cuid("Geçersiz araç ID"),
+  aciklama: z.string().max(500, "Açıklama en fazla 500 karakter olabilir").optional().nullable(),
 })
 
 // ==================== TYPE EXPORTS ====================

@@ -40,7 +40,8 @@
       "Bash(powershell -Command \"Rename-Item -Path ''D:\\\\projects\\\\bplani\\\\app\\\\\\(dashboard\\)\\\\musteriler'' -NewName ''kisiler'' -Force\")",
       "Bash(git mv:*)",
       "Bash(npx ts-node:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(grep:*)"
     ]
   }
 }

@@ -255,6 +255,7 @@ interface DataTableProps<TData, TValue> {
   rowWrapper?: (row: TData, children: React.ReactNode) => React.ReactNode
   columnVisibilityLabels?: ColumnVisibilityLabels
   defaultColumnVisibility?: VisibilityState
+  headerActions?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -270,6 +271,7 @@ export function DataTable<TData, TValue>({
   rowWrapper,
   columnVisibilityLabels = {},
   defaultColumnVisibility,
+  headerActions,
 }: DataTableProps<TData, TValue>) {
   const styles = densityStyles[density]
 
@@ -710,6 +712,7 @@ export function DataTable<TData, TValue>({
           className="max-w-sm"
         />
         <div className="flex items-center gap-2">
+          {headerActions}
           {/* Column Filter Toggle */}
           <Button
             variant={showColumnFilters ? "default" : "outline"}

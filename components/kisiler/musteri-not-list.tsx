@@ -116,7 +116,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
   const isEditing = !!editingNot
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
