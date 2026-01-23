@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
+import { useTabParams } from "@/components/providers/params-provider"
+import { useTabTitle } from "@/hooks/use-tab-title"
 import Link from "next/link"
 import {
-  ArrowLeft,
   Pencil,
   Phone,
   User,
@@ -33,14 +34,20 @@ const durumVariants: Record<TakipDurum, "default" | "secondary" | "destructive" 
 }
 
 export default function TakipDetayPage() {
-  const params = useParams()
+  const params = useTabParams<{ id: string }>()
   const router = useRouter()
-  const id = params.id as string
+  const id = params.id
 
   const [showEditModal, setShowEditModal] = React.useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false)
 
   const { data: takip, isLoading, error } = useTakip(id)
+
+  // Tab title'ı dinamik güncelle
+  const takipTitle = takip
+    ? `Takip - ${takip.gsm?.kisi ? `${takip.gsm.kisi.ad} ${takip.gsm.kisi.soyad}` : takip.gsm?.numara}`
+    : undefined
+  useTabTitle(takipTitle)
   const deleteTakip = useDeleteTakip()
 
   const handleDelete = async () => {
@@ -111,12 +118,6 @@ export default function TakipDetayPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/takipler">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">

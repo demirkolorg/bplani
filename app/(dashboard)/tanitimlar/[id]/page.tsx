@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Pencil, Calendar, MapPin, FileText, Info, Users } from "lucide-react"
+import { useTabParams } from "@/components/providers/params-provider"
+import { useTabTitle } from "@/hooks/use-tab-title"
+import { Pencil, Calendar, MapPin, FileText, Info, Users } from "lucide-react"
 
 import { useTanitim } from "@/hooks/use-tanitimlar"
 import { Button } from "@/components/ui/button"
@@ -23,13 +24,18 @@ import { TanitimFormModal } from "@/components/tanitimlar/tanitim-form-modal"
 import { TanitimKatilimciList } from "@/components/tanitimlar/tanitim-katilimci-list"
 
 export default function TanitimDetayPage() {
-  const params = useParams()
-  const router = useRouter()
-  const id = params.id as string
+  const params = useTabParams<{ id: string }>()
+  const id = params.id
 
   const [showEditModal, setShowEditModal] = React.useState(false)
 
   const { data: tanitim, isLoading, error } = useTanitim(id)
+
+  // Tab title'ı dinamik güncelle
+  const tanitimTitle = tanitim
+    ? `Tanıtım - ${new Date(tanitim.tarih).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}`
+    : undefined
+  useTabTitle(tanitimTitle)
 
   if (isLoading) {
     return (
@@ -92,12 +98,6 @@ export default function TanitimDetayPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/tanitimlar">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
             <Calendar className="h-7 w-7 text-blue-600" />
           </div>

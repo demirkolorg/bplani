@@ -1,20 +1,47 @@
-import { redirect } from "next/navigation"
+"use client"
+
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Plus } from "lucide-react"
+import { useEffect } from "react"
 
-import { getSession } from "@/lib/auth"
+import { useUser } from "@/components/providers/auth-provider"
 import { Button } from "@/components/ui/button"
 import { PersonelTable } from "@/components/personel/personel-table"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export default async function PersonelPage() {
-  const session = await getSession()
+export default function PersonelPage() {
+  const { user, isLoading } = useUser()
+  const router = useRouter()
 
   // Yetki kontrolü - sadece ADMIN ve YONETICI erişebilir
-  if (!session || (session.rol !== "ADMIN" && session.rol !== "YONETICI")) {
-    redirect("/")
+  useEffect(() => {
+    if (!isLoading && (!user || (user.rol !== "ADMIN" && user.rol !== "YONETICI"))) {
+      router.replace("/")
+    }
+  }, [user, isLoading, router])
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
+    )
   }
 
-  const isAdmin = session.rol === "ADMIN"
+  // Yetkisiz erişim kontrolü
+  if (!user || (user.rol !== "ADMIN" && user.rol !== "YONETICI")) {
+    return null
+  }
+
+  const isAdmin = user.rol === "ADMIN"
 
   return (
     <div className="container mx-auto py-6">
@@ -33,7 +60,7 @@ export default async function PersonelPage() {
         )}
       </div>
 
-      <PersonelTable currentUserRol={session.rol} currentUserId={session.id} />
+      <PersonelTable currentUserRol={user.rol} currentUserId={user.id} />
     </div>
   )
 }

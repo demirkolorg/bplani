@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, MapPin, Car } from "lucide-react"
+import { Plus, MapPin, Car, Briefcase } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,8 +15,9 @@ import { MarkaTable } from "@/components/araclar/marka-table"
 import { ModelTable } from "@/components/araclar/model-table"
 import { MarkaFormModal } from "@/components/araclar/marka-form-modal"
 import { ModelFormModal } from "@/components/araclar/model-form-modal"
+import { FaaliyetAlaniTreeManager } from "@/components/faaliyet/faaliyet-alani-tree-manager"
 
-type MainTab = "lokasyonlar" | "marka-model"
+type MainTab = "lokasyonlar" | "marka-model" | "faaliyet-alanlari"
 type LokasyonSubTab = "iller" | "ilceler" | "mahalleler"
 type MarkaModelSubTab = "markalar" | "modeller"
 
@@ -47,7 +48,7 @@ export default function TanimlamalarPage() {
           setMahalleModalOpen(true)
           break
       }
-    } else {
+    } else if (mainTab === "marka-model") {
       switch (markaModelTab) {
         case "markalar":
           setMarkaModalOpen(true)
@@ -57,6 +58,7 @@ export default function TanimlamalarPage() {
           break
       }
     }
+    // Faaliyet Alanları has its own add button in the tree manager
   }
 
   const getButtonText = () => {
@@ -69,7 +71,7 @@ export default function TanimlamalarPage() {
         case "mahalleler":
           return "Yeni Mahalle"
       }
-    } else {
+    } else if (mainTab === "marka-model") {
       switch (markaModelTab) {
         case "markalar":
           return "Yeni Marka"
@@ -80,6 +82,9 @@ export default function TanimlamalarPage() {
     return "Yeni"
   }
 
+  // Hide add button for faaliyet-alanlari (it has its own)
+  const showAddButton = mainTab !== "faaliyet-alanlari"
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
@@ -87,10 +92,12 @@ export default function TanimlamalarPage() {
           <h1 className="text-2xl font-bold">Tanımlamalar</h1>
           <p className="text-muted-foreground">Lokasyon ve araç tanımlarını yönetin</p>
         </div>
-        <Button onClick={handleAddNew}>
-          <Plus className="mr-2 h-4 w-4" />
-          {getButtonText()}
-        </Button>
+        {showAddButton && (
+          <Button onClick={handleAddNew}>
+            <Plus className="mr-2 h-4 w-4" />
+            {getButtonText()}
+          </Button>
+        )}
       </div>
 
       {/* Ana Tablar */}
@@ -103,6 +110,10 @@ export default function TanimlamalarPage() {
           <TabsTrigger value="marka-model" className="gap-2">
             <Car className="h-4 w-4" />
             Marka Model
+          </TabsTrigger>
+          <TabsTrigger value="faaliyet-alanlari" className="gap-2">
+            <Briefcase className="h-4 w-4" />
+            Faaliyet Alanları
           </TabsTrigger>
         </TabsList>
 
@@ -140,6 +151,11 @@ export default function TanimlamalarPage() {
               <ModelTable />
             </TabsContent>
           </Tabs>
+        </TabsContent>
+
+        {/* Faaliyet Alanları İçeriği */}
+        <TabsContent value="faaliyet-alanlari">
+          <FaaliyetAlaniTreeManager />
         </TabsContent>
       </Tabs>
 

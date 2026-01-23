@@ -2,6 +2,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateKisiInput, UpdateKisiInput, ListKisiQuery, KisiTip } from "@/lib/validations"
 
 // Types for API responses
+export interface FaaliyetAlaniRef {
+  id: string
+  faaliyetAlani: {
+    id: string
+    ad: string
+  }
+}
+
 export interface Kisi {
   id: string
   tip: KisiTip
@@ -20,6 +28,7 @@ export interface Kisi {
   gsmler?: Gsm[]
   adresler?: AdresWithLokasyon[]
   notlar?: Not[]
+  faaliyetAlanlari?: FaaliyetAlaniRef[]
   createdUser?: { ad: string; soyad: string } | null
   updatedUser?: { ad: string; soyad: string } | null
   _count?: {

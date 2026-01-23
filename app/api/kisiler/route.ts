@@ -74,6 +74,11 @@ export async function GET(request: NextRequest) {
             },
           },
         },
+        faaliyetAlanlari: {
+          include: {
+            faaliyetAlani: true,
+          },
+        },
         createdUser: { select: { ad: true, soyad: true } },
         updatedUser: { select: { ad: true, soyad: true } },
         _count: {

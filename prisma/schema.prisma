@@ -64,6 +64,10 @@ model Personel {
   // Log iliskileri
   loglar Log[] @relation("LogUser")
 
+  // Faaliyet Alanı iliskileri
+  createdFaaliyetAlanlari FaaliyetAlani[] @relation("FaaliyetAlaniCreatedBy")
+  updatedFaaliyetAlanlari FaaliyetAlani[] @relation("FaaliyetAlaniUpdatedBy")
+
   @@map("personeller")
 }
 
@@ -94,12 +98,13 @@ model Kisi {
   updatedUser   Personel? @relation("KisiUpdatedBy", fields: [updatedUserId], references: [id])
 
   // Iliskiler
-  gsmler       Gsm[]
-  adresler     Adres[]
-  notlar       Not[]
-  tanitimlar   TanitimKatilimci[]
-  operasyonlar OperasyonKatilimci[]
-  araclar      AracKisi[]
+  gsmler           Gsm[]
+  adresler         Adres[]
+  notlar           Not[]
+  tanitimlar       TanitimKatilimci[]
+  operasyonlar     OperasyonKatilimci[]
+  araclar          AracKisi[]
+  faaliyetAlanlari KisiFaaliyetAlani[]
 
   @@index([ad, soyad])
   @@index([tc])
@@ -551,4 +556,42 @@ model Log {
   @@index([islem])
   @@index([createdAt])
   @@map("loglar")
+}
+
+// ==================== FAALIYET ALANI ====================
+model FaaliyetAlani {
+  id        String  @id @default(cuid())
+  ad        String
+  parentId  String?
+  parent    FaaliyetAlani?  @relation("FaaliyetHierarchy", fields: [parentId], references: [id])
+  children  FaaliyetAlani[] @relation("FaaliyetHierarchy")
+  sira      Int     @default(0)
+  isActive  Boolean @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel? @relation("FaaliyetAlaniCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel? @relation("FaaliyetAlaniUpdatedBy", fields: [updatedUserId], references: [id])
+
+  kisiler KisiFaaliyetAlani[]
+
+  @@unique([parentId, ad])
+  @@index([parentId])
+  @@map("faaliyet_alanlari")
+}
+
+model KisiFaaliyetAlani {
+  id              String        @id @default(cuid())
+  kisiId          String
+  kisi            Kisi          @relation(fields: [kisiId], references: [id], onDelete: Cascade)
+  faaliyetAlaniId String
+  faaliyetAlani   FaaliyetAlani @relation(fields: [faaliyetAlaniId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+
+  @@unique([kisiId, faaliyetAlaniId])
+  @@index([kisiId])
+  @@index([faaliyetAlaniId])
+  @@map("kisi_faaliyet_alanlari")
 }

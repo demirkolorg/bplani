@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { RichTextEditor } from "@/components/shared/rich-text-editor"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LokasyonSelector } from "@/components/lokasyon/lokasyon-selector"
-import { Phone, MapPin } from "lucide-react"
+import { FaaliyetSelector } from "@/components/faaliyet/faaliyet-selector"
+import { Phone, MapPin, Briefcase } from "lucide-react"
 
 interface GsmItem {
   id?: string
@@ -35,11 +36,21 @@ interface AdresItem {
   lokasyonText?: string
 }
 
+interface FaaliyetAlaniItem {
+  id: string
+  faaliyetAlaniId: string
+  faaliyetAlani: {
+    id: string
+    ad: string
+  }
+}
+
 interface KisiFormProps {
   initialData?: Partial<CreateKisiInput> & {
     id?: string
     gsmler?: GsmItem[]
     adresler?: AdresItem[]
+    faaliyetAlanlari?: FaaliyetAlaniItem[]
   }
   onSuccess?: () => void
   onCancel?: () => void
@@ -83,6 +94,11 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
     mahalleId?: string
   }>({})
   const [newAdresDetay, setNewAdresDetay] = React.useState("")
+
+  // Faaliyet Alanlari
+  const [faaliyetAlaniIds, setFaaliyetAlaniIds] = React.useState<string[]>(
+    initialData?.faaliyetAlanlari?.map((f) => f.faaliyetAlaniId) || []
+  )
 
   const [errors, setErrors] = React.useState<Record<string, string>>({})
   const [isUploading, setIsUploading] = React.useState(false)
@@ -260,9 +276,13 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
 
     try {
       if (isEditing && initialData?.id) {
+        // Update kisi with faaliyet alanlari
         await updateKisi.mutateAsync({
           id: initialData.id,
-          data: result.data,
+          data: {
+            ...result.data,
+            faaliyetAlaniIds,
+          },
         })
       } else {
         const kisi = await createKisi.mutateAsync(result.data)
@@ -295,6 +315,17 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                 detay: a.detay,
                 isPrimary: a.isPrimary,
               })),
+            }),
+          })
+        }
+
+        // Create Faaliyet Alanlari for new kişi
+        if (faaliyetAlaniIds.length > 0 && kisi.id) {
+          await fetch(`/api/kisiler/${kisi.id}/faaliyet-alanlari`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              faaliyetAlaniIds,
             }),
           })
         }
@@ -451,14 +482,27 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                 </div>
               </div>
 
-              {/* Faaliyet */}
+              {/* Faaliyet Alanları */}
               <div className="space-y-1">
-                <Label htmlFor="faaliyet" className="text-xs">Faaliyet</Label>
+                <Label className="text-xs flex items-center gap-1">
+                  <Briefcase className="h-3 w-3" />
+                  Faaliyet Alanları
+                </Label>
+                <FaaliyetSelector
+                  value={faaliyetAlaniIds}
+                  onChange={setFaaliyetAlaniIds}
+                  maxDisplay={2}
+                />
+              </div>
+
+              {/* Ek Bilgi/Notlar (legacy faaliyet field) */}
+              <div className="space-y-1">
+                <Label htmlFor="faaliyet" className="text-xs">Ek Bilgi</Label>
                 <Textarea
                   id="faaliyet"
                   value={formData.faaliyet || ""}
                   onChange={(e) => handleChange("faaliyet", e.target.value || null)}
-                  placeholder="Faaliyet alanı..."
+                  placeholder="Ek bilgi veya notlar..."
                   rows={2}
                   className="text-sm"
                 />
@@ -822,13 +866,25 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
             </div>
           </div>
 
-          {/* Faaliyet */}
+          {/* Faaliyet Alanları */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4" />
+              Faaliyet Alanları
+            </Label>
+            <FaaliyetSelector
+              value={faaliyetAlaniIds}
+              onChange={setFaaliyetAlaniIds}
+            />
+          </div>
+
+          {/* Ek Bilgi/Notlar (legacy faaliyet field) */}
           <RichTextEditor
             id="faaliyet"
-            label="Faaliyet"
+            label="Ek Bilgi"
             value={formData.faaliyet || ""}
             onChange={(value) => handleChange("faaliyet", value || null)}
-            placeholder="Kişinin faaliyet alanı..."
+            placeholder="Ek bilgi veya notlar..."
             rows={3}
             error={errors.faaliyet}
           />

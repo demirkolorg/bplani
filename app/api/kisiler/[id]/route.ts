@@ -39,6 +39,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             },
           },
         },
+        faaliyetAlanlari: {
+          include: {
+            faaliyetAlani: {
+              select: {
+                id: true,
+                ad: true,
+                parent: { select: { ad: true } },
+              },
+            },
+          },
+        },
         createdUser: {
           select: { ad: true, soyad: true },
         },
@@ -102,10 +113,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Extract faaliyetAlaniIds from validated data
+    const { faaliyetAlaniIds, ...kisiData } = validatedData.data
+
     const kisi = await prisma.kisi.update({
       where: { id },
       data: {
-        ...validatedData.data,
+        ...kisiData,
         updatedUserId: validUserId,
       },
       include: {
@@ -123,10 +137,77 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             },
           },
         },
+        faaliyetAlanlari: {
+          include: {
+            faaliyetAlani: {
+              select: { id: true, ad: true },
+            },
+          },
+        },
         createdUser: { select: { ad: true, soyad: true } },
         updatedUser: { select: { ad: true, soyad: true } },
       },
     })
+
+    // Update faaliyet alanlari if provided
+    if (faaliyetAlaniIds !== undefined) {
+      // Delete existing relations
+      await prisma.kisiFaaliyetAlani.deleteMany({
+        where: { kisiId: id },
+      })
+
+      // Create new relations
+      if (faaliyetAlaniIds.length > 0) {
+        await prisma.kisiFaaliyetAlani.createMany({
+          data: faaliyetAlaniIds.map((faaliyetAlaniId) => ({
+            kisiId: id,
+            faaliyetAlaniId,
+          })),
+        })
+      }
+
+      // Re-fetch to get updated faaliyet alanlari
+      const updatedKisi = await prisma.kisi.findUnique({
+        where: { id },
+        include: {
+          gsmler: true,
+          adresler: {
+            include: {
+              mahalle: {
+                include: {
+                  ilce: {
+                    include: {
+                      il: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          faaliyetAlanlari: {
+            include: {
+              faaliyetAlani: {
+                select: { id: true, ad: true },
+              },
+            },
+          },
+          createdUser: { select: { ad: true, soyad: true } },
+          updatedUser: { select: { ad: true, soyad: true } },
+        },
+      })
+
+      // Log güncelleme
+      await logUpdate(
+        "Kisi",
+        kisi.id,
+        existing as unknown as Record<string, unknown>,
+        updatedKisi as unknown as Record<string, unknown>,
+        `${kisi.ad} ${kisi.soyad}`,
+        session
+      )
+
+      return NextResponse.json(updatedKisi)
+    }
 
     // Log güncelleme
     await logUpdate(

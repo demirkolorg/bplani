@@ -32,8 +32,10 @@ export const createKisiSchema = z.object({
   fotograf: z.string().max(500, "Fotoğraf yolu en fazla 500 karakter olabilir").optional().nullable(),
 })
 
-// Update Kisi schema (all fields optional)
-export const updateKisiSchema = createKisiSchema.partial()
+// Update Kisi schema (all fields optional, includes faaliyetAlaniIds for relation management)
+export const updateKisiSchema = createKisiSchema.partial().extend({
+  faaliyetAlaniIds: z.array(z.string().cuid()).optional(),
+})
 
 // List query params schema
 export const listKisiQuerySchema = z.object({

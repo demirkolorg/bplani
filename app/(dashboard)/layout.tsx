@@ -1,4 +1,4 @@
-import { SidebarLayout } from "@/components/sidebar-layout";
+import { HeaderLayout } from "@/components/header-layout";
 import { AuthProvider } from "@/components/providers/auth-provider";
 
 export default function DashboardLayout({
@@ -6,9 +6,10 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // children artık kullanılmıyor - TabContentRenderer sayfa içeriklerini yönetiyor
   return (
     <AuthProvider>
-      <SidebarLayout>{children}</SidebarLayout>
+      <HeaderLayout />
     </AuthProvider>
   );
 }

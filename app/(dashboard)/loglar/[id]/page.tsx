@@ -1,11 +1,8 @@
 "use client"
 
-import { use } from "react"
-import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
 import {
-  ArrowLeft,
   User,
   Calendar,
   Monitor,
@@ -26,10 +23,7 @@ import {
   entityTypeLabels,
   getIslemColor,
 } from "@/hooks/use-loglar"
-
-interface PageProps {
-  params: Promise<{ id: string }>
-}
+import { useTabParams } from "@/components/providers/params-provider"
 
 function JsonViewer({ data, title }: { data: unknown; title: string }) {
   if (!data) return null
@@ -92,9 +86,9 @@ function DegisiklikCard({ degisiklikler }: { degisiklikler: Record<string, { onc
   )
 }
 
-export default function LogDetailPage({ params }: PageProps) {
-  const router = useRouter()
-  const { id } = use(params)
+export default function LogDetailPage() {
+  const params = useTabParams<{ id: string }>()
+  const id = params.id
   const { data: log, isLoading } = useLog(id)
 
   if (isLoading) {
@@ -114,10 +108,6 @@ export default function LogDetailPage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 p-12">
         <p className="text-muted-foreground">Log bulunamadı</p>
-        <Button variant="outline" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Geri
-        </Button>
       </div>
     )
   }
@@ -126,9 +116,6 @@ export default function LogDetailPage({ params }: PageProps) {
     <div className="flex flex-col gap-6 p-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight">Log Detayı</h1>

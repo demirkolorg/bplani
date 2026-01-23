@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
+import { useTabParams } from "@/components/providers/params-provider"
+import { useTabTitle } from "@/hooks/use-tab-title"
 import Link from "next/link"
 import {
-  ArrowLeft,
   Pencil,
   User,
   Key,
@@ -39,9 +40,9 @@ import { PersonelRolModal } from "@/components/personel/personel-rol-modal"
 import { personelRolLabels, personelRolColors } from "@/lib/validations"
 
 export default function PersonelDetayPage() {
-  const params = useParams()
+  const params = useTabParams<{ id: string }>()
   const router = useRouter()
-  const id = params.id as string
+  const id = params.id
 
   const [showEditModal, setShowEditModal] = React.useState(false)
   const [showPasswordModal, setShowPasswordModal] = React.useState(false)
@@ -50,6 +51,9 @@ export default function PersonelDetayPage() {
   const [error, setError] = React.useState<string | null>(null)
 
   const { data: personel, isLoading, error: fetchError } = usePersonel(id)
+
+  // Tab title'ı dinamik güncelle
+  useTabTitle(personel ? `${personel.ad} ${personel.soyad}` : undefined)
   const deletePersonel = useDeletePersonel()
   const toggleActive = useToggleActive()
 
@@ -124,12 +128,6 @@ export default function PersonelDetayPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/personel">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-
           {/* Avatar */}
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted overflow-hidden">
             {personel.fotograf ? (

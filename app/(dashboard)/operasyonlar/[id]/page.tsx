@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Pencil, Calendar, MapPin, FileText, Info, Users } from "lucide-react"
+import { useTabParams } from "@/components/providers/params-provider"
+import { useTabTitle } from "@/hooks/use-tab-title"
+import { Pencil, Calendar, MapPin, FileText, Info, Users } from "lucide-react"
 
 import { useOperasyon } from "@/hooks/use-operasyonlar"
 import { Button } from "@/components/ui/button"
@@ -23,13 +24,18 @@ import { OperasyonFormModal } from "@/components/operasyonlar/operasyon-form-mod
 import { OperasyonKatilimciList } from "@/components/operasyonlar/operasyon-katilimci-list"
 
 export default function OperasyonDetayPage() {
-  const params = useParams()
-  const router = useRouter()
-  const id = params.id as string
+  const params = useTabParams<{ id: string }>()
+  const id = params.id
 
   const [showEditModal, setShowEditModal] = React.useState(false)
 
   const { data: operasyon, isLoading, error } = useOperasyon(id)
+
+  // Tab title'ı dinamik güncelle
+  const operasyonTitle = operasyon
+    ? `Operasyon - ${new Date(operasyon.tarih).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}`
+    : undefined
+  useTabTitle(operasyonTitle)
 
   if (isLoading) {
     return (
@@ -92,12 +98,6 @@ export default function OperasyonDetayPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/operasyonlar">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
             <Calendar className="h-7 w-7 text-purple-600" />
           </div>

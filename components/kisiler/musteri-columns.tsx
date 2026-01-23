@@ -103,18 +103,18 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
       id: "faaliyet",
       header: "Faaliyet",
       cell: ({ row }) => {
-        const faaliyet = row.original.faaliyet
-        if (!faaliyet) {
+        const faaliyetAlanlari = row.original.faaliyetAlanlari
+        if (!faaliyetAlanlari || faaliyetAlanlari.length === 0) {
           return <span className="text-muted-foreground">-</span>
         }
-        // HTML taglerini temizle ve kısalt
-        const cleanText = faaliyet.replace(/<[^>]*>/g, "")
+        const faaliyetler = faaliyetAlanlari.map(f => f.faaliyetAlani.ad)
+        const displayText = faaliyetler.join(", ")
         return (
           <span
             className="text-sm max-w-[200px] truncate block"
-            title={cleanText}
+            title={displayText}
           >
-            {cleanText.length > 40 ? cleanText.substring(0, 40) + "..." : cleanText}
+            {displayText.length > 40 ? displayText.substring(0, 40) + "..." : displayText}
           </span>
         )
       },
