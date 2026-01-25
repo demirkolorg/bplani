@@ -15,7 +15,8 @@ export function useTabTitle(title: string | undefined) {
 
   React.useEffect(() => {
     if (title && currentTabId) {
-      updateTabTitle(currentTabId, title)
+      // Dinamik başlık olarak işaretle (kişi adı, personel adı gibi)
+      updateTabTitle(currentTabId, title, true)
     }
   }, [title, currentTabId, updateTabTitle])
 }

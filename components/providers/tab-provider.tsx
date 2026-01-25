@@ -165,14 +165,18 @@ function tabReducer(state: TabState, action: TabAction): TabState {
     }
 
     case "UPDATE_TITLE": {
-      const { tabId, title } = action.payload
+      const { tabId, title, isDynamic } = action.payload
       // Ana sayfa başlığı değiştirilemez
       const tab = state.tabs.find((t) => t.id === tabId)
       if (tab?.path === "/") return state
 
       return {
         ...state,
-        tabs: state.tabs.map((t) => (t.id === tabId ? { ...t, title } : t)),
+        tabs: state.tabs.map((t) =>
+          t.id === tabId
+            ? { ...t, title, isDynamic: isDynamic !== undefined ? isDynamic : t.isDynamic }
+            : t
+        ),
       }
     }
 
@@ -239,8 +243,8 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
               tabs: parsed.tabs.map((tab) => ({
                 ...tab,
                 lastActiveAt: tab.openedAt,
-                // Title'ı her zaman current locale'den al
-                title: getRouteTitle(tab.path, t.tabs),
+                // Title'ı her zaman current locale'den al (dinamik değilse)
+                title: tab.isDynamic ? tab.title : getRouteTitle(tab.path, t.tabs),
                 icon: tab.path === "/" ? "Home" : tab.icon,
               })),
               activeTabId: parsed.activeTabId,
@@ -269,6 +273,7 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
           icon: t.icon,
           scrollPosition: t.scrollPosition,
           openedAt: t.openedAt,
+          isDynamic: t.isDynamic,
         })),
         activeTabId: state.activeTabId,
       }
@@ -291,11 +296,14 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.activeTabId, mounted])
 
-  // Locale değişince tüm tab title'larını güncelle
+  // Locale değişince tüm tab title'larını güncelle (dinamik olanlar hariç)
   React.useEffect(() => {
     if (!mounted || state.tabs.length === 0) return
 
     state.tabs.forEach((tab) => {
+      // Dinamik başlıkları koruyoruz (kişi adı gibi)
+      if (tab.isDynamic) return
+
       const newTitle = getRouteTitle(tab.path, t.tabs)
       if (tab.title !== newTitle) {
         dispatch({ type: "UPDATE_TITLE", payload: { tabId: tab.id, title: newTitle } })
@@ -363,8 +371,8 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "SET_ACTIVE", payload: { tabId } })
   }, [])
 
-  const updateTabTitle = React.useCallback((tabId: string, title: string) => {
-    dispatch({ type: "UPDATE_TITLE", payload: { tabId, title } })
+  const updateTabTitle = React.useCallback((tabId: string, title: string, isDynamic?: boolean) => {
+    dispatch({ type: "UPDATE_TITLE", payload: { tabId, title, isDynamic } })
   }, [])
 
   const updateTabIcon = React.useCallback((tabId: string, icon: string) => {

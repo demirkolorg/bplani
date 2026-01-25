@@ -8,6 +8,7 @@ export interface Tab {
   scrollPosition: number
   openedAt: number
   lastActiveAt: number
+  isDynamic?: boolean  // Dinamik başlık (kişi adı gibi) - locale değişiminde korunur
 }
 
 export interface TabState {
@@ -36,7 +37,7 @@ export interface TabContextType {
   closeAllTabs: () => void
   closeTabsToRight: (tabId: string) => void
   setActiveTab: (tabId: string) => void
-  updateTabTitle: (tabId: string, title: string) => void
+  updateTabTitle: (tabId: string, title: string, isDynamic?: boolean) => void
   updateTabIcon: (tabId: string, icon: string) => void
   updateScrollPosition: (tabId: string, position: number) => void
   reorderTabs: (fromIndex: number, toIndex: number) => void
@@ -51,7 +52,7 @@ export type TabAction =
   | { type: "CLOSE_TABS_TO_RIGHT"; payload: { tabId: string } }
   | { type: "CLOSE_ALL_TABS" }
   | { type: "SET_ACTIVE"; payload: { tabId: string } }
-  | { type: "UPDATE_TITLE"; payload: { tabId: string; title: string } }
+  | { type: "UPDATE_TITLE"; payload: { tabId: string; title: string; isDynamic?: boolean } }
   | { type: "UPDATE_ICON"; payload: { tabId: string; icon: string } }
   | { type: "UPDATE_SCROLL"; payload: { tabId: string; position: number } }
   | { type: "REORDER"; payload: { fromIndex: number; toIndex: number } }
@@ -71,4 +72,5 @@ export interface PersistedTab {
   icon?: string
   scrollPosition: number
   openedAt: number
+  isDynamic?: boolean
 }

@@ -337,6 +337,62 @@ export interface KisilerTranslations {
 
   // Search
   searchPlaceholder: string
+
+  // Detail page
+  backToKisiler: string
+  archived: string
+  phone: string
+  address: string
+  yes: string
+  no: string
+  noFaaliyetAlanlari: string
+  notes: string
+  viewAll: string
+  createdAt: string
+  gsm: string
+  vehicles: string
+  introductions: string
+  operations: string
+  recentIntroductions: string
+  noIntroductionsYet: string
+  recentOperations: string
+  noOperationsYet: string
+  noVehiclesYet: string
+  recentActivity: string
+  createdPersonRecord: string
+  updatedPersonInfo: string
+  personNotFound: string
+  backToPersons: string
+
+  // Tab content
+  participants: string
+  addToIntroduction: string
+  createNewIntroduction: string
+  addToExistingIntroduction: string
+  noIntroductionsYetDescription: string
+  addToOperation: string
+  createNewOperation: string
+  addToExistingOperation: string
+  noOperationsYetDescription: string
+
+  // Vehicle tab
+  addVehicle: string
+  noVehiclesAdded: string
+  addVehicleTitle: string
+  selectFromExisting: string
+  selectVehicle: string
+  searchPlate: string
+  vehicleNotFound: string
+  descriptionOptional: string
+  vehicleDescriptionPlaceholder: string
+  adding: string
+  or: string
+  createNewVehicle: string
+  newVehicle: string
+  removeVehicle: string
+  removeVehicleConfirm: string
+  removing: string
+  remove: string
 }
 
 export interface TakiplerTranslations {

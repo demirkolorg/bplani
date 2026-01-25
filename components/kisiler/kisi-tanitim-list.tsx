@@ -8,6 +8,7 @@ import { tr } from "date-fns/locale"
 
 import { useTanitimlarByKisi, type Tanitim } from "@/hooks/use-tanitimlar"
 import { useKisi } from "@/hooks/use-kisiler"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,7 @@ interface KisiTanitimListProps {
 }
 
 function TanitimRow({ tanitim }: { tanitim: Tanitim }) {
+  const { t } = useLocale()
   const tarih = new Date(tanitim.tarih)
 
   // Build address string
@@ -79,7 +81,7 @@ function TanitimRow({ tanitim }: { tanitim: Tanitim }) {
         {/* Katılımcılar */}
         {tanitim.katilimcilar && tanitim.katilimcilar.length > 0 && (
           <div className="mt-3 pt-3 border-t">
-            <p className="text-xs text-muted-foreground mb-1.5">Katılımcılar:</p>
+            <p className="text-xs text-muted-foreground mb-1.5">{t.kisiler.participants}</p>
             <div className="flex flex-wrap gap-1">
               {tanitim.katilimcilar
                 .filter((k) => k.kisi)
@@ -88,11 +90,10 @@ function TanitimRow({ tanitim }: { tanitim: Tanitim }) {
                   <Badge
                     key={k.id}
                     variant="outline"
-                    className={`text-[10px] ${
-                      k.kisi?.tt
+                    className={`text-[10px] ${k.kisi?.tt
                         ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
                         : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
-                    }`}
+                      }`}
                   >
                     {k.kisi?.ad} {k.kisi?.soyad}
                   </Badge>
@@ -113,6 +114,7 @@ function TanitimRow({ tanitim }: { tanitim: Tanitim }) {
 export function KisiTanitimList({ kisiId }: KisiTanitimListProps) {
   const { data: tanitimlar, isLoading } = useTanitimlarByKisi(kisiId)
   const { data: kisi } = useKisi(kisiId)
+  const { t } = useLocale()
 
   const [showSeciciModal, setShowSeciciModal] = React.useState(false)
   const [showYeniModal, setShowYeniModal] = React.useState(false)
@@ -127,7 +129,7 @@ export function KisiTanitimList({ kisiId }: KisiTanitimListProps) {
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
               <Megaphone className="h-5 w-5 text-purple-600" />
-              Tanıtımlar
+              {t.kisiler.introductions}
               {tanitimlar && tanitimlar.length > 0 && (
                 <span className="text-sm font-normal text-muted-foreground">
                   ({tanitimlar.length})
@@ -138,18 +140,18 @@ export function KisiTanitimList({ kisiId }: KisiTanitimListProps) {
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="outline">
                   <Plus className="h-4 w-4 mr-1" />
-                  Tanıtıma Ekle
+                  {t.kisiler.addToIntroduction}
                   <ChevronDown className="h-3 w-3 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setShowYeniModal(true)}>
                   <Calendar className="h-4 w-4 mr-2" />
-                  Yeni Tanıtım Oluştur
+                  {t.kisiler.createNewIntroduction}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShowSeciciModal(true)}>
                   <History className="h-4 w-4 mr-2" />
-                  Mevcut Tanıtıma Ekle
+                  {t.kisiler.addToExistingIntroduction}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -168,9 +170,9 @@ export function KisiTanitimList({ kisiId }: KisiTanitimListProps) {
           ) : (
             <div className="text-center py-6">
               <Megaphone className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground">Henüz tanıtım kaydı yok</p>
+              <p className="text-sm text-muted-foreground">{t.kisiler.noIntroductionsYet}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Yukarıdaki &quot;Tanıtıma Ekle&quot; butonunu kullanarak kişiyi tanıtıma ekleyebilirsiniz
+                {t.kisiler.noIntroductionsYetDescription}
               </p>
             </div>
           )}

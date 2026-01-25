@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { useTabParams } from "@/components/providers/params-provider"
 import { useTabTitle } from "@/hooks/use-tab-title"
+import { useLocale } from "@/components/providers/locale-provider"
 import {
   Pencil,
   User,
@@ -119,6 +120,7 @@ function DetailRow({ label, value, isLink }: DetailRowProps) {
 export default function KisiDetayPage() {
   const params = useTabParams<{ id: string }>()
   const id = params.id
+  const { t } = useLocale()
 
   const [showDetayModal, setShowDetayModal] = React.useState(false)
   const [showFaaliyetModal, setShowFaaliyetModal] = React.useState(false)
@@ -156,10 +158,10 @@ export default function KisiDetayPage() {
         <Card className="max-w-md">
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground mb-4">
-              {error instanceof Error ? error.message : "Kişi bulunamadı"}
+              {error instanceof Error ? error.message : t.kisiler.personNotFound}
             </p>
             <Button asChild>
-              <Link href="/kisiler">Kişilere Dön</Link>
+              <Link href="/kisiler">{t.kisiler.backToPersons}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -208,7 +210,7 @@ export default function KisiDetayPage() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
-            Kişiler
+            {t.kisiler.backToKisiler}
           </Link>
 
           {/* Profile Photo */}
@@ -239,7 +241,7 @@ export default function KisiDetayPage() {
 
           {/* Archived Badge */}
           {kisi.isArchived && (
-            <Badge variant="destructive" className="mb-2">Arşivlenmiş</Badge>
+            <Badge variant="destructive" className="mb-2">{t.kisiler.archived}</Badge>
           )}
         </div>
 
@@ -247,31 +249,31 @@ export default function KisiDetayPage() {
         <div className="px-6 divide-y">
           {/* Kişi Detayları */}
           <CollapsibleSection
-            title="Kişi Detayları"
+            title={t.kisiler.kisiDetails}
             onEdit={() => setShowDetayModal(true)}
           >
             <div className="space-y-0.5">
-              {kisi.tc && <DetailRow label="TC" value={kisi.tc} />}
+              {kisi.tc && <DetailRow label={t.kisiler.tt} value={kisi.tc} />}
               {primaryGsm && (
                 <DetailRow
-                  label="Telefon"
+                  label={t.kisiler.phone}
                   value={primaryGsm.numara}
                   isLink
                 />
               )}
               {adresText && (
-                <DetailRow label="Adres" value={adresText} />
+                <DetailRow label={t.kisiler.address} value={adresText} />
               )}
               <DetailRow
-                label="TT"
+                label={t.kisiler.tt}
                 value={
                   <Badge variant={kisi.tt ? "default" : "secondary"}>
-                    {kisi.tt ? "Evet" : "Hayır"}
+                    {kisi.tt ? t.kisiler.yes : t.kisiler.no}
                   </Badge>
                 }
               />
               <DetailRow
-                label="Tip"
+                label={t.kisiler.tip}
                 value={
                   <Badge
                     variant="outline"
@@ -281,24 +283,24 @@ export default function KisiDetayPage() {
                         : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300"
                     }
                   >
-                    {kisi.tt ? "Müşteri" : "Aday"}
+                    {kisi.tt ? t.kisiler.tipMusteri : t.kisiler.tipAday}
                   </Badge>
                 }
               />
               <DetailRow
-                label="PIO"
-                value={kisi.pio ? "Evet" : "Hayır"}
+                label={t.kisiler.pio}
+                value={kisi.pio ? t.kisiler.yes : t.kisiler.no}
               />
               <DetailRow
-                label="Asli"
-                value={kisi.asli ? "Evet" : "Hayır"}
+                label={t.kisiler.asli}
+                value={kisi.asli ? t.kisiler.yes : t.kisiler.no}
               />
             </div>
           </CollapsibleSection>
 
           {/* Faaliyet Alanları (Tags) */}
           <CollapsibleSection
-            title="Faaliyet Alanları"
+            title={t.kisiler.faaliyetAlanlari}
             onEdit={() => setShowFaaliyetModal(true)}
           >
             <div className="flex flex-wrap gap-2">
@@ -314,7 +316,7 @@ export default function KisiDetayPage() {
                 ))
               ) : (
                 <span className="text-sm text-muted-foreground">
-                  Faaliyet alanı belirlenmemiş
+                  {t.kisiler.noFaaliyetAlanlari}
                 </span>
               )}
             </div>
@@ -322,7 +324,7 @@ export default function KisiDetayPage() {
 
           {/* Notlar */}
           <CollapsibleSection
-            title="Notlar"
+            title={t.kisiler.notes}
             onAdd={() => setActiveTab("notlar")}
           >
             {recentNotes.length > 0 ? (
@@ -349,13 +351,13 @@ export default function KisiDetayPage() {
                     onClick={() => setActiveTab("notlar")}
                     className="text-sm text-blue-600 hover:underline"
                   >
-                    Tümünü gör ({kisi.notlar?.length})
+                    {t.kisiler.viewAll} ({kisi.notlar?.length})
                   </button>
                 )}
               </div>
             ) : (
               <span className="text-sm text-muted-foreground">
-                Henüz not eklenmemiş
+                {t.kisiler.noNotesYet}
               </span>
             )}
           </CollapsibleSection>
@@ -365,7 +367,7 @@ export default function KisiDetayPage() {
         <div className="mt-auto p-6 border-t text-xs text-muted-foreground">
           <div className="flex items-center gap-2 mb-1">
             <Clock className="h-3 w-3" />
-            <span>Oluşturulma: {formatDateTime(kisi.createdAt)}</span>
+            <span>{t.kisiler.createdAt} {formatDateTime(kisi.createdAt)}</span>
           </div>
           {kisi.createdUser && (
             <span className="pl-5">
@@ -382,46 +384,46 @@ export default function KisiDetayPage() {
           <div className="border-b px-6 pt-2">
             <TabsList variant="line">
               <TabsTrigger value="genel">
-                Genel Bakış
+                {t.kisiler.overview}
               </TabsTrigger>
               <TabsTrigger value="gsm">
                 <Phone className="h-4 w-4" />
-                GSM
+                {t.kisiler.gsm}
                 <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                   {kisi.gsmler?.length || 0}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="adres">
                 <MapPin className="h-4 w-4" />
-                Adresler
+                {t.kisiler.addresses}
                 <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                   {kisi.adresler?.length || 0}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="arac">
                 <Car className="h-4 w-4" />
-                Araçlar
+                {t.kisiler.vehicles}
                 <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                   {araclarData?.data?.length || 0}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="tanitim">
                 <Megaphone className="h-4 w-4" />
-                Tanıtımlar
+                {t.kisiler.introductions}
                 <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                   {tanitimlar?.length || 0}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="operasyon">
                 <Workflow className="h-4 w-4" />
-                Operasyonlar
+                {t.kisiler.operations}
                 <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                   {operasyonlar?.length || 0}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="notlar">
                 <FileText className="h-4 w-4" />
-                Notlar
+                {t.kisiler.notes}
                 <Badge variant="secondary" className="h-5 px-1.5 text-xs">
                   {kisi.notlar?.length || 0}
                 </Badge>
@@ -437,13 +439,13 @@ export default function KisiDetayPage() {
                 {/* Son Tanıtımlar */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Son Tanıtımlar</h3>
+                    <h3 className="font-semibold">{t.kisiler.recentIntroductions}</h3>
                     {(tanitimlar?.length || 0) > 0 && (
                       <button
                         onClick={() => setActiveTab("tanitim")}
                         className="text-sm text-blue-600 hover:underline"
                       >
-                        Tümünü gör
+                        {t.kisiler.viewAll}
                       </button>
                     )}
                   </div>
@@ -477,7 +479,7 @@ export default function KisiDetayPage() {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Megaphone className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Henüz tanıtım kaydı yok</p>
+                      <p className="text-sm">{t.kisiler.noIntroductionsYet}</p>
                     </div>
                   )}
                 </div>
@@ -485,13 +487,13 @@ export default function KisiDetayPage() {
                 {/* Son Operasyonlar */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Son Operasyonlar</h3>
+                    <h3 className="font-semibold">{t.kisiler.recentOperations}</h3>
                     {(operasyonlar?.length || 0) > 0 && (
                       <button
                         onClick={() => setActiveTab("operasyon")}
                         className="text-sm text-blue-600 hover:underline"
                       >
-                        Tümünü gör
+                        {t.kisiler.viewAll}
                       </button>
                     )}
                   </div>
@@ -525,7 +527,7 @@ export default function KisiDetayPage() {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Workflow className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Henüz operasyon kaydı yok</p>
+                      <p className="text-sm">{t.kisiler.noOperationsYet}</p>
                     </div>
                   )}
                 </div>
@@ -533,13 +535,13 @@ export default function KisiDetayPage() {
                 {/* Araçlar */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Araçlar</h3>
+                    <h3 className="font-semibold">{t.kisiler.vehicles}</h3>
                     {(araclarData?.data?.length || 0) > 0 && (
                       <button
                         onClick={() => setActiveTab("arac")}
                         className="text-sm text-blue-600 hover:underline"
                       >
-                        Tümünü gör
+                        {t.kisiler.viewAll}
                       </button>
                     )}
                   </div>
@@ -570,7 +572,7 @@ export default function KisiDetayPage() {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <Car className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Henüz araç kaydı yok</p>
+                      <p className="text-sm">{t.kisiler.noVehiclesYet}</p>
                     </div>
                   )}
                 </div>
@@ -578,7 +580,7 @@ export default function KisiDetayPage() {
                 {/* Son Aktivite */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <h3 className="font-semibold">Son Aktivite</h3>
+                    <h3 className="font-semibold">{t.kisiler.recentActivity}</h3>
                     <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="space-y-3">
@@ -592,7 +594,7 @@ export default function KisiDetayPage() {
                             <span className="font-medium text-blue-600">
                               {kisi.createdUser.ad} {kisi.createdUser.soyad}
                             </span>{" "}
-                            kişi kaydını oluşturdu
+                            {t.kisiler.createdPersonRecord}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {formatDate(kisi.createdAt)}
@@ -610,7 +612,7 @@ export default function KisiDetayPage() {
                             <span className="font-medium text-blue-600">
                               {kisi.updatedUser.ad} {kisi.updatedUser.soyad}
                             </span>{" "}
-                            kişi bilgilerini güncelledi
+                            {t.kisiler.updatedPersonInfo}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {formatDate(kisi.updatedAt)}

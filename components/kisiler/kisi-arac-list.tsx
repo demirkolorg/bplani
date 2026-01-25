@@ -5,6 +5,7 @@ import { Car, Plus, X, ExternalLink } from "lucide-react"
 import Link from "next/link"
 
 import { useAraclarByKisi, useAddKisiToArac, useRemoveKisiFromArac, useAraclar, type Arac } from "@/hooks/use-araclar-vehicles"
+import { useLocale } from "@/components/providers/locale-provider"
 import { aracRenkLabels, type AracRenk } from "@/lib/validations"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,6 +51,7 @@ interface KisiAracListProps {
 }
 
 export function KisiAracList({ kisiId }: KisiAracListProps) {
+  const { t } = useLocale()
   const { data, isLoading } = useAraclarByKisi(kisiId)
   const { data: allAraclar } = useAraclar({ limit: 100 })
   const addKisiToArac = useAddKisiToArac()
@@ -106,7 +108,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Car className="h-5 w-5" />
-            Araçlar
+            {t.kisiler.vehicles}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -126,7 +128,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
               <Car className="h-5 w-5 text-indigo-600" />
-              Araçlar
+              {t.kisiler.vehicles}
               <Badge variant="secondary" className="ml-1">
                 {araclar.length}
               </Badge>
@@ -137,14 +139,14 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
               onClick={() => setIsAddDialogOpen(true)}
             >
               <Plus className="h-4 w-4 mr-1" />
-              Ekle
+              {t.kisiler.addVehicle}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {araclar.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Henüz araç eklenmemiş
+              {t.kisiler.noVehiclesAdded}
             </p>
           ) : (
             <div className="space-y-2">
@@ -216,13 +218,13 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Araç Ekle</DialogTitle>
+            <DialogTitle>{t.kisiler.addVehicleTitle}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             {/* Existing Araç Selection */}
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Mevcut araçlardan seç</p>
+              <p className="text-sm text-muted-foreground">{t.kisiler.selectFromExisting}</p>
               <Popover open={aracOpen} onOpenChange={setAracOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -233,15 +235,15 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
                   >
                     {selectedAracId
                       ? availableAraclar.find(a => a.id === selectedAracId)?.plaka
-                      : "Araç seçin..."}
+                      : t.kisiler.selectVehicle}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[300px] p-0">
                   <Command>
-                    <CommandInput placeholder="Plaka ara..." />
+                    <CommandInput placeholder={t.kisiler.searchPlate} />
                     <CommandList>
-                      <CommandEmpty>Araç bulunamadı.</CommandEmpty>
+                      <CommandEmpty>{t.kisiler.vehicleNotFound}</CommandEmpty>
                       <CommandGroup>
                         {availableAraclar.map((arac) => (
                           <CommandItem
@@ -276,10 +278,10 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
             {/* Açıklama */}
             {selectedAracId && (
               <div className="space-y-2">
-                <Label htmlFor="aciklama">Açıklama (İsteğe bağlı)</Label>
+                <Label htmlFor="aciklama">{t.kisiler.descriptionOptional}</Label>
                 <Textarea
                   id="aciklama"
-                  placeholder="Bu araç neden bu kişiye ekleniyor?"
+                  placeholder={t.kisiler.vehicleDescriptionPlaceholder}
                   value={aciklama}
                   onChange={(e) => setAciklama(e.target.value)}
                   rows={2}
@@ -294,7 +296,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
                 disabled={!selectedAracId || addKisiToArac.isPending}
                 className="w-full"
               >
-                {addKisiToArac.isPending ? "Ekleniyor..." : "Ekle"}
+                {addKisiToArac.isPending ? t.kisiler.adding : t.kisiler.addVehicle}
               </Button>
             )}
 
@@ -304,7 +306,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  veya
+                  {t.kisiler.or}
                 </span>
               </div>
             </div>
@@ -319,7 +321,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
               }}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Yeni Araç Oluştur
+              {t.kisiler.createNewVehicle}
             </Button>
           </div>
         </DialogContent>
@@ -329,7 +331,7 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
       <Dialog open={isNewAracDialogOpen} onOpenChange={setIsNewAracDialogOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Yeni Araç</DialogTitle>
+            <DialogTitle>{t.kisiler.newVehicle}</DialogTitle>
           </DialogHeader>
           <AracForm
             inModal
@@ -344,19 +346,18 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
       <AlertDialog open={!!removingArac} onOpenChange={(open) => !open && setRemovingArac(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Aracı Kaldır</AlertDialogTitle>
+            <AlertDialogTitle>{t.kisiler.removeVehicle}</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong>{removingArac?.plaka}</strong> plakalı aracı bu kişiden kaldırmak istediğinize emin misiniz?
-              Bu işlem aracı silmez, sadece bu kişi ile ilişkisini kaldırır.
+              <strong>{removingArac?.plaka}</strong> {t.kisiler.removeVehicleConfirm}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRemove}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {removeKisiFromArac.isPending ? "Kaldırılıyor..." : "Kaldır"}
+              {removeKisiFromArac.isPending ? t.kisiler.removing : t.kisiler.remove}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
