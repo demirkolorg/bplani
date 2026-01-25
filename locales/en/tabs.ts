@@ -12,6 +12,7 @@ export const tabs: TabsTranslations = {
   kisiDetay: "Person Detail",
   numaralar: "Phone Numbers",
   araclar: "Vehicles",
+  advancedSearch: "Advanced Search",
   takipler: "Follow-ups",
   takipYeni: "New Follow-up",
   takipDetay: "Follow-up Detail",

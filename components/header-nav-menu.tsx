@@ -16,6 +16,7 @@ import {
   Activity,
   Menu,
   ChevronDown,
+  Search,
   type LucideIcon,
 } from "lucide-react"
 
@@ -59,6 +60,7 @@ const navGroups: NavGroup[] = [
       { titleKey: "kisiler", url: "/kisiler", icon: Users },
       { titleKey: "numaralar", url: "/numaralar", icon: Phone },
       { titleKey: "araclar", url: "/araclar", icon: Car },
+      { titleKey: "advancedSearch", url: "/advanced-search", icon: Search },
     ],
   },
   {

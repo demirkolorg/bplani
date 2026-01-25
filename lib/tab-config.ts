@@ -20,6 +20,8 @@ export const ROUTE_CONFIG: Record<string, RouteConfig> = {
 
   "/araclar": { titleKey: "araclar", icon: "Car" },
 
+  "/advanced-search": { titleKey: "advancedSearch", icon: "Search" },
+
   // Faaliyetler
   "/takipler": { titleKey: "takipler", icon: "CalendarClock" },
   "/takipler/yeni": { titleKey: "takipYeni", icon: "CalendarPlus" },

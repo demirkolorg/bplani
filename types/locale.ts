@@ -148,6 +148,7 @@ export interface NavigationTranslations {
   profil: string
   logout: string
   faaliyetAlanlari: string
+  advancedSearch: string
 }
 
 export interface TableTranslations {
@@ -1231,6 +1232,7 @@ export interface TabsTranslations {
   kisiDetay: string
   numaralar: string
   araclar: string
+  advancedSearch: string
   takipler: string
   takipYeni: string
   takipDetay: string
@@ -1354,6 +1356,113 @@ export interface DashboardTranslations {
   pendingAlarms: string
 }
 
+export interface QueryBuilderTranslations {
+  // Page
+  pageTitle: string
+  pageDescription: string
+
+  // Components
+  title: string
+  description: string
+  submitLabel: string
+  addFilter: string
+  removeFilter: string
+
+  // Logic
+  logic: string
+  logicAnd: string
+  logicOr: string
+
+  // Status
+  activeFilters: string
+  noFilters: string
+  searching: string
+
+  // Operators - Text
+  contains: string
+  doesNotContain: string
+  startsWith: string
+  endsWith: string
+  equals: string
+  notEquals: string
+  isEmpty: string
+  isNotEmpty: string
+  inList: string
+  notInList: string
+
+  // Operators - Number
+  greaterThan: string
+  lessThan: string
+  between: string
+
+  // Operators - Select
+  in: string
+  notIn: string
+
+  // Operators - Date
+  before: string
+  after: string
+
+  // Input
+  selectColumn: string
+  selectOperator: string
+  enterValue: string
+  noValueNeeded: string
+
+  // Bulk input
+  bulkPaste: string
+  bulkPasteTitle: string
+  bulkPasteDescription: string
+  bulkPastePlaceholder: string
+  uniqueValues: string
+  valuesSelected: string
+  clear: string
+  apply: string
+
+  // Between input
+  min: string
+  max: string
+
+  // Select input
+  selectOption: string
+  search: string
+  noResults: string
+
+  // Results
+  resultsTitle: string
+  resultsCount: string
+  noSearchYet: string
+  noResultsFound: string
+  searchInstructions: string
+
+  // Errors
+  searchError: string
+
+  // Debug
+  debugTitle: string
+
+  // Saved Queries
+  savedQueries: string
+  saveQuery: string
+  loadQuery: string
+  deleteQuery: string
+  queryName: string
+  queryNamePlaceholder: string
+  saveSuccess: string
+  loadSuccess: string
+  deleteSuccess: string
+  noSavedQueries: string
+
+  // Export
+  export: string
+  exportExcel: string
+  exportCsv: string
+  exportJson: string
+  exporting: string
+  exportSuccess: string
+  exportError: string
+}
+
 export interface Translations {
   common: CommonTranslations
   sidebar: SidebarTranslations
@@ -1372,6 +1481,7 @@ export interface Translations {
   numaralar: NumaralarTranslations
   araclar: AraclarTranslations
   faaliyet: FaaliyetTranslations
+  queryBuilder: QueryBuilderTranslations
   search: SearchTranslations
   loglar: LoglarTranslations
   ayarlar: AyarlarTranslations

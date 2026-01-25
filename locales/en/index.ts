@@ -23,6 +23,7 @@ import { tabs } from "./tabs"
 import { api } from "./api"
 import { notFound } from "./notFound"
 import { dashboard } from "./dashboard"
+import { queryBuilder } from "./query-builder"
 
 export const en = {
   common,
@@ -50,4 +51,5 @@ export const en = {
   api,
   notFound,
   dashboard,
+  queryBuilder,
 }

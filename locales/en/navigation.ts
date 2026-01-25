@@ -17,4 +17,5 @@ export const navigation: NavigationTranslations = {
   profil: "Profile",
   logout: "Logout",
   faaliyetAlanlari: "Activity Areas",
+  advancedSearch: "Advanced Search",
 }
