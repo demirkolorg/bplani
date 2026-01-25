@@ -26,14 +26,16 @@ import { Button } from "@/components/ui/button"
 import { useUser } from "@/components/providers/auth-provider"
 import { useAuth } from "@/hooks/use-auth"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useLocale } from "@/components/providers/locale-provider"
 
 export function NavUser() {
   const { user, isLoading } = useUser()
   const { logout } = useAuth()
+  const { t } = useLocale()
 
-  const fullName = user ? `${user.ad} ${user.soyad}` : "Kullanıcı"
+  const fullName = user ? `${user.ad} ${user.soyad}` : t.auth.user
   const initials = user ? `${user.ad[0]}${user.soyad[0]}` : "?"
-  const rolLabel = user?.rol === "ADMIN" ? "Yönetici" : user?.rol === "YONETICI" ? "Yönetici" : "Personel"
+  const rolLabel = user?.rol === "ADMIN" ? t.auth.admin : user?.rol === "YONETICI" ? t.auth.manager : t.auth.staff
 
   if (isLoading) {
     return (
@@ -77,21 +79,21 @@ export function NavUser() {
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <BadgeCheck className="mr-2 size-4" />
-            Profil
+            {t.auth.profile}
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings className="mr-2 size-4" />
-            Hesap Ayarları
+            {t.auth.accountSettings}
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Bell className="mr-2 size-4" />
-            Bildirimler
+            {t.auth.notifications}
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
           <LogOut className="mr-2 size-4" />
-          Çıkış Yap
+          {t.auth.logout}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

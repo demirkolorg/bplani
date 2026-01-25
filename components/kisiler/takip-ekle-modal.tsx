@@ -3,8 +3,10 @@
 import * as React from "react"
 import { CalendarIcon, Plus } from "lucide-react"
 import { format, parse, isValid } from "date-fns"
-import { tr } from "date-fns/locale"
+import { tr as trLocale, enUS } from "date-fns/locale"
 import { useCreateTakip } from "@/hooks/use-takip"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,12 +31,15 @@ interface TakipEkleModalProps {
 }
 
 export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess }: TakipEkleModalProps) {
+  const { t, locale } = useLocale()
   const createTakip = useCreateTakip()
   const [baslamaTarihi, setBaslamaTarihi] = React.useState<Date>(new Date())
   const [bitisTarihi, setBitisTarihi] = React.useState<Date>(
     new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
   )
   const [error, setError] = React.useState("")
+
+  const dateLocale = locale === "tr" ? trLocale : enUS
 
   // Başlama tarihi değiştiğinde bitiş tarihini +90 gün olarak güncelle
   const handleBaslamaTarihiChange = (date: Date) => {
@@ -46,7 +51,7 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
     e.preventDefault()
 
     if (bitisTarihi < baslamaTarihi) {
-      setError("Bitiş tarihi başlama tarihinden önce olamaz")
+      setError(t.takipler.endDateBeforeStart)
       return
     }
 
@@ -84,11 +89,11 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
-              Yeni Takip Ekle
+              {t.takipler.newTakip}
             </DialogTitle>
             <DialogDescription>
-              <span className="font-mono">{gsmNumara}</span> numaralı GSM için yeni takip kaydı oluşturun.
-              Mevcut aktif takip kayıtları otomatik olarak "Uzatıldı" durumuna geçecektir.
+              <span className="font-mono">{gsmNumara}</span>{" "}
+              {t.takipler.activeWillBeExtended}
             </DialogDescription>
           </DialogHeader>
 
@@ -100,7 +105,7 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
             )}
 
             <div className="space-y-2">
-              <Label>Başlama Tarihi</Label>
+              <Label>{t.takipler.startDate}</Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
@@ -125,7 +130,7 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
                       mode="single"
                       selected={baslamaTarihi}
                       onSelect={(date) => date && handleBaslamaTarihiChange(date)}
-                      locale={tr}
+                      locale={dateLocale}
                     />
                   </PopoverContent>
                 </Popover>
@@ -133,7 +138,7 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
             </div>
 
             <div className="space-y-2">
-              <Label>Bitiş Tarihi</Label>
+              <Label>{t.takipler.endDate}</Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
@@ -158,13 +163,13 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
                       mode="single"
                       selected={bitisTarihi}
                       onSelect={(date) => date && setBitisTarihi(date)}
-                      locale={tr}
+                      locale={dateLocale}
                     />
                   </PopoverContent>
                 </Popover>
               </div>
               <p className="text-xs text-muted-foreground">
-                Başlama tarihine göre otomatik +90 gün hesaplanır
+                {t.takipler.auto90Days}
               </p>
             </div>
           </div>
@@ -176,13 +181,13 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
               onClick={() => handleOpenChange(false)}
               disabled={createTakip.isPending}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={createTakip.isPending}>
               {createTakip.isPending && (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               )}
-              Takip Ekle
+              {t.takipler.addTakip}
             </Button>
           </DialogFooter>
         </form>

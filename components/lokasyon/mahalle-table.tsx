@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Check, ChevronsUpDown, X, Pencil, Trash2 } from "lucide-react"
 import { useMahalleler, useDeleteMahalle, useIller, useIlceler, type Mahalle } from "@/hooks/use-lokasyon"
+import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { getMahalleColumns } from "./mahalle-columns"
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/context-menu"
 
 export function MahalleTable() {
+  const { t } = useLocale()
   const [selectedIlId, setSelectedIlId] = React.useState<string | undefined>()
   const [selectedIlceId, setSelectedIlceId] = React.useState<string | undefined>()
   const [editingMahalle, setEditingMahalle] = React.useState<Mahalle | null>(null)
@@ -46,7 +48,7 @@ export function MahalleTable() {
   const { data: ilceler } = useIlceler(selectedIlId)
   const deleteMahalle = useDeleteMahalle()
 
-  const columns = React.useMemo(() => getMahalleColumns(), [])
+  const columns = React.useMemo(() => getMahalleColumns(t), [t])
 
   const handleIlChange = (ilId: string) => {
     setSelectedIlId(ilId)
@@ -72,7 +74,7 @@ export function MahalleTable() {
       <ContextMenuContent className="w-48">
         <ContextMenuItem onClick={() => setEditingMahalle(row)}>
           <Pencil className="mr-2 h-4 w-4" />
-          Düzenle
+          {t.common.edit}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -80,7 +82,7 @@ export function MahalleTable() {
           onClick={() => setDeleteId(row.id)}
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Sil
+          {t.common.delete}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -100,15 +102,15 @@ export function MahalleTable() {
             >
               {selectedIl
                 ? `${selectedIl.plaka ? `${selectedIl.plaka} - ` : ""}${selectedIl.ad}`
-                : "İl filtresi..."}
+                : t.lokasyon.ilFilter}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[250px] p-0">
             <Command>
-              <CommandInput placeholder="İl ara..." />
+              <CommandInput placeholder={t.lokasyon.searchIl} />
               <CommandList>
-                <CommandEmpty>İl bulunamadı.</CommandEmpty>
+                <CommandEmpty>{t.lokasyon.ilNotFound}</CommandEmpty>
                 <CommandGroup>
                   {iller?.map((il) => (
                     <CommandItem
@@ -156,15 +158,15 @@ export function MahalleTable() {
               className="w-[250px] justify-between"
               disabled={!selectedIlId}
             >
-              {selectedIlce ? selectedIlce.ad : "İlçe filtresi..."}
+              {selectedIlce ? selectedIlce.ad : t.lokasyon.ilceFilter}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[250px] p-0">
             <Command>
-              <CommandInput placeholder="İlçe ara..." />
+              <CommandInput placeholder={t.lokasyon.searchIlce} />
               <CommandList>
-                <CommandEmpty>İlçe bulunamadı.</CommandEmpty>
+                <CommandEmpty>{t.lokasyon.ilceNotFound}</CommandEmpty>
                 <CommandGroup>
                   {ilceler?.map((ilce) => (
                     <CommandItem
@@ -204,14 +206,14 @@ export function MahalleTable() {
       <DataTable
         columns={columns}
         data={data || []}
-        searchPlaceholder="Mahalle adı ile ara..."
+        searchPlaceholder={t.lokasyon.searchMahallePlaceholder}
         isLoading={isLoading}
         rowWrapper={rowWrapper}
         columnVisibilityLabels={{
-          ad: "Mahalle Adı",
-          ilce: "İlçe",
-          il: "İl",
-          adresSayisi: "Adres Sayısı",
+          ad: t.lokasyon.mahalleAdi,
+          ilce: t.lokasyon.ilce,
+          il: t.lokasyon.il,
+          adresSayisi: t.lokasyon.adresSayisi,
         }}
       />
 
@@ -230,9 +232,9 @@ export function MahalleTable() {
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Mahalleyi Sil"
-        description="Bu mahalleyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz. Mahalleye bağlı adresler varsa silme işlemi engellenecektir."
-        confirmText="Sil"
+        title={t.lokasyon.deleteMahalle}
+        description={t.lokasyon.deleteMahalleConfirm}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deleteMahalle.isPending}
       />

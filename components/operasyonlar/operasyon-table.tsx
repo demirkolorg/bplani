@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { Eye, Pencil, Trash2 } from "lucide-react"
 
 import { useOperasyonlar, useDeleteOperasyon, type Operasyon } from "@/hooks/use-operasyonlar"
+import { useDataTablePreferences } from "@/hooks/use-table-preferences"
+import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import {
@@ -14,16 +16,24 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
-import { getOperasyonColumns, operasyonSortOptions } from "./operasyon-columns"
+import { getOperasyonColumns, getOperasyonSortOptions } from "./operasyon-columns"
 
 export function OperasyonTable() {
   const router = useRouter()
+  const { t, locale } = useLocale()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
 
   const { data, isLoading } = useOperasyonlar()
   const deleteOperasyon = useDeleteOperasyon()
 
-  const columns = React.useMemo(() => getOperasyonColumns(), [])
+  // Table preferences
+  const prefs = useDataTablePreferences("operasyonlar", {
+    defaultSort: { column: "tarih", direction: "desc" },
+    defaultPageSize: 20,
+  })
+
+  const columns = React.useMemo(() => getOperasyonColumns(t, locale), [t, locale])
+  const sortOptions = React.useMemo(() => getOperasyonSortOptions(t), [t])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -54,7 +64,7 @@ export function OperasyonTable() {
           }}
         >
           <Eye className="mr-2 h-4 w-4" />
-          Görüntüle
+          {t.common.view}
         </ContextMenuItem>
         <ContextMenuItem
           onClick={(e) => {
@@ -63,7 +73,7 @@ export function OperasyonTable() {
           }}
         >
           <Pencil className="mr-2 h-4 w-4" />
-          Düzenle
+          {t.common.edit}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -74,7 +84,7 @@ export function OperasyonTable() {
           }}
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Sil
+          {t.common.delete}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -85,27 +95,32 @@ export function OperasyonTable() {
       <DataTable
         columns={columns}
         data={data?.data || []}
-        searchPlaceholder="Adres veya notlarda ara..."
+        searchPlaceholder={t.operasyonlar.searchPlaceholder}
         isLoading={isLoading}
-        sortOptions={operasyonSortOptions}
-        defaultSort={{ column: "tarih", direction: "desc" }}
+        sortOptions={sortOptions}
+        defaultSort={prefs.defaultSort}
+        pageSize={prefs.pageSize}
+        defaultColumnVisibility={prefs.columnVisibility}
         onRowClick={handleRowClick}
         rowWrapper={rowWrapper}
+        onColumnVisibilityChange={prefs.setColumnVisibility}
+        onSortChange={prefs.setSorting}
+        onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
-          tarih: "Tarih",
-          adres: "Adres",
-          katilimcilar: "Katılımcılar",
-          katilimciSayisi: "Sayı",
-          notlar: "Notlar",
+          tarih: t.operasyonlar.date,
+          adres: t.operasyonlar.address,
+          katilimcilar: t.operasyonlar.participants,
+          katilimciSayisi: t.operasyonlar.count,
+          notlar: t.operasyonlar.notes,
         }}
       />
 
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Operasyonu Sil"
-        description="Bu operasyonu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm katılımcı kayıtları da silinecektir."
-        confirmText="Sil"
+        title={t.operasyonlar.deleteOperasyon}
+        description={t.operasyonlar.deleteOperasyonConfirm}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deleteOperasyon.isPending}
       />

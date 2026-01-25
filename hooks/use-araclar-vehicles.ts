@@ -27,7 +27,7 @@ interface KisiInfo {
   id: string
   ad: string
   soyad: string
-  tip: "LEAD" | "MUSTERI"
+  tt: boolean
 }
 
 interface AracKisiInfo {

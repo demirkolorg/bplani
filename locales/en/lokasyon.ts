@@ -1,0 +1,59 @@
+import type { LokasyonTranslations } from "@/types/locale"
+
+export const lokasyon: LokasyonTranslations = {
+  // Province
+  il: "Province",
+  iller: "Provinces",
+  newIl: "New Province",
+  editIl: "Edit Province",
+  ilAdi: "Province Name",
+  plakaKodu: "Plate Code",
+  plaka: "Plate",
+  ilceSayisi: "District Count",
+  deleteIl: "Delete Province",
+  deleteIlConfirm: "Are you sure you want to delete this province? This action cannot be undone. Deletion will be blocked if there are linked districts.",
+  newIlDescription: "Fill out the form below to add a new province.",
+  editIlDescription: "Update province information.",
+  searchIlPlaceholder: "Search by province name or plate code...",
+
+  // District
+  ilce: "District",
+  ilceler: "Districts",
+  newIlce: "New District",
+  editIlce: "Edit District",
+  ilceAdi: "District Name",
+  mahalleSayisi: "Neighborhood Count",
+  deleteIlce: "Delete District",
+  deleteIlceConfirm: "Are you sure you want to delete this district? This action cannot be undone. Deletion will be blocked if there are linked neighborhoods.",
+  newIlceDescription: "Fill out the form below to add a new district.",
+  editIlceDescription: "Update district information.",
+  searchIlcePlaceholder: "Search by district name...",
+
+  // Neighborhood
+  mahalle: "Neighborhood",
+  mahalleler: "Neighborhoods",
+  newMahalle: "New Neighborhood",
+  editMahalle: "Edit Neighborhood",
+  mahalleAdi: "Neighborhood Name",
+  adresSayisi: "Address Count",
+  deleteMahalle: "Delete Neighborhood",
+  deleteMahalleConfirm: "Are you sure you want to delete this neighborhood? This action cannot be undone. Deletion will be blocked if there are linked addresses.",
+  newMahalleDescription: "Fill out the form below to add a new neighborhood.",
+  editMahalleDescription: "Update neighborhood information.",
+  searchMahallePlaceholder: "Search by neighborhood name...",
+
+  // Filters and selectors
+  ilFilter: "Province filter...",
+  ilceFilter: "District filter...",
+  selectIl: "Select province...",
+  selectIlce: "Select district...",
+  selectMahalle: "Select neighborhood...",
+  searchIl: "Search province...",
+  searchIlce: "Search district...",
+  searchMahalle: "Search neighborhood...",
+  ilNotFound: "Province not found.",
+  ilceNotFound: "District not found.",
+  mahalleNotFound: "Neighborhood not found.",
+  selectIlFirst: "Select province first",
+  selectIlceFirst: "Select district first",
+}

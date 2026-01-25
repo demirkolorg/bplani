@@ -1,5 +1,6 @@
 "use client"
 
+import { useLocale } from "@/components/providers/locale-provider"
 import {
   Dialog,
   DialogContent,
@@ -17,17 +18,18 @@ interface ModelFormModalProps {
 }
 
 export function ModelFormModal({ open, onOpenChange, initialData }: ModelFormModalProps) {
+  const { t } = useLocale()
   const isEditing = !!initialData?.id
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Model Düzenle" : "Yeni Model"}</DialogTitle>
+          <DialogTitle>{isEditing ? t.araclar.editModel : t.araclar.newModel}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Model bilgilerini güncelleyin."
-              : "Yeni bir model eklemek için aşağıdaki formu doldurun."}
+              ? t.araclar.editModelDescription
+              : t.araclar.newModelDescription}
           </DialogDescription>
         </DialogHeader>
         <ModelForm

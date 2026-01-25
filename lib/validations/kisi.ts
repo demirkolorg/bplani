@@ -1,9 +1,5 @@
 import { z } from "zod"
 
-// KisiTip enum
-export const kisiTipValues = ["LEAD", "MUSTERI"] as const
-export type KisiTip = (typeof kisiTipValues)[number]
-
 // TC Kimlik No validation (11 digits, specific algorithm)
 const tcKimlikSchema = z.string()
   .length(11, "TC Kimlik No 11 haneli olmalıdır")
@@ -22,7 +18,7 @@ const tcKimlikSchema = z.string()
 
 // Create Kisi schema
 export const createKisiSchema = z.object({
-  tip: z.enum(kisiTipValues).default("LEAD"),
+  tt: z.boolean().default(false), // true = Müşteri, false = Aday
   tc: tcKimlikSchema,
   ad: z.string().min(1, "Ad zorunludur").max(100, "Ad en fazla 100 karakter olabilir"),
   soyad: z.string().min(1, "Soyad zorunludur").max(100, "Soyad en fazla 100 karakter olabilir"),
@@ -42,7 +38,7 @@ export const listKisiQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   search: z.string().optional(),
-  tip: z.enum(kisiTipValues).optional(),
+  tt: z.coerce.boolean().optional(), // true = Müşteri, false = Aday
   isArchived: z.coerce.boolean().optional(),
   pio: z.coerce.boolean().optional(),
   asli: z.coerce.boolean().optional(),
@@ -54,9 +50,3 @@ export const listKisiQuerySchema = z.object({
 export type CreateKisiInput = z.infer<typeof createKisiSchema>
 export type UpdateKisiInput = z.infer<typeof updateKisiSchema>
 export type ListKisiQuery = z.infer<typeof listKisiQuerySchema>
-
-// Kisi tip labels for display
-export const kisiTipLabels: Record<KisiTip, string> = {
-  LEAD: "Lead",
-  MUSTERI: "Müşteri",
-}

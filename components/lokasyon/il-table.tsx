@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Pencil, Trash2 } from "lucide-react"
 import { useIller, useDeleteIl, type Il } from "@/hooks/use-lokasyon"
+import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { getIlColumns } from "./il-columns"
@@ -16,13 +17,14 @@ import {
 } from "@/components/ui/context-menu"
 
 export function IlTable() {
+  const { t } = useLocale()
   const [editingIl, setEditingIl] = React.useState<Il | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
 
   const { data, isLoading } = useIller()
   const deleteIl = useDeleteIl()
 
-  const columns = React.useMemo(() => getIlColumns(), [])
+  const columns = React.useMemo(() => getIlColumns(t), [t])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -40,7 +42,7 @@ export function IlTable() {
       <ContextMenuContent className="w-48">
         <ContextMenuItem onClick={() => setEditingIl(row)}>
           <Pencil className="mr-2 h-4 w-4" />
-          Düzenle
+          {t.common.edit}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -48,7 +50,7 @@ export function IlTable() {
           onClick={() => setDeleteId(row.id)}
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Sil
+          {t.common.delete}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -59,13 +61,13 @@ export function IlTable() {
       <DataTable
         columns={columns}
         data={data || []}
-        searchPlaceholder="İl adı veya plaka kodu ile ara..."
+        searchPlaceholder={t.lokasyon.searchIlPlaceholder}
         isLoading={isLoading}
         rowWrapper={rowWrapper}
         columnVisibilityLabels={{
-          plaka: "Plaka",
-          ad: "İl Adı",
-          ilceSayisi: "İlçe Sayısı",
+          plaka: t.lokasyon.plaka,
+          ad: t.lokasyon.ilAdi,
+          ilceSayisi: t.lokasyon.ilceSayisi,
         }}
       />
 
@@ -78,9 +80,9 @@ export function IlTable() {
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="İli Sil"
-        description="Bu ili silmek istediğinizden emin misiniz? Bu işlem geri alınamaz. İle bağlı ilçeler varsa silme işlemi engellenecektir."
-        confirmText="Sil"
+        title={t.lokasyon.deleteIl}
+        description={t.lokasyon.deleteIlConfirm}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deleteIl.isPending}
       />

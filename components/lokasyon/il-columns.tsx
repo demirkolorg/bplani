@@ -3,12 +3,13 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import type { Il } from "@/hooks/use-lokasyon"
+import type { Translations } from "@/types/locale"
 
-export function getIlColumns(): ColumnDef<Il>[] {
+export function getIlColumns(t: Translations): ColumnDef<Il>[] {
   return [
     {
       accessorKey: "plaka",
-      header: "Plaka",
+      header: t.lokasyon.plaka,
       cell: ({ row }) => {
         const plaka = row.getValue("plaka") as number | null
         return plaka ? (
@@ -20,14 +21,14 @@ export function getIlColumns(): ColumnDef<Il>[] {
     },
     {
       accessorKey: "ad",
-      header: "İl Adı",
+      header: t.lokasyon.ilAdi,
       cell: ({ row }) => {
         return <span className="font-medium">{row.getValue("ad")}</span>
       },
     },
     {
       id: "ilceSayisi",
-      header: "İlçe Sayısı",
+      header: t.lokasyon.ilceSayisi,
       cell: ({ row }) => {
         const count = row.original._count.ilceler
         return (

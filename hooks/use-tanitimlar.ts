@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateTanitimInput, UpdateTanitimInput, ListTanitimQuery, AddKatilimciInput } from "@/lib/validations"
-import type { KisiTip } from "@/lib/validations"
 
 // Types for API responses
 export interface TanitimKatilimci {
@@ -12,7 +11,7 @@ export interface TanitimKatilimci {
     id: string
     ad: string
     soyad: string
-    tip: KisiTip
+    tt: boolean
     gsmler?: {
       id: string
       numara: string

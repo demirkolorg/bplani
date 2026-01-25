@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useCreateMarka, useUpdateMarka } from "@/hooks/use-araclar"
+import { useLocale } from "@/components/providers/locale-provider"
 import { createMarkaSchema, type CreateMarkaInput } from "@/lib/validations"
 
 import { Button } from "@/components/ui/button"
@@ -18,6 +19,7 @@ interface MarkaFormProps {
 }
 
 export function MarkaForm({ initialData, onSuccess, onCancel, inModal = false }: MarkaFormProps) {
+  const { t } = useLocale()
   const router = useRouter()
   const createMarka = useCreateMarka()
   const updateMarka = useUpdateMarka()
@@ -97,13 +99,13 @@ export function MarkaForm({ initialData, onSuccess, onCancel, inModal = false }:
 
       <div className="space-y-2">
         <Label htmlFor="ad">
-          Marka Adı <span className="text-destructive">*</span>
+          {t.araclar.markaAdi} <span className="text-destructive">*</span>
         </Label>
         <Input
           id="ad"
           value={formData.ad}
           onChange={(e) => handleChange("ad", e.target.value)}
-          placeholder="Marka adı"
+          placeholder={t.araclar.markaAdi}
           required
         />
         {errors.ad && <p className="text-sm text-destructive">{errors.ad}</p>}
@@ -116,13 +118,13 @@ export function MarkaForm({ initialData, onSuccess, onCancel, inModal = false }:
           onClick={handleCancel}
           disabled={isPending}
         >
-          İptal
+          {t.common.cancel}
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && (
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {isEditing ? "Güncelle" : "Oluştur"}
+          {isEditing ? t.common.update : t.common.create}
         </Button>
       </div>
     </>
@@ -140,7 +142,7 @@ export function MarkaForm({ initialData, onSuccess, onCancel, inModal = false }:
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>{isEditing ? "Marka Düzenle" : "Yeni Marka"}</CardTitle>
+          <CardTitle>{isEditing ? t.araclar.editMarka : t.araclar.newMarka}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {formContent}

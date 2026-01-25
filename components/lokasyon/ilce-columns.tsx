@@ -3,19 +3,20 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import type { Ilce } from "@/hooks/use-lokasyon"
+import type { Translations } from "@/types/locale"
 
-export function getIlceColumns(): ColumnDef<Ilce>[] {
+export function getIlceColumns(t: Translations): ColumnDef<Ilce>[] {
   return [
     {
       accessorKey: "ad",
-      header: "İlçe Adı",
+      header: t.lokasyon.ilceAdi,
       cell: ({ row }) => {
         return <span className="font-medium">{row.getValue("ad")}</span>
       },
     },
     {
       id: "il",
-      header: "İl",
+      header: t.lokasyon.il,
       cell: ({ row }) => {
         const il = row.original.il
         return (
@@ -33,7 +34,7 @@ export function getIlceColumns(): ColumnDef<Ilce>[] {
     },
     {
       id: "mahalleSayisi",
-      header: "Mahalle Sayısı",
+      header: t.lokasyon.mahalleSayisi,
       cell: ({ row }) => {
         const count = row.original._count.mahalleler
         return (

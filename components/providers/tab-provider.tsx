@@ -11,7 +11,8 @@ import type {
   OpenTabOptions,
   PersistedTabState,
 } from "@/types/tabs"
-import { getRouteTitle, getRouteIcon } from "@/lib/tab-config"
+import { getRouteTitle, getRouteIcon, getRouteTitleKey } from "@/lib/tab-config"
+import { useLocale } from "@/components/providers/locale-provider"
 
 const TAB_STORAGE_KEY = "altay_tabs_state"
 const TAB_STORAGE_VERSION = 1
@@ -220,11 +221,12 @@ const TabContext = React.createContext<TabContextType | null>(null)
 export function TabProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
+  const { t } = useLocale()
   const [state, dispatch] = React.useReducer(tabReducer, initialState)
   const [mounted, setMounted] = React.useState(false)
   const isInitialMount = React.useRef(true)
 
-  // localStorage'dan hydrate
+  // localStorage'dan hydrate - titleKey kullanarak current locale'e göre title al
   React.useEffect(() => {
     try {
       const stored = localStorage.getItem(TAB_STORAGE_KEY)
@@ -234,12 +236,12 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
           dispatch({
             type: "HYDRATE",
             payload: {
-              tabs: parsed.tabs.map((t) => ({
-                ...t,
-                lastActiveAt: t.openedAt,
-                // Ana sayfa başlığını her zaman doğru tut
-                title: t.path === "/" ? "Ana Sayfa" : t.title,
-                icon: t.path === "/" ? "Home" : t.icon,
+              tabs: parsed.tabs.map((tab) => ({
+                ...tab,
+                lastActiveAt: tab.openedAt,
+                // Title'ı her zaman current locale'den al
+                title: getRouteTitle(tab.path, t.tabs),
+                icon: tab.path === "/" ? "Home" : tab.icon,
               })),
               activeTabId: parsed.activeTabId,
               maxTabs: DEFAULT_MAX_TABS,
@@ -251,7 +253,7 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
       console.error("Tab state restore failed:", e)
     }
     setMounted(true)
-  }, [])
+  }, [t.tabs])
 
   // localStorage'a kaydet (debounced)
   React.useEffect(() => {
@@ -283,11 +285,23 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    const activeTab = state.tabs.find((t) => t.id === state.activeTabId)
+    const activeTab = state.tabs.find((tab) => tab.id === state.activeTabId)
     if (activeTab && activeTab.path !== pathname) {
       router.push(activeTab.path, { scroll: false })
     }
   }, [state.activeTabId, mounted])
+
+  // Locale değişince tüm tab title'larını güncelle
+  React.useEffect(() => {
+    if (!mounted || state.tabs.length === 0) return
+
+    state.tabs.forEach((tab) => {
+      const newTitle = getRouteTitle(tab.path, t.tabs)
+      if (tab.title !== newTitle) {
+        dispatch({ type: "UPDATE_TITLE", payload: { tabId: tab.id, title: newTitle } })
+      }
+    })
+  }, [t.tabs, mounted])
 
   // İlk yüklemede veya URL değişince tab aç
   React.useEffect(() => {
@@ -295,7 +309,7 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
 
     // Eğer hiç tab yoksa ve pathname varsa, aç
     if (state.tabs.length === 0 && pathname) {
-      const title = getRouteTitle(pathname)
+      const title = getRouteTitle(pathname, t.tabs)
       const icon = getRouteIcon(pathname)
       dispatch({
         type: "OPEN_TAB",
@@ -305,9 +319,9 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Pathname değişti ve o path'te tab yoksa (doğrudan URL navigasyonu)
-    const existingTab = state.tabs.find((t) => t.path === pathname)
+    const existingTab = state.tabs.find((tab) => tab.path === pathname)
     if (!existingTab && pathname && pathname !== "/") {
-      const title = getRouteTitle(pathname)
+      const title = getRouteTitle(pathname, t.tabs)
       const icon = getRouteIcon(pathname)
       dispatch({
         type: "OPEN_TAB",
@@ -317,16 +331,16 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
       // Tab var ama aktif değil, aktif yap
       dispatch({ type: "SET_ACTIVE", payload: { tabId: existingTab.id } })
     }
-  }, [pathname, mounted])
+  }, [pathname, mounted, t.tabs])
 
   // Actions
   const openTab = React.useCallback(
     (path: string, options?: OpenTabOptions) => {
-      const title = getRouteTitle(path)
+      const title = getRouteTitle(path, t.tabs)
       const icon = getRouteIcon(path)
       dispatch({ type: "OPEN_TAB", payload: { path, title, icon, options } })
     },
-    []
+    [t.tabs]
   )
 
   const closeTab = React.useCallback((tabId: string) => {

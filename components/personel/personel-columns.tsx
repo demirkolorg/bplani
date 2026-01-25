@@ -7,9 +7,23 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import type { Personel } from "@/hooks/use-personel"
 import type { SortOption } from "@/components/shared/data-table"
-import { personelRolLabels, personelRolColors } from "@/lib/validations"
+import type { Translations } from "@/types/locale"
 
 // Personel tablosu için özel sıralama seçenekleri
+export function getPersonelSortOptions(t: Translations): SortOption[] {
+  return [
+    { label: t.personel.nameAZ, value: "ad-asc", column: "ad", direction: "asc" },
+    { label: t.personel.nameZA, value: "ad-desc", column: "ad", direction: "desc" },
+    { label: t.personel.surnameAZ, value: "soyad-asc", column: "soyad", direction: "asc" },
+    { label: t.personel.surnameZA, value: "soyad-desc", column: "soyad", direction: "desc" },
+    { label: t.personel.lastLoginNewOld, value: "lastLoginAt-desc", column: "lastLoginAt", direction: "desc" },
+    { label: t.personel.lastLoginOldNew, value: "lastLoginAt-asc", column: "lastLoginAt", direction: "asc" },
+    { label: t.personel.createdNewOld, value: "createdAt-desc", column: "createdAt", direction: "desc" },
+    { label: t.personel.createdOldNew, value: "createdAt-asc", column: "createdAt", direction: "asc" },
+  ]
+}
+
+// Legacy export for backwards compatibility
 export const personelSortOptions: SortOption[] = [
   { label: "Ad (A → Z)", value: "ad-asc", column: "ad", direction: "asc" },
   { label: "Ad (Z → A)", value: "ad-desc", column: "ad", direction: "desc" },
@@ -21,7 +35,23 @@ export const personelSortOptions: SortOption[] = [
   { label: "Oluşturma (Eski → Yeni)", value: "createdAt-asc", column: "createdAt", direction: "asc" },
 ]
 
-export function getPersonelColumns(): ColumnDef<Personel>[] {
+export function getPersonelColumns(t: Translations, locale: string): ColumnDef<Personel>[] {
+  const dateLocale = locale === "tr" ? "tr-TR" : "en-US"
+
+  // Rol labels
+  const rolLabels: Record<string, string> = {
+    ADMIN: t.personel.rolAdmin,
+    YONETICI: t.personel.rolYonetici,
+    PERSONEL: t.personel.rolPersonel,
+  }
+
+  // Rol colors
+  const rolColors: Record<string, string> = {
+    ADMIN: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700",
+    YONETICI: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700",
+    PERSONEL: "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600",
+  }
+
   return [
     // Hidden columns for sorting
     {
@@ -66,7 +96,7 @@ export function getPersonelColumns(): ColumnDef<Personel>[] {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Ad Soyad
+            {t.personel.fullName}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )
@@ -92,12 +122,12 @@ export function getPersonelColumns(): ColumnDef<Personel>[] {
     {
       id: "rol",
       accessorKey: "rol",
-      header: "Rol",
+      header: t.personel.rol,
       cell: ({ row }) => {
         const rol = row.original.rol
         return (
-          <Badge variant="outline" className={personelRolColors[rol]}>
-            {personelRolLabels[rol]}
+          <Badge variant="outline" className={rolColors[rol]}>
+            {rolLabels[rol] || rol}
           </Badge>
         )
       },
@@ -105,38 +135,38 @@ export function getPersonelColumns(): ColumnDef<Personel>[] {
     {
       id: "isActive",
       accessorKey: "isActive",
-      header: "Durum",
+      header: t.personel.status,
       cell: ({ row }) => {
         const isActive = row.original.isActive
         return isActive ? (
-          <Badge variant="default" className="bg-green-600">Aktif</Badge>
+          <Badge variant="default" className="bg-green-600">{t.personel.active}</Badge>
         ) : (
-          <Badge variant="secondary">Pasif</Badge>
+          <Badge variant="secondary">{t.personel.inactive}</Badge>
         )
       },
     },
     {
       id: "aktivite",
-      header: "Aktivite",
+      header: t.personel.activity,
       cell: ({ row }) => {
         const count = row.original._count
         if (!count) return <span className="text-muted-foreground">-</span>
 
         return (
           <div className="flex items-center gap-3 text-sm">
-            <div className="flex items-center gap-1" title="Oluşturulan Kişiler">
+            <div className="flex items-center gap-1" title={t.personel.createdPersons}>
               <User className="h-3.5 w-3.5 text-blue-600" />
               <span>{count.createdKisiler}</span>
             </div>
-            <div className="flex items-center gap-1" title="Oluşturulan Takipler">
+            <div className="flex items-center gap-1" title={t.personel.createdFollowups}>
               <CalendarClock className="h-3.5 w-3.5 text-purple-600" />
               <span>{count.createdTakipler}</span>
             </div>
-            <div className="flex items-center gap-1" title="Oluşturulan Notlar">
+            <div className="flex items-center gap-1" title={t.personel.createdNotes}>
               <FileText className="h-3.5 w-3.5 text-orange-600" />
               <span>{count.createdNotlar}</span>
             </div>
-            <div className="flex items-center gap-1" title="Oluşturulan Tanıtımlar">
+            <div className="flex items-center gap-1" title={t.personel.createdIntroductions}>
               <Megaphone className="h-3.5 w-3.5 text-green-600" />
               <span>{count.createdTanitimlar}</span>
             </div>
@@ -146,16 +176,16 @@ export function getPersonelColumns(): ColumnDef<Personel>[] {
     },
     {
       id: "sonGiris",
-      header: "Son Giriş",
+      header: t.personel.lastLogin,
       cell: ({ row }) => {
         const lastLoginAt = row.original.lastLoginAt
         if (!lastLoginAt) {
-          return <span className="text-muted-foreground">Hiç giriş yapmadı</span>
+          return <span className="text-muted-foreground">{t.personel.neverLoggedIn}</span>
         }
         const date = new Date(lastLoginAt)
         return (
           <span className="text-sm">
-            {date.toLocaleDateString("tr-TR", {
+            {date.toLocaleDateString(dateLocale, {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",

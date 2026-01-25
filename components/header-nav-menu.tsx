@@ -26,72 +26,71 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu"
 import { TabLink } from "@/components/tabs/tab-link"
 import { useUser } from "@/components/providers/auth-provider"
+import { useLocale } from "@/components/providers/locale-provider"
 import { useBildirimler } from "@/hooks/use-alarmlar"
 import type { PersonelRol } from "@prisma/client"
 import { Badge } from "@/components/ui/badge"
+import type { NavigationTranslations, SidebarTranslations } from "@/types/locale"
 
 interface NavItem {
-  title: string
+  titleKey: keyof NavigationTranslations
   url: string
   icon: LucideIcon
   roles?: PersonelRol[]
 }
 
 interface NavGroup {
-  label: string
+  labelKey: keyof SidebarTranslations
   items: NavItem[]
   roles?: PersonelRol[]
 }
 
 const navGroups: NavGroup[] = [
   {
-    label: "Genel",
-    items: [{ title: "Ana Sayfa", url: "/", icon: Home }],
+    labelKey: "general",
+    items: [{ titleKey: "home", url: "/", icon: Home }],
   },
   {
-    label: "Kayıtlar",
+    labelKey: "records",
     items: [
-      { title: "Kişiler", url: "/kisiler", icon: Users },
-      { title: "Numaralar", url: "/numaralar", icon: Phone },
-      { title: "Araçlar", url: "/araclar", icon: Car },
+      { titleKey: "kisiler", url: "/kisiler", icon: Users },
+      { titleKey: "numaralar", url: "/numaralar", icon: Phone },
+      { titleKey: "araclar", url: "/araclar", icon: Car },
     ],
   },
   {
-    label: "Faaliyetler",
+    labelKey: "activities",
     items: [
-      { title: "Takipler", url: "/takipler", icon: CalendarClock },
-      { title: "Tanıtımlar", url: "/tanitimlar", icon: Megaphone },
-      { title: "Operasyonlar", url: "/operasyonlar", icon: Workflow },
-      { title: "Alarmlar", url: "/alarmlar", icon: Bell },
+      { titleKey: "takipler", url: "/takipler", icon: CalendarClock },
+      { titleKey: "tanitimlar", url: "/tanitimlar", icon: Megaphone },
+      { titleKey: "operasyonlar", url: "/operasyonlar", icon: Workflow },
+      { titleKey: "alarmlar", url: "/alarmlar", icon: Bell },
     ],
   },
   {
-    label: "Tanımlar",
-    items: [{ title: "Tanımlamalar", url: "/tanimlamalar", icon: ListTree }],
+    labelKey: "definitions",
+    items: [{ titleKey: "tanimlamalar", url: "/tanimlamalar", icon: ListTree }],
   },
   {
-    label: "Yönetim",
+    labelKey: "management",
     roles: ["ADMIN", "YONETICI"],
     items: [
-      { title: "Personel", url: "/personel", icon: UserCog },
-      { title: "Ayarlar", url: "/ayarlar", icon: Settings },
+      { titleKey: "personel", url: "/personel", icon: UserCog },
+      { titleKey: "ayarlar", url: "/ayarlar", icon: Settings },
     ],
   },
   {
-    label: "Sistem",
-    items: [{ title: "Loglar", url: "/loglar", icon: Activity }],
+    labelKey: "system",
+    items: [{ titleKey: "loglar", url: "/loglar", icon: Activity }],
   },
 ]
 
 export function HeaderNavMenu() {
   const { user } = useUser()
+  const { t } = useLocale()
   const { data: bildirimler } = useBildirimler()
 
   const hasAccess = (roles?: PersonelRol[]) => {
@@ -113,19 +112,19 @@ export function HeaderNavMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="gap-2">
           <Menu className="h-5 w-5" />
-          <span className="hidden sm:inline">Menü</span>
+          <span className="hidden sm:inline">{t.sidebar.menu}</span>
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
         {visibleGroups.map((group, groupIndex) => (
-          <React.Fragment key={group.label}>
+          <React.Fragment key={group.labelKey}>
             {groupIndex > 0 && <DropdownMenuSeparator />}
             {group.items.map((item) => (
               <DropdownMenuItem key={item.url} asChild>
                 <TabLink href={item.url} className="flex items-center gap-2 w-full cursor-pointer">
                   <item.icon className="h-4 w-4" />
-                  <span>{item.title}</span>
+                  <span>{t.navigation[item.titleKey]}</span>
                   {item.url === "/alarmlar" && bildirimler?.unreadCount ? (
                     <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-xs">
                       {bildirimler.unreadCount}
@@ -144,6 +143,7 @@ export function HeaderNavMenu() {
 // Alternatif: Yatay menü bar (küçük ekranlar için dropdown'a düşer)
 export function HeaderNavBar() {
   const { user } = useUser()
+  const { t } = useLocale()
   const { data: bildirimler } = useBildirimler()
 
   const hasAccess = (roles?: PersonelRol[]) => {
@@ -154,11 +154,11 @@ export function HeaderNavBar() {
 
   // Flat list of quick access items
   const quickItems: NavItem[] = [
-    { title: "Ana Sayfa", url: "/", icon: Home },
-    { title: "Kişiler", url: "/kisiler", icon: Users },
-    { title: "Takipler", url: "/takipler", icon: CalendarClock },
-    { title: "Tanıtımlar", url: "/tanitimlar", icon: Megaphone },
-    { title: "Alarmlar", url: "/alarmlar", icon: Bell },
+    { titleKey: "home", url: "/", icon: Home },
+    { titleKey: "kisiler", url: "/kisiler", icon: Users },
+    { titleKey: "takipler", url: "/takipler", icon: CalendarClock },
+    { titleKey: "tanitimlar", url: "/tanitimlar", icon: Megaphone },
+    { titleKey: "alarmlar", url: "/alarmlar", icon: Bell },
   ]
 
   return (
@@ -170,7 +170,7 @@ export function HeaderNavBar() {
           className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
         >
           <item.icon className="h-4 w-4" />
-          <span>{item.title}</span>
+          <span>{t.navigation[item.titleKey]}</span>
           {item.url === "/alarmlar" && bildirimler?.unreadCount ? (
             <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
               {bildirimler.unreadCount > 9 ? "9+" : bildirimler.unreadCount}
@@ -183,7 +183,7 @@ export function HeaderNavBar() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
-            <span>Diğer</span>
+            <span>{t.sidebar.other}</span>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -191,26 +191,26 @@ export function HeaderNavBar() {
           <DropdownMenuItem asChild>
             <TabLink href="/numaralar" className="flex items-center gap-2 w-full cursor-pointer">
               <Phone className="h-4 w-4" />
-              <span>Numaralar</span>
+              <span>{t.navigation.numaralar}</span>
             </TabLink>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <TabLink href="/araclar" className="flex items-center gap-2 w-full cursor-pointer">
               <Car className="h-4 w-4" />
-              <span>Araçlar</span>
+              <span>{t.navigation.araclar}</span>
             </TabLink>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <TabLink href="/operasyonlar" className="flex items-center gap-2 w-full cursor-pointer">
               <Workflow className="h-4 w-4" />
-              <span>Operasyonlar</span>
+              <span>{t.navigation.operasyonlar}</span>
             </TabLink>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <TabLink href="/tanimlamalar" className="flex items-center gap-2 w-full cursor-pointer">
               <ListTree className="h-4 w-4" />
-              <span>Tanımlamalar</span>
+              <span>{t.navigation.tanimlamalar}</span>
             </TabLink>
           </DropdownMenuItem>
           {hasAccess(["ADMIN", "YONETICI"]) && (
@@ -219,13 +219,13 @@ export function HeaderNavBar() {
               <DropdownMenuItem asChild>
                 <TabLink href="/personel" className="flex items-center gap-2 w-full cursor-pointer">
                   <UserCog className="h-4 w-4" />
-                  <span>Personel</span>
+                  <span>{t.navigation.personel}</span>
                 </TabLink>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <TabLink href="/ayarlar" className="flex items-center gap-2 w-full cursor-pointer">
                   <Settings className="h-4 w-4" />
-                  <span>Ayarlar</span>
+                  <span>{t.navigation.ayarlar}</span>
                 </TabLink>
               </DropdownMenuItem>
             </>
@@ -234,7 +234,7 @@ export function HeaderNavBar() {
           <DropdownMenuItem asChild>
             <TabLink href="/loglar" className="flex items-center gap-2 w-full cursor-pointer">
               <Activity className="h-4 w-4" />
-              <span>Loglar</span>
+              <span>{t.navigation.loglar}</span>
             </TabLink>
           </DropdownMenuItem>
         </DropdownMenuContent>

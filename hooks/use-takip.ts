@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { CreateTakipInput, UpdateTakipInput, BulkCreateTakipInput, ListTakipQuery, TakipDurum, KisiTip } from "@/lib/validations"
+import type { CreateTakipInput, UpdateTakipInput, BulkCreateTakipInput, ListTakipQuery, TakipDurum } from "@/lib/validations"
 import { gsmKeys } from "./use-gsm"
 import { alarmKeys } from "./use-alarmlar"
 
@@ -21,7 +21,7 @@ export interface Takip {
       id: string
       ad: string
       soyad: string
-      tip: KisiTip
+      tt: boolean
       fotograf?: string | null
     } | null
   }

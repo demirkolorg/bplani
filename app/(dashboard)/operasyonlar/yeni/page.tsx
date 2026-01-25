@@ -143,12 +143,12 @@ export default function YeniOperasyonPage() {
               variant="outline"
               className={cn(
                 "text-xs shrink-0",
-                kisi.tip === "MUSTERI"
+                kisi.tt
                   ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
                   : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
               )}
             >
-              {kisi.tip === "MUSTERI" ? "Müşteri" : "Aday"}
+              {kisi.tt ? "Müşteri" : "Aday"}
             </Badge>
           </div>
           <div className="text-xs text-muted-foreground space-y-0.5">

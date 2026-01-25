@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { CreateKisiInput, UpdateKisiInput, ListKisiQuery, KisiTip } from "@/lib/validations"
+import type { CreateKisiInput, UpdateKisiInput, ListKisiQuery } from "@/lib/validations"
 
 // Types for API responses
 export interface FaaliyetAlaniRef {
@@ -12,7 +12,7 @@ export interface FaaliyetAlaniRef {
 
 export interface Kisi {
   id: string
-  tip: KisiTip
+  tt: boolean // true = Müşteri, false = Aday
   tc: string | null
   ad: string
   soyad: string

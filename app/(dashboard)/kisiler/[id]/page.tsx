@@ -28,7 +28,9 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-import { KisiFormModal } from "@/components/kisiler/musteri-form-modal"
+import { KisiDetayEditModal } from "@/components/kisiler/kisi-detay-edit-modal"
+import { KisiFaaliyetEditModal } from "@/components/kisiler/kisi-faaliyet-edit-modal"
+import { KisiFotografEditModal } from "@/components/kisiler/kisi-fotograf-edit-modal"
 import { KisiGsmList } from "@/components/kisiler/musteri-gsm-list"
 import { KisiAdresList } from "@/components/kisiler/musteri-adres-list"
 import { KisiNotList } from "@/components/kisiler/musteri-not-list"
@@ -118,7 +120,9 @@ export default function KisiDetayPage() {
   const params = useTabParams<{ id: string }>()
   const id = params.id
 
-  const [showEditModal, setShowEditModal] = React.useState(false)
+  const [showDetayModal, setShowDetayModal] = React.useState(false)
+  const [showFaaliyetModal, setShowFaaliyetModal] = React.useState(false)
+  const [showFotografModal, setShowFotografModal] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState("genel")
 
   const { data: kisi, isLoading, error } = useKisi(id)
@@ -208,16 +212,24 @@ export default function KisiDetayPage() {
           </Link>
 
           {/* Profile Photo */}
-          <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 overflow-hidden mb-4">
-            {kisi.fotograf ? (
-              <img
-                src={kisi.fotograf}
-                alt={`${kisi.ad} ${kisi.soyad}`}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <User className="h-12 w-12 text-muted-foreground" />
-            )}
+          <div className="mb-4 group relative">
+            <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 overflow-hidden flex items-center justify-center">
+              {kisi.fotograf ? (
+                <img
+                  src={kisi.fotograf}
+                  alt={`${kisi.ad} ${kisi.soyad}`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <User className="h-12 w-12 text-muted-foreground" />
+              )}
+            </div>
+            <button
+              onClick={() => setShowFotografModal(true)}
+              className="absolute inset-0 h-24 w-24 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+            >
+              <Pencil className="h-5 w-5 text-white" />
+            </button>
           </div>
 
           {/* Name */}
@@ -236,7 +248,7 @@ export default function KisiDetayPage() {
           {/* Kişi Detayları */}
           <CollapsibleSection
             title="Kişi Detayları"
-            onEdit={() => setShowEditModal(true)}
+            onEdit={() => setShowDetayModal(true)}
           >
             <div className="space-y-0.5">
               {kisi.tc && <DetailRow label="TC" value={kisi.tc} />}
@@ -251,17 +263,17 @@ export default function KisiDetayPage() {
                 <DetailRow label="Adres" value={adresText} />
               )}
               <DetailRow
-                label="Tip"
+                label="TT"
                 value={
                   <Badge
                     variant="outline"
                     className={
-                      kisi.tip === "MUSTERI"
+                      kisi.tt
                         ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300"
                         : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300"
                     }
                   >
-                    {kisi.tip === "MUSTERI" ? "Müşteri" : "Aday"}
+                    {kisi.tt ? "Müşteri" : "Aday"}
                   </Badge>
                 }
               />
@@ -277,7 +289,10 @@ export default function KisiDetayPage() {
           </CollapsibleSection>
 
           {/* Faaliyet Alanları (Tags) */}
-          <CollapsibleSection title="Faaliyet Alanları">
+          <CollapsibleSection
+            title="Faaliyet Alanları"
+            onEdit={() => setShowFaaliyetModal(true)}
+          >
             <div className="flex flex-wrap gap-2">
               {kisi.faaliyetAlanlari && kisi.faaliyetAlanlari.length > 0 ? (
                 kisi.faaliyetAlanlari.map((f) => (
@@ -633,20 +648,37 @@ export default function KisiDetayPage() {
         </Tabs>
       </div>
 
-      {/* Edit Modal */}
-      <KisiFormModal
-        open={showEditModal}
-        onOpenChange={setShowEditModal}
-        initialData={{
+      {/* Kişi Detayları Edit Modal */}
+      <KisiDetayEditModal
+        open={showDetayModal}
+        onOpenChange={setShowDetayModal}
+        kisi={{
           id: kisi.id,
           tc: kisi.tc,
           ad: kisi.ad,
           soyad: kisi.soyad,
-          faaliyet: kisi.faaliyet,
+          tt: kisi.tt,
           pio: kisi.pio,
           asli: kisi.asli,
-          fotograf: kisi.fotograf,
         }}
+      />
+
+      {/* Faaliyet Alanları Edit Modal */}
+      <KisiFaaliyetEditModal
+        open={showFaaliyetModal}
+        onOpenChange={setShowFaaliyetModal}
+        kisiId={kisi.id}
+        faaliyetAlanlari={kisi.faaliyetAlanlari || []}
+      />
+
+      {/* Fotoğraf Edit Modal */}
+      <KisiFotografEditModal
+        open={showFotografModal}
+        onOpenChange={setShowFotografModal}
+        kisiId={kisi.id}
+        fotograf={kisi.fotograf}
+        ad={kisi.ad}
+        soyad={kisi.soyad}
       />
     </div>
   )

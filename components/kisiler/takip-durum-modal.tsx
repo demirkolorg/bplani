@@ -5,6 +5,8 @@ import { RefreshCw } from "lucide-react"
 import { useUpdateTakip } from "@/hooks/use-takip"
 import { takipDurumLabels, type TakipDurum } from "@/lib/validations"
 import type { GsmTakip } from "@/hooks/use-gsm"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -36,6 +38,7 @@ interface TakipDurumModalProps {
 const durumOptions: TakipDurum[] = ["UZATILACAK", "DEVAM_EDECEK", "SONLANDIRILACAK"]
 
 export function TakipDurumModal({ open, onOpenChange, takip, gsmNumara, onSuccess }: TakipDurumModalProps) {
+  const { t } = useLocale()
   const updateTakip = useUpdateTakip()
   const [durum, setDurum] = React.useState<TakipDurum>("UZATILACAK")
   const [error, setError] = React.useState("")
@@ -83,26 +86,27 @@ export function TakipDurumModal({ open, onOpenChange, takip, gsmNumara, onSucces
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <RefreshCw className="h-5 w-5" />
-              Takip Durumu Güncelle
+              {t.takipler.updateStatusTitle}
             </DialogTitle>
             <DialogDescription>
-              {gsmNumara && <span className="font-mono">{gsmNumara}</span>} numaralı GSM için takip durumunu güncelleyin
+              {gsmNumara && <span className="font-mono">{gsmNumara}</span>}{" "}
+              {interpolate(t.takipler.updateStatusDescription, { gsm: gsmNumara || "" })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <Label>Mevcut Durum</Label>
+              <Label>{t.takipler.currentStatus}</Label>
               <p className="text-sm text-muted-foreground">
                 {takipDurumLabels[takip.durum as TakipDurum]}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="durum">Yeni Durum</Label>
+              <Label htmlFor="durum">{t.takipler.newStatus}</Label>
               <Select value={durum} onValueChange={(value) => setDurum(value as TakipDurum)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Durum seçin" />
+                  <SelectValue placeholder={t.takipler.selectStatus} />
                 </SelectTrigger>
                 <SelectContent>
                   {durumOptions.map((d) => (
@@ -123,7 +127,7 @@ export function TakipDurumModal({ open, onOpenChange, takip, gsmNumara, onSucces
               onClick={() => handleOpenChange(false)}
               disabled={updateTakip.isPending}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button
               type="submit"
@@ -132,7 +136,7 @@ export function TakipDurumModal({ open, onOpenChange, takip, gsmNumara, onSucces
               {updateTakip.isPending && (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               )}
-              Güncelle
+              {t.common.update}
             </Button>
           </DialogFooter>
         </form>

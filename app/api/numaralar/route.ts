@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
             id: true,
             ad: true,
             soyad: true,
-            tip: true,
+            tt: true,
             tc: true,
           },
         },

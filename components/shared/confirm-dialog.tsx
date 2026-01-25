@@ -13,6 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { useLocale } from "@/components/providers/locale-provider"
 
 interface ConfirmDialogProps {
   trigger?: React.ReactNode
@@ -30,10 +31,10 @@ interface ConfirmDialogProps {
 
 export function ConfirmDialog({
   trigger,
-  title = "Emin misiniz?",
-  description = "Bu işlem geri alınamaz.",
-  confirmText = "Onayla",
-  cancelText = "İptal",
+  title,
+  description,
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
   variant = "destructive",
@@ -41,6 +42,12 @@ export function ConfirmDialog({
   onOpenChange,
   isLoading,
 }: ConfirmDialogProps) {
+  const { t } = useLocale()
+
+  const effectiveTitle = title ?? t.dialog.areYouSure
+  const effectiveDescription = description ?? t.dialog.cannotUndo
+  const effectiveConfirmText = confirmText ?? t.common.confirm
+  const effectiveCancelText = cancelText ?? t.common.cancel
   const [internalOpen, setInternalOpen] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
 
@@ -68,12 +75,12 @@ export function ConfirmDialog({
       {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogTitle>{effectiveTitle}</AlertDialogTitle>
+          <AlertDialogDescription>{effectiveDescription}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={handleCancel} disabled={loading || isLoading}>
-            {cancelText}
+            {effectiveCancelText}
           </AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
@@ -84,7 +91,7 @@ export function ConfirmDialog({
               {(loading || isLoading) && (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               )}
-              {confirmText}
+              {effectiveConfirmText}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>

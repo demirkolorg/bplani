@@ -1,4 +1,4 @@
-import { PrismaClient, KisiTip, PersonelRol, TakipDurum, AlarmTip, AlarmDurum, AracRenk, LogIslem } from '@prisma/client';
+import { PrismaClient, PersonelRol, TakipDurum, AlarmTip, AlarmDurum, AracRenk, LogIslem } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as bcrypt from 'bcryptjs';
@@ -51,18 +51,18 @@ const personelData = [
   { visibleId: '000005', ad: 'Ali', soyad: 'Öztürk', rol: PersonelRol.PERSONEL },
 ];
 
-// Kişi seed data
+// Kişi seed data (tt: true = Müşteri, tt: false = Aday)
 const kisiData = [
-  { tc: '12345678901', ad: 'Mustafa', soyad: 'Arslan', tip: KisiTip.MUSTERI },
-  { tc: '23456789012', ad: 'Zeynep', soyad: 'Yıldız', tip: KisiTip.MUSTERI },
-  { tc: '34567890123', ad: 'Hasan', soyad: 'Şahin', tip: KisiTip.LEAD },
-  { tc: '45678901234', ad: 'Elif', soyad: 'Koç', tip: KisiTip.LEAD },
-  { tc: '56789012345', ad: 'Emre', soyad: 'Aydın', tip: KisiTip.MUSTERI },
-  { tc: '67890123456', ad: 'Selin', soyad: 'Yılmaz', tip: KisiTip.MUSTERI },
-  { tc: '78901234567', ad: 'Burak', soyad: 'Kara', tip: KisiTip.LEAD },
-  { tc: '89012345678', ad: 'Deniz', soyad: 'Özkan', tip: KisiTip.MUSTERI },
-  { tc: '90123456789', ad: 'Ceren', soyad: 'Aksoy', tip: KisiTip.LEAD },
-  { tc: '01234567890', ad: 'Kaan', soyad: 'Erdoğan', tip: KisiTip.MUSTERI },
+  { tc: '12345678901', ad: 'Mustafa', soyad: 'Arslan', tt: true },
+  { tc: '23456789012', ad: 'Zeynep', soyad: 'Yıldız', tt: true },
+  { tc: '34567890123', ad: 'Hasan', soyad: 'Şahin', tt: false },
+  { tc: '45678901234', ad: 'Elif', soyad: 'Koç', tt: false },
+  { tc: '56789012345', ad: 'Emre', soyad: 'Aydın', tt: true },
+  { tc: '67890123456', ad: 'Selin', soyad: 'Yılmaz', tt: true },
+  { tc: '78901234567', ad: 'Burak', soyad: 'Kara', tt: false },
+  { tc: '89012345678', ad: 'Deniz', soyad: 'Özkan', tt: true },
+  { tc: '90123456789', ad: 'Ceren', soyad: 'Aksoy', tt: false },
+  { tc: '01234567890', ad: 'Kaan', soyad: 'Erdoğan', tt: true },
 ];
 
 // GSM numaraları
@@ -215,7 +215,7 @@ async function seedKisilerVeIliskiler(adminId: string, mahalleler: { id: string 
         tc: k.tc,
         ad: k.ad,
         soyad: k.soyad,
-        tip: k.tip,
+        tt: k.tt,
         createdUserId: adminId,
       },
     });

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { LocaleProvider } from "@/components/providers/locale-provider";
 import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -64,8 +65,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
-            <Toaster richColors position="top-right" />
+            <LocaleProvider>
+              {children}
+              <Toaster richColors position="top-right" />
+            </LocaleProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

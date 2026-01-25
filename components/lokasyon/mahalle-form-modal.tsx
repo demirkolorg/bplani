@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useLocale } from "@/components/providers/locale-provider"
 import { MahalleForm } from "./mahalle-form"
 import type { CreateMahalleInput } from "@/lib/validations"
 
@@ -25,17 +26,18 @@ export function MahalleFormModal({
   defaultIlId,
   defaultIlceId,
 }: MahalleFormModalProps) {
+  const { t } = useLocale()
   const isEditing = !!initialData?.id
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Mahalle Düzenle" : "Yeni Mahalle"}</DialogTitle>
+          <DialogTitle>{isEditing ? t.lokasyon.editMahalle : t.lokasyon.newMahalle}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Mahalle bilgilerini güncelleyin."
-              : "Yeni bir mahalle eklemek için aşağıdaki formu doldurun."}
+              ? t.lokasyon.editMahalleDescription
+              : t.lokasyon.newMahalleDescription}
           </DialogDescription>
         </DialogHeader>
         <MahalleForm

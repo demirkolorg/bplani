@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useCreateIl, useUpdateIl } from "@/hooks/use-lokasyon"
+import { useLocale } from "@/components/providers/locale-provider"
 import { createIlSchema, type CreateIlInput } from "@/lib/validations"
 
 import { Button } from "@/components/ui/button"
@@ -19,6 +20,7 @@ interface IlFormProps {
 }
 
 export function IlForm({ initialData, onSuccess, onCancel, inModal = false }: IlFormProps) {
+  const { t } = useLocale()
   const router = useRouter()
   const createIl = useCreateIl()
   const updateIl = useUpdateIl()
@@ -101,20 +103,20 @@ export function IlForm({ initialData, onSuccess, onCancel, inModal = false }: Il
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="ad">
-            İl Adı <span className="text-destructive">*</span>
+            {t.lokasyon.ilAdi} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="ad"
             value={formData.ad}
             onChange={(e) => handleChange("ad", e.target.value)}
-            placeholder="İl adı"
+            placeholder={t.lokasyon.ilAdi}
             required
           />
           {errors.ad && <p className="text-sm text-destructive">{errors.ad}</p>}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="plaka">Plaka Kodu</Label>
+          <Label htmlFor="plaka">{t.lokasyon.plakaKodu}</Label>
           <Input
             id="plaka"
             type="number"
@@ -135,7 +137,7 @@ export function IlForm({ initialData, onSuccess, onCancel, inModal = false }: Il
           onCheckedChange={(checked) => handleChange("isActive", checked)}
         />
         <Label htmlFor="isActive" className="cursor-pointer">
-          Aktif
+          {t.common.active}
         </Label>
       </div>
 
@@ -146,13 +148,13 @@ export function IlForm({ initialData, onSuccess, onCancel, inModal = false }: Il
           onClick={handleCancel}
           disabled={isPending}
         >
-          İptal
+          {t.common.cancel}
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && (
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {isEditing ? "Güncelle" : "Oluştur"}
+          {isEditing ? t.common.update : t.common.create}
         </Button>
       </div>
     </>
@@ -170,7 +172,7 @@ export function IlForm({ initialData, onSuccess, onCancel, inModal = false }: Il
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>{isEditing ? "İl Düzenle" : "Yeni İl"}</CardTitle>
+          <CardTitle>{isEditing ? t.lokasyon.editIl : t.lokasyon.newIl}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {formContent}

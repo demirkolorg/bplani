@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useLocale } from "@/components/providers/locale-provider"
 import { IlceForm } from "./ilce-form"
 import type { CreateIlceInput } from "@/lib/validations"
 
@@ -18,17 +19,18 @@ interface IlceFormModalProps {
 }
 
 export function IlceFormModal({ open, onOpenChange, initialData, defaultIlId }: IlceFormModalProps) {
+  const { t } = useLocale()
   const isEditing = !!initialData?.id
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "İlçe Düzenle" : "Yeni İlçe"}</DialogTitle>
+          <DialogTitle>{isEditing ? t.lokasyon.editIlce : t.lokasyon.newIlce}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "İlçe bilgilerini güncelleyin."
-              : "Yeni bir ilçe eklemek için aşağıdaki formu doldurun."}
+              ? t.lokasyon.editIlceDescription
+              : t.lokasyon.newIlceDescription}
           </DialogDescription>
         </DialogHeader>
         <IlceForm

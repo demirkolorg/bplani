@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Plus, Trash2, User, Phone, Users } from "lucide-react"
 import { useAddKatilimci, useRemoveKatilimci, useTanitim } from "@/hooks/use-tanitimlar"
 import { useKisiler } from "@/hooks/use-kisiler"
+import { useLocale } from "@/components/providers/locale-provider"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -31,6 +32,7 @@ interface TanitimKatilimciListProps {
 
 export function TanitimKatilimciList({ tanitimId }: TanitimKatilimciListProps) {
   const router = useRouter()
+  const { t } = useLocale()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [selectorOpen, setSelectorOpen] = React.useState(false)
 
@@ -78,7 +80,7 @@ export function TanitimKatilimciList({ tanitimId }: TanitimKatilimciListProps) {
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4 text-blue-600" />
-              Katılımcılar
+              {t.tanitimlar.participants}
               {katilimcilar.length > 0 && (
                 <span className="text-xs font-normal text-muted-foreground">
                   ({katilimcilar.length})
@@ -89,17 +91,17 @@ export function TanitimKatilimciList({ tanitimId }: TanitimKatilimciListProps) {
               <PopoverTrigger asChild>
                 <Button size="sm" variant="outline">
                   <Plus className="h-4 w-4 mr-1" />
-                  Ekle
+                  {t.common.add}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[350px] p-0" align="end">
                 <Command>
-                  <CommandInput placeholder="Kişi ara..." />
+                  <CommandInput placeholder={t.tanitimlar.searchPerson} />
                   <CommandList>
                     <CommandEmpty>
                       {availableKisiler.length === 0
-                        ? "Tüm kişiler zaten katılımcı"
-                        : "Kişi bulunamadı"}
+                        ? t.tanitimlar.allPersonsParticipants
+                        : t.tanitimlar.personNotFound}
                     </CommandEmpty>
                     <CommandGroup>
                       {availableKisiler.map((kisi) => (
@@ -117,12 +119,12 @@ export function TanitimKatilimciList({ tanitimId }: TanitimKatilimciListProps) {
                             variant="outline"
                             className={cn(
                               "ml-auto text-xs",
-                              kisi.tip === "MUSTERI"
+                              kisi.tt
                                 ? "bg-green-50 text-green-700 border-green-300"
                                 : "bg-amber-50 text-amber-700 border-amber-300"
                             )}
                           >
-                            {kisi.tip === "MUSTERI" ? "Müşteri" : "Aday"}
+                            {kisi.tt ? t.kisiler.tipMusteri : t.kisiler.tipAday}
                           </Badge>
                         </CommandItem>
                       ))}
@@ -153,19 +155,19 @@ export function TanitimKatilimciList({ tanitimId }: TanitimKatilimciListProps) {
                         <span className="font-medium">
                           {katilimci.kisi
                             ? `${katilimci.kisi.ad} ${katilimci.kisi.soyad}`
-                            : "Bilinmeyen Kişi"}
+                            : t.tanitimlar.unknownPerson}
                         </span>
                         {katilimci.kisi && (
                           <Badge
                             variant="outline"
                             className={cn(
                               "text-xs",
-                              katilimci.kisi.tip === "MUSTERI"
+                              katilimci.kisi.tt
                                 ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
                                 : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
                             )}
                           >
-                            {katilimci.kisi.tip === "MUSTERI" ? "Müşteri" : "Aday"}
+                            {katilimci.kisi.tt ? t.kisiler.tipMusteri : t.kisiler.tipAday}
                           </Badge>
                         )}
                       </div>
@@ -198,8 +200,8 @@ export function TanitimKatilimciList({ tanitimId }: TanitimKatilimciListProps) {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-10 w-10 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">Henüz katılımcı eklenmedi</p>
-              <p className="text-xs">Yukarıdaki Ekle butonunu kullanın</p>
+              <p className="text-sm">{t.tanitimlar.noParticipantsYet}</p>
+              <p className="text-xs">{t.tanitimlar.useAddButton}</p>
             </div>
           )}
         </CardContent>
@@ -208,9 +210,9 @@ export function TanitimKatilimciList({ tanitimId }: TanitimKatilimciListProps) {
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Katılımcıyı Kaldır"
-        description="Bu kişiyi tanıtımdan kaldırmak istediğinizden emin misiniz?"
-        confirmText="Kaldır"
+        title={t.tanitimlar.removeParticipant}
+        description={t.tanitimlar.removeParticipantConfirm}
+        confirmText={t.common.remove}
         onConfirm={handleRemoveKatilimci}
         isLoading={removeKatilimci.isPending}
       />

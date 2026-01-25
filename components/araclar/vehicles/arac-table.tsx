@@ -4,6 +4,9 @@ import * as React from "react"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 
 import { useAraclar, useDeleteArac, type Arac } from "@/hooks/use-araclar-vehicles"
+import { useDataTablePreferences } from "@/hooks/use-table-preferences"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 import { DataTable } from "@/components/shared/data-table"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,17 +33,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { AracForm } from "./arac-form"
-import { getAracColumns, aracSortOptions } from "./arac-columns"
+import { getAracColumns, getAracSortOptions } from "./arac-columns"
 
 export function AracTable() {
+  const { t } = useLocale()
   const { data, isLoading } = useAraclar()
   const deleteArac = useDeleteArac()
+
+  // Table preferences
+  const prefs = useDataTablePreferences("araclar", {
+    defaultSort: { column: "createdAt", direction: "desc" },
+    defaultPageSize: 20,
+  })
 
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [editingArac, setEditingArac] = React.useState<Arac | null>(null)
   const [deletingArac, setDeletingArac] = React.useState<Arac | null>(null)
 
-  const columns = React.useMemo(() => getAracColumns(), [])
+  const columns = React.useMemo(() => getAracColumns(t), [t])
+  const sortOptions = React.useMemo(() => getAracSortOptions(t), [t])
 
   const handleDelete = async () => {
     if (!deletingArac) return
@@ -68,7 +79,7 @@ export function AracTable() {
           }}
         >
           <Pencil className="mr-2 h-4 w-4" />
-          Düzenle
+          {t.common.edit}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -79,7 +90,7 @@ export function AracTable() {
           }}
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Sil
+          {t.common.delete}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -90,21 +101,26 @@ export function AracTable() {
       <DataTable
         columns={columns}
         data={data?.data || []}
-        searchPlaceholder="Plaka ile ara..."
+        searchPlaceholder={t.araclar.searchPlaceholder}
         isLoading={isLoading}
-        sortOptions={aracSortOptions}
-        defaultSort={{ column: "createdAt", direction: "desc" }}
+        sortOptions={sortOptions}
+        defaultSort={prefs.defaultSort}
+        pageSize={prefs.pageSize}
+        defaultColumnVisibility={prefs.columnVisibility}
         rowWrapper={rowWrapper}
+        onColumnVisibilityChange={prefs.setColumnVisibility}
+        onSortChange={prefs.setSorting}
+        onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
-          plaka: "Plaka",
-          markaModel: "Marka / Model",
-          renk: "Renk",
-          kisiler: "Kişiler",
+          plaka: t.araclar.plaka,
+          markaModel: t.araclar.markaModel,
+          renk: t.araclar.renk,
+          kisiler: t.araclar.kisiler,
         }}
         headerActions={
           <Button onClick={() => setIsCreateOpen(true)} size="sm">
             <Plus className="mr-2 h-4 w-4" />
-            Yeni Araç
+            {t.araclar.newArac}
           </Button>
         }
       />
@@ -113,7 +129,7 @@ export function AracTable() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Yeni Araç</DialogTitle>
+            <DialogTitle>{t.araclar.newArac}</DialogTitle>
           </DialogHeader>
           <AracForm
             inModal
@@ -127,7 +143,7 @@ export function AracTable() {
       <Dialog open={!!editingArac} onOpenChange={(open) => !open && setEditingArac(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Araç Düzenle</DialogTitle>
+            <DialogTitle>{t.araclar.editArac}</DialogTitle>
           </DialogHeader>
           {editingArac && (
             <AracForm
@@ -150,19 +166,18 @@ export function AracTable() {
       <AlertDialog open={!!deletingArac} onOpenChange={(open) => !open && setDeletingArac(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Aracı Sil</AlertDialogTitle>
+            <AlertDialogTitle>{t.araclar.deleteArac}</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong>{deletingArac?.plaka}</strong> plakalı aracı silmek istediğinize emin misiniz?
-              Bu işlem geri alınamaz.
+              {interpolate(t.araclar.deleteAracConfirm, { plaka: deletingArac?.plaka || "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteArac.isPending ? "Siliniyor..." : "Sil"}
+              {deleteArac.isPending ? t.araclar.deleting : t.common.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

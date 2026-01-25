@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Phone } from "lucide-react"
 import { useCreateGsm } from "@/hooks/use-gsm"
+import { useLocale } from "@/components/providers/locale-provider"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,7 @@ interface GsmFormModalProps {
 }
 
 export function GsmFormModal({ open, onOpenChange, kisiId, isFirstGsm }: GsmFormModalProps) {
+  const { t } = useLocale()
   const createGsm = useCreateGsm()
   const [numara, setNumara] = React.useState("")
   const [error, setError] = React.useState("")
@@ -32,7 +34,7 @@ export function GsmFormModal({ open, onOpenChange, kisiId, isFirstGsm }: GsmForm
     e.preventDefault()
 
     if (!numara.trim()) {
-      setError("GSM numarası gerekli")
+      setError(t.kisiler.gsmRequired)
       return
     }
 
@@ -67,21 +69,21 @@ export function GsmFormModal({ open, onOpenChange, kisiId, isFirstGsm }: GsmForm
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Phone className="h-5 w-5" />
-              Yeni GSM Ekle
+              {t.kisiler.addGsmTitle}
             </DialogTitle>
             <DialogDescription>
-              Kişiye yeni bir GSM numarası ekleyin
+              {t.kisiler.addGsmDescription}
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="numara">GSM Numarası</Label>
+              <Label htmlFor="numara">{t.kisiler.gsmNumbers}</Label>
               <Input
                 id="numara"
                 value={numara}
                 onChange={(e) => setNumara(e.target.value)}
-                placeholder="05XX XXX XX XX"
+                placeholder={t.kisiler.gsmPlaceholder}
                 autoFocus
               />
               {error && <p className="text-sm text-destructive">{error}</p>}
@@ -95,13 +97,13 @@ export function GsmFormModal({ open, onOpenChange, kisiId, isFirstGsm }: GsmForm
               onClick={() => handleOpenChange(false)}
               disabled={createGsm.isPending}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={createGsm.isPending || !numara.trim()}>
               {createGsm.isPending && (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               )}
-              Ekle
+              {t.common.add}
             </Button>
           </DialogFooter>
         </form>

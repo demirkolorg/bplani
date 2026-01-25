@@ -47,6 +47,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
 // Deep search function for nested objects
 function deepSearch(obj: unknown, searchTerm: string): boolean {
@@ -230,12 +232,12 @@ export interface SortOption {
   direction: "asc" | "desc"
 }
 
-// Common sort options for date fields
+// Common sort options for date fields - these will be translated in the component
 export const commonSortOptions: SortOption[] = [
-  { label: "Eklenme (Yeni → Eski)", value: "createdAt-desc", column: "createdAt", direction: "desc" },
-  { label: "Eklenme (Eski → Yeni)", value: "createdAt-asc", column: "createdAt", direction: "asc" },
-  { label: "Güncelleme (Yeni → Eski)", value: "updatedAt-desc", column: "updatedAt", direction: "desc" },
-  { label: "Güncelleme (Eski → Yeni)", value: "updatedAt-asc", column: "updatedAt", direction: "asc" },
+  { label: "createdAt-desc", value: "createdAt-desc", column: "createdAt", direction: "desc" },
+  { label: "createdAt-asc", value: "createdAt-asc", column: "createdAt", direction: "asc" },
+  { label: "updatedAt-desc", value: "updatedAt-desc", column: "updatedAt", direction: "desc" },
+  { label: "updatedAt-asc", value: "updatedAt-asc", column: "updatedAt", direction: "asc" },
 ]
 
 export interface ColumnVisibilityLabels {
@@ -250,18 +252,24 @@ interface DataTableProps<TData, TValue> {
   density?: TableDensity
   isLoading?: boolean
   sortOptions?: SortOption[]
-  defaultSort?: { column: string; direction: "asc" | "desc" }
+  defaultSort?: { column: string; direction: "asc" | "desc" } | null
   onRowClick?: (row: TData) => void
   rowWrapper?: (row: TData, children: React.ReactNode) => React.ReactNode
   columnVisibilityLabels?: ColumnVisibilityLabels
   defaultColumnVisibility?: VisibilityState
   headerActions?: React.ReactNode
+  /** Callback when column visibility changes */
+  onColumnVisibilityChange?: (visibility: VisibilityState) => void
+  /** Callback when sorting changes */
+  onSortChange?: (column: string, direction: "asc" | "desc") => void
+  /** Callback when page size changes */
+  onPageSizeChange?: (size: number) => void
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  searchPlaceholder = "Ara...",
+  searchPlaceholder,
   pageSize = 20,
   density = "compact",
   isLoading,
@@ -272,8 +280,26 @@ export function DataTable<TData, TValue>({
   columnVisibilityLabels = {},
   defaultColumnVisibility,
   headerActions,
+  onColumnVisibilityChange,
+  onSortChange,
+  onPageSizeChange,
 }: DataTableProps<TData, TValue>) {
   const styles = densityStyles[density]
+  const { t } = useLocale()
+
+  // Get translated common sort option labels
+  const getCommonSortLabel = (value: string): string => {
+    switch (value) {
+      case "createdAt-desc": return t.table.addedNewOld
+      case "createdAt-asc": return t.table.addedOldNew
+      case "updatedAt-desc": return t.table.updatedNewOld
+      case "updatedAt-asc": return t.table.updatedOldNew
+      default: return value
+    }
+  }
+
+  // Use translated placeholder if not provided
+  const effectiveSearchPlaceholder = searchPlaceholder ?? t.table.searchPlaceholder
 
   // Combine common and custom sort options
   const allSortOptions = [...sortOptions, ...commonSortOptions]
@@ -330,12 +356,21 @@ export function DataTable<TData, TValue>({
     const option = allSortOptions.find((opt) => opt.value === value)
     if (option) {
       setSorting([{ id: option.column, desc: option.direction === "desc" }])
+      onSortChange?.(option.column, option.direction)
     }
   }
 
   const selectedSortLabel = selectedSort
-    ? allSortOptions.find((opt) => opt.value === selectedSort)?.label || "Sıralama"
-    : "Sıralama"
+    ? (() => {
+        const opt = allSortOptions.find((opt) => opt.value === selectedSort)
+        if (!opt) return t.table.sortBy
+        // Check if it's a common sort option
+        if (commonSortOptions.some((c) => c.value === opt.value)) {
+          return getCommonSortLabel(opt.value)
+        }
+        return opt.label
+      })()
+    : t.table.sortBy
 
   const table = useReactTable({
     data,
@@ -513,17 +548,28 @@ export function DataTable<TData, TValue>({
             break
           }
 
-          // Tip column (kisi, alarm)
-          case "tip":
-          case "kisiTip": {
-            let tipVal = original.tip as string | undefined
-            // numara tablosu için kisi.tip
-            if (columnId === "kisiTip") {
-              const kisi = original.kisi as Record<string, unknown> | undefined
-              tipVal = kisi?.tip as string | undefined
-            }
+          // Tip column (alarm only - AlarmTip enum)
+          case "tip": {
+            const tipVal = original.tip as string | undefined
             if (tipVal) {
               const tipText = labelMaps.tip[tipVal] || tipVal.toLowerCase()
+              matched = tipText.includes(term)
+            }
+            break
+          }
+
+          // Kisi tip (tt boolean: true=Müşteri, false=Aday)
+          case "tt":
+          case "kisiTip": {
+            let ttVal: boolean | undefined
+            if (columnId === "kisiTip") {
+              const kisi = original.kisi as Record<string, unknown> | undefined
+              ttVal = kisi?.tt as boolean | undefined
+            } else {
+              ttVal = original.tt as boolean | undefined
+            }
+            if (ttVal !== undefined) {
+              const tipText = ttVal ? "müşteri" : "aday"
               matched = tipText.includes(term)
             }
             break
@@ -706,7 +752,7 @@ export function DataTable<TData, TValue>({
       {/* Search and Controls */}
       <div className="flex items-center justify-between gap-4 py-4">
         <Input
-          placeholder={searchPlaceholder}
+          placeholder={effectiveSearchPlaceholder}
           value={globalFilterInput}
           onChange={(e) => setGlobalFilterInput(e.target.value)}
           className="max-w-sm"
@@ -725,7 +771,7 @@ export function DataTable<TData, TValue>({
               setShowColumnFilters(!showColumnFilters)
             }}
             className="relative"
-            title="Kolon filtreleri"
+            title={t.table.columnFilters}
           >
             <Filter className="h-4 w-4" />
             {hasActiveColumnFilters && (
@@ -736,12 +782,12 @@ export function DataTable<TData, TValue>({
           {/* Column Visibility Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" title="Kolonları göster/gizle">
+              <Button variant="outline" size="icon" title={t.table.visibleColumns}>
                 <Columns3 className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
-              <DropdownMenuLabel>Görünür Kolonlar</DropdownMenuLabel>
+              <DropdownMenuLabel>{t.table.visibleColumns}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {table
                 .getAllColumns()
@@ -761,7 +807,15 @@ export function DataTable<TData, TValue>({
                     <DropdownMenuCheckboxItem
                       key={column.id}
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      onCheckedChange={(value) => {
+                        column.toggleVisibility(!!value)
+                        // Notify parent of visibility change
+                        const newVisibility = {
+                          ...columnVisibility,
+                          [column.id]: !!value,
+                        }
+                        onColumnVisibilityChange?.(newVisibility)
+                      }}
                     >
                       {label}
                     </DropdownMenuCheckboxItem>
@@ -773,17 +827,17 @@ export function DataTable<TData, TValue>({
           {/* Sort Dropdown */}
           <Popover open={sortOpen} onOpenChange={setSortOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" title={selectedSortLabel || "Sıralama"}>
+              <Button variant="outline" size="icon" title={selectedSortLabel || t.table.sortBy}>
                 <ArrowUpDown className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[240px] p-0" align="end">
               <Command>
-                <CommandInput placeholder="Sıralama ara..." />
+                <CommandInput placeholder={`${t.table.sortBy}...`} />
                 <CommandList>
-                  <CommandEmpty>Sıralama bulunamadı.</CommandEmpty>
+                  <CommandEmpty>{t.table.noSortFound}</CommandEmpty>
                   {sortOptions.length > 0 && (
-                    <CommandGroup heading="Alana Göre">
+                    <CommandGroup heading={t.table.byField}>
                       {sortOptions.map((option) => (
                         <CommandItem
                           key={option.value}
@@ -801,7 +855,7 @@ export function DataTable<TData, TValue>({
                       ))}
                     </CommandGroup>
                   )}
-                  <CommandGroup heading="Tarihe Göre">
+                  <CommandGroup heading={t.table.byDate}>
                     {commonSortOptions.map((option) => (
                       <CommandItem
                         key={option.value}
@@ -814,7 +868,7 @@ export function DataTable<TData, TValue>({
                             selectedSort === option.value ? "opacity-100" : "opacity-0"
                           )}
                         />
-                        {option.label}
+                        {getCommonSortLabel(option.value)}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -857,7 +911,7 @@ export function DataTable<TData, TValue>({
                     <th key={`filter-${header.id}`} className="px-2 py-1.5">
                       {!skipFilter && (
                         <Input
-                          placeholder="Filtre..."
+                          placeholder={t.table.filterPlaceholder}
                           value={columnFilterValues[header.id] || ""}
                           onChange={(e) => handleColumnFilterChange(header.id, e.target.value)}
                           className="h-7 text-xs"
@@ -875,7 +929,7 @@ export function DataTable<TData, TValue>({
                 <td colSpan={columns.length} className="h-24 text-center">
                   <div className="flex items-center justify-center">
                     <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    <span className="ml-2">Yükleniyor...</span>
+                    <span className="ml-2">{t.common.loading}</span>
                   </div>
                 </td>
               </tr>
@@ -910,7 +964,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <tr>
                 <td colSpan={columns.length} className="h-24 text-center">
-                  Kayıt bulunamadı.
+                  {t.table.noRecords}
                 </td>
               </tr>
             )}
@@ -923,17 +977,19 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
           {totalRows > 0 ? (
             <span>
-              Toplam {totalRows} kayıttan {startRow}-{endRow} arası gösteriliyor
+              {interpolate(t.table.showingRecords, { total: totalRows, start: startRow, end: endRow })}
             </span>
           ) : (
-            <span>Kayıt yok</span>
+            <span>{t.table.noRecordsAlt}</span>
           )}
         </div>
         <div className="flex items-center space-x-2">
           <Select
             value={String(pagination.pageSize)}
             onValueChange={(value) => {
-              table.setPageSize(Number(value))
+              const newSize = Number(value)
+              table.setPageSize(newSize)
+              onPageSizeChange?.(newSize)
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">

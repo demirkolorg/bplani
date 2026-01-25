@@ -189,7 +189,7 @@ export default function OperasyonDetayPage() {
             {operasyon.katilimcilar?.length || 0}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            ({operasyon.katilimcilar?.filter(k => k.kisi?.tip === 'MUSTERI').length || 0} Müşteri, {operasyon.katilimcilar?.filter(k => k.kisi?.tip === 'LEAD').length || 0} Aday)
+            ({operasyon.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} Müşteri, {operasyon.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} Aday)
           </span>
         </div>
         {fullAddress && (

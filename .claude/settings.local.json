@@ -45,7 +45,11 @@
       "Bash(del \"D:\\\\projects\\\\bplani\\\\lib\\\\page-registry.ts\")",
       "Bash(powershell.exe -Command \"Remove-Item ''D:\\\\projects\\\\bplani\\\\lib\\\\page-registry.ts'' -Force\")",
       "WebFetch(domain:mrlightful.com)",
-      "Bash(timeout /t 5)"
+      "Bash(timeout /t 5)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(del /f \"D:\\\\projects\\\\bplani\\\\app\\\\\\(dashboard\\)\\\\kisiler\\\\[id]\\\\page.backup.tsx\")",
+      "Bash(cd:*)",
+      "Bash(echo:*)"
     ]
   }
 }

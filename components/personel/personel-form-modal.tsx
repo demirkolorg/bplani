@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { useCreatePersonel, useUpdatePersonel, type Personel } from "@/hooks/use-personel"
+import { useLocale } from "@/components/providers/locale-provider"
 
 interface PersonelFormModalProps {
   open: boolean
@@ -28,6 +29,7 @@ export function PersonelFormModal({
   initialData,
   onSuccess,
 }: PersonelFormModalProps) {
+  const { t } = useLocale()
   const createPersonel = useCreatePersonel()
   const updatePersonel = useUpdatePersonel()
   const isEditing = !!initialData?.id
@@ -74,23 +76,23 @@ export function PersonelFormModal({
     const newErrors: Record<string, string> = {}
 
     if (!formData.visibleId) {
-      newErrors.visibleId = "Kullanıcı ID zorunludur"
+      newErrors.visibleId = t.personel.userIdRequired
     } else if (!/^\d{6}$/.test(formData.visibleId)) {
-      newErrors.visibleId = "Kullanıcı ID 6 haneli rakam olmalıdır"
+      newErrors.visibleId = t.personel.userIdMustBe6Digits
     }
 
     if (!formData.ad) {
-      newErrors.ad = "Ad zorunludur"
+      newErrors.ad = t.personel.firstNameRequired
     }
     if (!formData.soyad) {
-      newErrors.soyad = "Soyad zorunludur"
+      newErrors.soyad = t.personel.lastNameRequired
     }
 
     if (!isEditing) {
       if (!formData.parola) {
-        newErrors.parola = "Şifre zorunludur"
+        newErrors.parola = t.personel.passwordRequired
       } else if (formData.parola.length < 6) {
-        newErrors.parola = "Şifre en az 6 karakter olmalıdır"
+        newErrors.parola = t.personel.passwordMin6
       }
     }
 
@@ -126,7 +128,7 @@ export function PersonelFormModal({
       onOpenChange(false)
     } catch (error) {
       setErrors({
-        submit: error instanceof Error ? error.message : "İşlem başarısız",
+        submit: error instanceof Error ? error.message : t.personel.operationFailed,
       })
     }
   }
@@ -137,11 +139,11 @@ export function PersonelFormModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Personel Düzenle" : "Yeni Personel"}</DialogTitle>
+          <DialogTitle>{isEditing ? t.personel.editPersonel : t.personel.newPersonel}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Personel bilgilerini güncelleyin"
-              : "Yeni bir personel hesabı oluşturun"}
+              ? t.personel.editPersonelDescription
+              : t.personel.createNewAccount}
           </DialogDescription>
         </DialogHeader>
 
@@ -153,7 +155,7 @@ export function PersonelFormModal({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="visibleId">Kullanıcı ID (6 haneli)</Label>
+            <Label htmlFor="visibleId">{t.personel.userId6Digit}</Label>
             <Input
               id="visibleId"
               value={formData.visibleId}
@@ -169,12 +171,12 @@ export function PersonelFormModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="ad">Ad</Label>
+              <Label htmlFor="ad">{t.common.firstName}</Label>
               <Input
                 id="ad"
                 value={formData.ad}
                 onChange={(e) => handleChange("ad", e.target.value)}
-                placeholder="Ad"
+                placeholder={t.common.firstName}
               />
               {errors.ad && (
                 <p className="text-sm text-destructive">{errors.ad}</p>
@@ -182,12 +184,12 @@ export function PersonelFormModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="soyad">Soyad</Label>
+              <Label htmlFor="soyad">{t.common.lastName}</Label>
               <Input
                 id="soyad"
                 value={formData.soyad}
                 onChange={(e) => handleChange("soyad", e.target.value)}
-                placeholder="Soyad"
+                placeholder={t.common.lastName}
               />
               {errors.soyad && (
                 <p className="text-sm text-destructive">{errors.soyad}</p>
@@ -197,13 +199,13 @@ export function PersonelFormModal({
 
           {!isEditing && (
             <div className="space-y-2">
-              <Label htmlFor="parola">Şifre</Label>
+              <Label htmlFor="parola">{t.personel.password}</Label>
               <Input
                 id="parola"
                 type="password"
                 value={formData.parola}
                 onChange={(e) => handleChange("parola", e.target.value)}
-                placeholder="En az 6 karakter"
+                placeholder={t.personel.passwordMin6}
               />
               {errors.parola && (
                 <p className="text-sm text-destructive">{errors.parola}</p>
@@ -212,7 +214,7 @@ export function PersonelFormModal({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="fotograf">Fotoğraf URL (opsiyonel)</Label>
+            <Label htmlFor="fotograf">{t.personel.photoUrl}</Label>
             <Input
               id="fotograf"
               value={formData.fotograf}
@@ -223,9 +225,9 @@ export function PersonelFormModal({
 
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div className="space-y-0.5">
-              <Label>Aktif Hesap</Label>
+              <Label>{t.personel.activeAccount}</Label>
               <p className="text-sm text-muted-foreground">
-                Pasif hesaplar giriş yapamaz
+                {t.personel.inactiveAccountHint}
               </p>
             </div>
             <Switch
@@ -241,10 +243,10 @@ export function PersonelFormModal({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Kaydediliyor..." : isEditing ? "Güncelle" : "Oluştur"}
+              {isLoading ? t.common.saving : isEditing ? t.common.update : t.common.create}
             </Button>
           </div>
         </form>

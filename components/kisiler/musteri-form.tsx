@@ -4,7 +4,8 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Trash2, Star, StarOff, User, Upload, X } from "lucide-react"
 import { useCreateKisi, useUpdateKisi } from "@/hooks/use-kisiler"
-import { createKisiSchema, type CreateKisiInput, type KisiTip } from "@/lib/validations"
+import { createKisiSchema, type CreateKisiInput } from "@/lib/validations"
+import { useLocale } from "@/components/providers/locale-provider"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -59,6 +60,7 @@ interface KisiFormProps {
 
 export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiFormProps) {
   const router = useRouter()
+  const { t } = useLocale()
   const createKisi = useCreateKisi()
   const updateKisi = useUpdateKisi()
 
@@ -66,7 +68,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
 
   // Main form data
   const [formData, setFormData] = React.useState<CreateKisiInput>({
-    tip: (initialData as { tip?: KisiTip })?.tip || "LEAD",
+    tt: (initialData as { tt?: boolean })?.tt || false,
     tc: initialData?.tc || null,
     ad: initialData?.ad || "",
     soyad: initialData?.soyad || "",
@@ -113,7 +115,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
     if (!allowedTypes.includes(file.type)) {
       setErrors((prev) => ({
         ...prev,
-        fotograf: "Geçersiz dosya türü. Sadece JPEG, PNG, WebP ve GIF desteklenir.",
+        fotograf: t.api.invalidFileType,
       }))
       return
     }
@@ -122,7 +124,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
     if (file.size > 5 * 1024 * 1024) {
       setErrors((prev) => ({
         ...prev,
-        fotograf: "Dosya boyutu 5MB'dan büyük olamaz",
+        fotograf: t.api.fileTooLarge,
       }))
       return
     }
@@ -144,7 +146,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || "Dosya yüklenirken hata oluştu")
+        throw new Error(error.error || t.api.uploadError)
       }
 
       const { url } = await response.json()
@@ -152,7 +154,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
     } catch (error) {
       setErrors((prev) => ({
         ...prev,
-        fotograf: error instanceof Error ? error.message : "Dosya yüklenirken hata oluştu",
+        fotograf: error instanceof Error ? error.message : t.api.uploadError,
       }))
     } finally {
       setIsUploading(false)
@@ -368,7 +370,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <User className="h-4 w-4" />
-                Kişisel Bilgiler
+                {t.kisiler.personalInfo}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -379,7 +381,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                     {formData.fotograf ? (
                       <img
                         src={formData.fotograf}
-                        alt="Profil"
+                        alt={t.kisiler.profile}
                         className="h-16 w-16 object-cover"
                       />
                     ) : (
@@ -418,17 +420,17 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                     {isUploading ? (
                       <>
                         <div className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Yükleniyor...
+                        {t.common.loading}
                       </>
                     ) : (
                       <>
                         <Upload className="mr-2 h-3 w-3" />
-                        Fotoğraf
+                        {t.kisiler.photo}
                       </>
                     )}
                   </Button>
                   <p className="text-[10px] text-muted-foreground text-center">
-                    Maks. 5MB
+                    {t.kisiler.maxFileSize}
                   </p>
                   {errors.fotograf && (
                     <p className="text-xs text-destructive">{errors.fotograf}</p>
@@ -438,12 +440,12 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
 
               {/* TC */}
               <div className="space-y-1">
-                <Label htmlFor="tc" className="text-xs">TC Kimlik No</Label>
+                <Label htmlFor="tc" className="text-xs">{t.kisiler.tcKimlik}</Label>
                 <Input
                   id="tc"
                   value={formData.tc || ""}
                   onChange={(e) => handleChange("tc", e.target.value || null)}
-                  placeholder="11 haneli"
+                  placeholder={t.kisiler.tc11Digit}
                   maxLength={11}
                   className="h-9"
                 />
@@ -454,13 +456,13 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
                   <Label htmlFor="ad" className="text-xs">
-                    Ad <span className="text-destructive">*</span>
+                    {t.common.firstName} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="ad"
                     value={formData.ad}
                     onChange={(e) => handleChange("ad", e.target.value)}
-                    placeholder="Ad"
+                    placeholder={t.common.firstName}
                     className="h-9"
                     required
                   />
@@ -468,13 +470,13 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="soyad" className="text-xs">
-                    Soyad <span className="text-destructive">*</span>
+                    {t.common.lastName} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="soyad"
                     value={formData.soyad}
                     onChange={(e) => handleChange("soyad", e.target.value)}
-                    placeholder="Soyad"
+                    placeholder={t.common.lastName}
                     className="h-9"
                     required
                   />
@@ -486,7 +488,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
               <div className="space-y-1">
                 <Label className="text-xs flex items-center gap-1">
                   <Briefcase className="h-3 w-3" />
-                  Faaliyet Alanları
+                  {t.kisiler.faaliyetAlanlari}
                 </Label>
                 <FaaliyetSelector
                   value={faaliyetAlaniIds}
@@ -497,12 +499,12 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
 
               {/* Ek Bilgi/Notlar (legacy faaliyet field) */}
               <div className="space-y-1">
-                <Label htmlFor="faaliyet" className="text-xs">Ek Bilgi</Label>
+                <Label htmlFor="faaliyet" className="text-xs">{t.kisiler.additionalInfo}</Label>
                 <Textarea
                   id="faaliyet"
                   value={formData.faaliyet || ""}
                   onChange={(e) => handleChange("faaliyet", e.target.value || null)}
-                  placeholder="Ek bilgi veya notlar..."
+                  placeholder={t.kisiler.additionalInfoPlaceholder}
                   rows={2}
                   className="text-sm"
                 />
@@ -510,6 +512,16 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
 
               {/* Checkboxes */}
               <div className="flex flex-wrap gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="tt"
+                    checked={formData.tt}
+                    onCheckedChange={(checked) => handleChange("tt", checked)}
+                  />
+                  <Label htmlFor="tt" className="cursor-pointer text-xs">
+                    {t.kisiler.tt} ({formData.tt ? t.kisiler.tipMusteri : t.kisiler.tipAday})
+                  </Label>
+                </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="pio"
@@ -539,7 +551,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Phone className="h-4 w-4 text-blue-600" />
-                GSM Numaraları
+                {t.kisiler.gsmNumbers}
                 {gsmler.length > 0 && (
                   <span className="text-xs font-normal text-muted-foreground">
                     ({gsmler.length})
@@ -553,7 +565,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                 <Input
                   value={newGsmNumara}
                   onChange={(e) => setNewGsmNumara(e.target.value)}
-                  placeholder="05XX XXX XX XX"
+                  placeholder={t.kisiler.gsmPlaceholder}
                   className="flex-1 h-9"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -601,7 +613,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                           className="h-7 w-7"
                           onClick={() => handleSetGsmPrimary(index)}
                           disabled={gsm.isPrimary}
-                          title="Birincil yap"
+                          title={t.common.makePrimary}
                         >
                           {gsm.isPrimary ? (
                             <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
@@ -625,8 +637,8 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Phone className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">Henüz GSM eklenmedi</p>
-                  <p className="text-xs">Yukarıdan numara ekleyin</p>
+                  <p className="text-sm">{t.kisiler.noGsmYet}</p>
+                  <p className="text-xs">{t.kisiler.addNumberFromAbove}</p>
                 </div>
               )}
             </CardContent>
@@ -637,7 +649,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-green-600" />
-                Adresler
+                {t.kisiler.addresses}
                 {adresler.length > 0 && (
                   <span className="text-xs font-normal text-muted-foreground">
                     ({adresler.length})
@@ -649,12 +661,12 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
               {/* Add Adres Form - Always visible */}
               <div className="space-y-3 rounded-lg border p-3 bg-muted/30">
                 <div className="space-y-1">
-                  <Label htmlFor="adresAd" className="text-xs">Adres Adı</Label>
+                  <Label htmlFor="adresAd" className="text-xs">{t.kisiler.addressName}</Label>
                   <Input
                     id="adresAd"
                     value={newAdresAd}
                     onChange={(e) => setNewAdresAd(e.target.value)}
-                    placeholder="Ev, İş, vb."
+                    placeholder={t.kisiler.addressNamePlaceholder}
                     className="h-9"
                   />
                 </div>
@@ -665,12 +677,12 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                   compact
                 />
                 <div className="space-y-1">
-                  <Label htmlFor="adresDetay" className="text-xs">Detay</Label>
+                  <Label htmlFor="adresDetay" className="text-xs">{t.common.details}</Label>
                   <Textarea
                     id="adresDetay"
                     value={newAdresDetay}
                     onChange={(e) => setNewAdresDetay(e.target.value)}
-                    placeholder="Sokak, kapı no..."
+                    placeholder={t.kisiler.addressDetailShort}
                     rows={2}
                     className="text-sm"
                   />
@@ -683,7 +695,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                   className="w-full"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Adres Ekle
+                  {t.kisiler.addAddress}
                 </Button>
               </div>
 
@@ -711,7 +723,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                            {adres.lokasyonText || "Mahalle seçildi"}
+                            {adres.lokasyonText || t.kisiler.neighborhoodSelected}
                           </p>
                           {adres.detay && (
                             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
@@ -762,7 +774,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                 {formData.fotograf ? (
                   <img
                     src={formData.fotograf}
-                    alt="Profil"
+                    alt={t.kisiler.profile}
                     className="h-24 w-24 object-cover"
                   />
                 ) : (
@@ -782,7 +794,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
               )}
             </div>
             <div className="flex-1 space-y-2">
-              <Label>Fotoğraf</Label>
+              <Label>{t.kisiler.photo}</Label>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -801,17 +813,17 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                 {isUploading ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Yükleniyor...
+                    {t.common.loading}
                   </>
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    Fotoğraf Yükle
+                    {t.kisiler.uploadPhoto}
                   </>
                 )}
               </Button>
               <p className="text-xs text-muted-foreground">
-                JPEG, PNG, WebP veya GIF. Maks. 5MB
+                {t.kisiler.photoFormats}
               </p>
               {errors.fotograf && (
                 <p className="text-sm text-destructive">{errors.fotograf}</p>
@@ -822,12 +834,12 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
           {/* Temel Bilgiler */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="tc">TC Kimlik No</Label>
+              <Label htmlFor="tc">{t.kisiler.tcKimlik}</Label>
               <Input
                 id="tc"
                 value={formData.tc || ""}
                 onChange={(e) => handleChange("tc", e.target.value || null)}
-                placeholder="11 haneli TC Kimlik No"
+                placeholder={t.kisiler.tc11Digit}
                 maxLength={11}
               />
               {errors.tc && <p className="text-sm text-destructive">{errors.tc}</p>}
@@ -837,13 +849,13 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
 
             <div className="space-y-2">
               <Label htmlFor="ad">
-                Ad <span className="text-destructive">*</span>
+                {t.common.firstName} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="ad"
                 value={formData.ad}
                 onChange={(e) => handleChange("ad", e.target.value)}
-                placeholder="Ad"
+                placeholder={t.common.firstName}
                 required
               />
               {errors.ad && <p className="text-sm text-destructive">{errors.ad}</p>}
@@ -851,13 +863,13 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
 
             <div className="space-y-2">
               <Label htmlFor="soyad">
-                Soyad <span className="text-destructive">*</span>
+                {t.common.lastName} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="soyad"
                 value={formData.soyad}
                 onChange={(e) => handleChange("soyad", e.target.value)}
-                placeholder="Soyad"
+                placeholder={t.common.lastName}
                 required
               />
               {errors.soyad && (
@@ -870,7 +882,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
-              Faaliyet Alanları
+              {t.kisiler.faaliyetAlanlari}
             </Label>
             <FaaliyetSelector
               value={faaliyetAlaniIds}
@@ -881,10 +893,10 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
           {/* Ek Bilgi/Notlar (legacy faaliyet field) */}
           <RichTextEditor
             id="faaliyet"
-            label="Ek Bilgi"
+            label={t.kisiler.additionalInfo}
             value={formData.faaliyet || ""}
             onChange={(value) => handleChange("faaliyet", value || null)}
-            placeholder="Ek bilgi veya notlar..."
+            placeholder={t.kisiler.additionalInfoPlaceholder}
             rows={3}
             error={errors.faaliyet}
           />
@@ -893,12 +905,23 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center space-x-2">
               <Checkbox
+                id="tt-edit"
+                checked={formData.tt}
+                onCheckedChange={(checked) => handleChange("tt", checked)}
+              />
+              <Label htmlFor="tt-edit" className="cursor-pointer">
+                {t.kisiler.tt} ({formData.tt ? t.kisiler.tipMusteri : t.kisiler.tipAday})
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
                 id="pio"
                 checked={formData.pio}
                 onCheckedChange={(checked) => handleChange("pio", checked)}
               />
               <Label htmlFor="pio" className="cursor-pointer">
-                PIO (Potansiyel İş Ortağı)
+                {t.kisiler.pioFull}
               </Label>
             </div>
 
@@ -909,7 +932,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                 onCheckedChange={(checked) => handleChange("asli", checked)}
               />
               <Label htmlFor="asli" className="cursor-pointer">
-                Asli Kişi
+                {t.kisiler.asliFull}
               </Label>
             </div>
           </div>
@@ -924,13 +947,13 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
           onClick={handleCancel}
           disabled={isPending}
         >
-          İptal
+          {t.common.cancel}
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && (
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {isEditing ? "Güncelle" : "Oluştur"}
+          {isEditing ? t.common.update : t.common.create}
         </Button>
       </div>
     </div>
@@ -950,7 +973,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>Kişi Düzenle</CardTitle>
+          <CardTitle>{t.kisiler.editKisi}</CardTitle>
         </CardHeader>
         <CardContent>{formContent}</CardContent>
       </Card>

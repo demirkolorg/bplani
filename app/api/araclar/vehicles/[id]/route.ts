@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         },
         kisiler: {
           include: {
-            kisi: { select: { id: true, ad: true, soyad: true, tip: true } },
+            kisi: { select: { id: true, ad: true, soyad: true, tt: true } },
           },
         },
         createdUser: { select: { ad: true, soyad: true } },
@@ -122,7 +122,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         },
         kisiler: {
           include: {
-            kisi: { select: { id: true, ad: true, soyad: true, tip: true } },
+            kisi: { select: { id: true, ad: true, soyad: true, tt: true } },
           },
         },
         createdUser: { select: { ad: true, soyad: true } },

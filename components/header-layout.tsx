@@ -7,13 +7,16 @@ import { TabProvider } from "@/components/providers/tab-provider"
 import { TabBar, TabContentRenderer } from "@/components/tabs"
 import { HeaderNavMenu, HeaderNavBar } from "@/components/header-nav-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LocaleToggle } from "@/components/locale-toggle"
 import { NavUser } from "@/components/nav-user"
 import { AlarmBell } from "@/components/alarm-bell"
 import { Button } from "@/components/ui/button"
 import { GlobalSearch } from "@/components/search/global-search"
+import { useLocale } from "@/components/providers/locale-provider"
 
 export function HeaderLayout() {
   const [searchOpen, setSearchOpen] = useState(false)
+  const { t } = useLocale()
 
   // Keyboard shortcut: Ctrl+K / Cmd+K
   useEffect(() => {
@@ -60,7 +63,7 @@ export function HeaderLayout() {
             className="hidden sm:flex items-center gap-2 text-muted-foreground h-9 w-64 lg:w-80 justify-start px-3"
           >
             <Search className="h-4 w-4 shrink-0" />
-            <span className="flex-1 text-left">Ara...</span>
+            <span className="flex-1 text-left">{t.table.searchPlaceholder}</span>
             <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium sm:flex">
               Ctrl K
             </kbd>
@@ -81,6 +84,7 @@ export function HeaderLayout() {
           {/* Right side actions */}
           <div className="flex items-center gap-2">
             <AlarmBell />
+            <LocaleToggle />
             <ThemeToggle />
             <NavUser />
           </div>

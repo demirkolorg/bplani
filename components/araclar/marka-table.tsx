@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Pencil, Trash2 } from "lucide-react"
 import { useMarkalar, useDeleteMarka, type Marka } from "@/hooks/use-araclar"
+import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { getMarkaColumns } from "./marka-columns"
@@ -16,13 +17,14 @@ import {
 } from "@/components/ui/context-menu"
 
 export function MarkaTable() {
+  const { t } = useLocale()
   const [editingMarka, setEditingMarka] = React.useState<Marka | null>(null)
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
 
   const { data, isLoading } = useMarkalar()
   const deleteMarka = useDeleteMarka()
 
-  const columns = React.useMemo(() => getMarkaColumns(), [])
+  const columns = React.useMemo(() => getMarkaColumns(t), [t])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -40,7 +42,7 @@ export function MarkaTable() {
       <ContextMenuContent className="w-48">
         <ContextMenuItem onClick={() => setEditingMarka(row)}>
           <Pencil className="mr-2 h-4 w-4" />
-          Düzenle
+          {t.common.edit}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -48,7 +50,7 @@ export function MarkaTable() {
           onClick={() => setDeleteId(row.id)}
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Sil
+          {t.common.delete}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -59,12 +61,12 @@ export function MarkaTable() {
       <DataTable
         columns={columns}
         data={data || []}
-        searchPlaceholder="Marka adı ile ara..."
+        searchPlaceholder={t.araclar.searchMarkaPlaceholder}
         isLoading={isLoading}
         rowWrapper={rowWrapper}
         columnVisibilityLabels={{
-          ad: "Marka Adı",
-          modelSayisi: "Model Sayısı",
+          ad: t.araclar.markaAdi,
+          modelSayisi: t.araclar.modelSayisi,
         }}
       />
 
@@ -77,9 +79,9 @@ export function MarkaTable() {
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Markayı Sil"
-        description="Bu markayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz. Markaya bağlı modeller varsa silme işlemi engellenecektir."
-        confirmText="Sil"
+        title={t.araclar.deleteMarka}
+        description={t.araclar.deleteMarkaConfirm}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deleteMarka.isPending}
       />

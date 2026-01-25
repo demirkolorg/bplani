@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { useIller, useIlceler, useMahalleler } from "@/hooks/use-lokasyon"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -52,6 +53,7 @@ export function LokasyonSelector({
   defaultIlPlaka = DEFAULT_IL_PLAKA,
   compact = false,
 }: LokasyonSelectorProps) {
+  const { t } = useLocale()
   const [selectedIlId, setSelectedIlId] = React.useState(value?.ilId || "")
   const [selectedIlceId, setSelectedIlceId] = React.useState(value?.ilceId || "")
   const [selectedMahalleId, setSelectedMahalleId] = React.useState(value?.mahalleId || "")
@@ -120,7 +122,7 @@ export function LokasyonSelector({
       {/* İl */}
       <div className={compact ? "space-y-1" : "space-y-2"}>
         <Label className={compact ? "text-xs" : ""}>
-          İl {required && <span className="text-destructive">*</span>}
+          {t.lokasyon.il} {required && <span className="text-destructive">*</span>}
         </Label>
         <Popover open={ilOpen} onOpenChange={setIlOpen}>
           <PopoverTrigger asChild>
@@ -137,18 +139,18 @@ export function LokasyonSelector({
               disabled={disabled || illerLoading}
             >
               {illerLoading
-                ? "Yükleniyor..."
+                ? t.common.loading
                 : selectedIl
                 ? `${selectedIl.plaka ? `${selectedIl.plaka} - ` : ""}${selectedIl.ad}`
-                : "İl seçin"}
+                : t.lokasyon.selectIl}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[250px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="İl ara..." />
+              <CommandInput placeholder={t.lokasyon.searchIl} />
               <CommandList>
-                <CommandEmpty>İl bulunamadı.</CommandEmpty>
+                <CommandEmpty>{t.lokasyon.ilNotFound}</CommandEmpty>
                 <CommandGroup>
                   {iller?.map((il) => (
                     <CommandItem
@@ -176,7 +178,7 @@ export function LokasyonSelector({
       {/* İlçe */}
       <div className={compact ? "space-y-1" : "space-y-2"}>
         <Label className={compact ? "text-xs" : ""}>
-          İlçe {required && <span className="text-destructive">*</span>}
+          {t.lokasyon.ilce} {required && <span className="text-destructive">*</span>}
         </Label>
         <Popover open={ilceOpen} onOpenChange={setIlceOpen}>
           <PopoverTrigger asChild>
@@ -193,20 +195,20 @@ export function LokasyonSelector({
               disabled={disabled || !selectedIlId || ilcelerLoading}
             >
               {!selectedIlId
-                ? "Önce il seçin"
+                ? t.lokasyon.selectIlFirst
                 : ilcelerLoading
-                ? "Yükleniyor..."
+                ? t.common.loading
                 : selectedIlce
                 ? selectedIlce.ad
-                : "İlçe seçin"}
+                : t.lokasyon.selectIlce}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[250px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="İlçe ara..." />
+              <CommandInput placeholder={t.lokasyon.searchIlce} />
               <CommandList>
-                <CommandEmpty>İlçe bulunamadı.</CommandEmpty>
+                <CommandEmpty>{t.lokasyon.ilceNotFound}</CommandEmpty>
                 <CommandGroup>
                   {ilceler?.map((ilce) => (
                     <CommandItem
@@ -234,7 +236,7 @@ export function LokasyonSelector({
       {/* Mahalle */}
       <div className={compact ? "space-y-1" : "space-y-2"}>
         <Label className={compact ? "text-xs" : ""}>
-          Mahalle {required && <span className="text-destructive">*</span>}
+          {t.lokasyon.mahalle} {required && <span className="text-destructive">*</span>}
         </Label>
         <Popover open={mahalleOpen} onOpenChange={setMahalleOpen}>
           <PopoverTrigger asChild>
@@ -251,20 +253,20 @@ export function LokasyonSelector({
               disabled={disabled || !selectedIlceId || mahallelerLoading}
             >
               {!selectedIlceId
-                ? "Önce ilçe seçin"
+                ? t.lokasyon.selectIlceFirst
                 : mahallelerLoading
-                ? "Yükleniyor..."
+                ? t.common.loading
                 : selectedMahalle
                 ? selectedMahalle.ad
-                : "Mahalle seçin"}
+                : t.lokasyon.selectMahalle}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[250px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="Mahalle ara..." />
+              <CommandInput placeholder={t.lokasyon.searchMahalle} />
               <CommandList>
-                <CommandEmpty>Mahalle bulunamadı.</CommandEmpty>
+                <CommandEmpty>{t.lokasyon.mahalleNotFound}</CommandEmpty>
                 <CommandGroup>
                   {mahalleler?.map((mahalle) => (
                     <CommandItem

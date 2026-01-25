@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
                   id: true,
                   ad: true,
                   soyad: true,
-                  tip: true,
+                  tt: true,
                   fotograf: true,
                 },
               },
@@ -274,10 +274,10 @@ export async function POST(request: NextRequest) {
         await prisma.kisi.updateMany({
           where: {
             id: { in: kisiIds },
-            tip: "LEAD",
+            tt: false,
           },
           data: {
-            tip: "MUSTERI",
+            tt: true,
             updatedUserId: validUserId,
           },
         })
@@ -347,7 +347,7 @@ export async function POST(request: NextRequest) {
                 id: true,
                 ad: true,
                 soyad: true,
-                tip: true,
+                tt: true,
               },
             },
           },
@@ -406,10 +406,10 @@ export async function POST(request: NextRequest) {
       await prisma.kisi.updateMany({
         where: {
           id: gsm.kisiId,
-          tip: "LEAD",
+          tt: false,
         },
         data: {
-          tip: "MUSTERI",
+          tt: true,
           updatedUserId: validUserId,
         },
       })

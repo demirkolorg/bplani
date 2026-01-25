@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { CreateGsmInput, UpdateGsmInput, BulkCreateGsmInput, KisiTip } from "@/lib/validations"
+import type { CreateGsmInput, UpdateGsmInput, BulkCreateGsmInput } from "@/lib/validations"
 import { kisiKeys } from "./use-kisiler"
 
 export interface Gsm {
@@ -16,7 +16,7 @@ export interface GsmWithKisi extends Gsm {
     id: string
     ad: string
     soyad: string
-    tip: KisiTip
+    tt: boolean
   } | null
 }
 

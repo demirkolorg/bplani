@@ -6,12 +6,14 @@ import { Plus } from "lucide-react"
 import { useEffect } from "react"
 
 import { useUser } from "@/components/providers/auth-provider"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import { PersonelTable } from "@/components/personel/personel-table"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function PersonelPage() {
   const { user, isLoading } = useUser()
+  const { t } = useLocale()
   const router = useRouter()
 
   // Yetki kontrolü - sadece ADMIN ve YONETICI erişebilir
@@ -47,14 +49,14 @@ export default function PersonelPage() {
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Personel</h1>
-          <p className="text-muted-foreground">Sistem kullanıcılarını yönetin</p>
+          <h1 className="text-2xl font-bold">{t.personel.pageTitle}</h1>
+          <p className="text-muted-foreground">{t.personel.pageDescription}</p>
         </div>
         {isAdmin && (
           <Button asChild>
             <Link href="/personel/yeni">
               <Plus className="mr-2 h-4 w-4" />
-              Yeni Personel
+              {t.personel.newPersonelButton}
             </Link>
           </Button>
         )}

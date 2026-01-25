@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query"
-import type { KisiTip } from "@/lib/validations"
 
 // Types for API responses
 export interface NumaraTakip {
@@ -20,7 +19,7 @@ export interface NumaraWithKisi {
     id: string
     ad: string
     soyad: string
-    tip: KisiTip
+    tt: boolean
     tc: string | null
   }
   takipler: NumaraTakip[]

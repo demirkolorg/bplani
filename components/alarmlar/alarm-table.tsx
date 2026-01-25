@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { Eye, Pause, Play, Trash2, Check } from "lucide-react"
 
 import { useAlarmlar, useUpdateAlarm, useDeleteAlarm, type Alarm } from "@/hooks/use-alarmlar"
+import { useDataTablePreferences } from "@/hooks/use-table-preferences"
+import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import {
@@ -14,17 +16,25 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
-import { getAlarmColumns, alarmSortOptions } from "./alarm-columns"
+import { getAlarmColumns, getAlarmSortOptions } from "./alarm-columns"
 
 export function AlarmTable() {
   const router = useRouter()
+  const { t, locale } = useLocale()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
 
   const { data, isLoading } = useAlarmlar()
   const updateAlarm = useUpdateAlarm()
   const deleteAlarm = useDeleteAlarm()
 
-  const columns = React.useMemo(() => getAlarmColumns(), [])
+  // Table preferences
+  const prefs = useDataTablePreferences("alarmlar", {
+    defaultSort: { column: "tetikTarihi", direction: "asc" },
+    defaultPageSize: 20,
+  })
+
+  const columns = React.useMemo(() => getAlarmColumns(t, locale), [t, locale])
+  const sortOptions = React.useMemo(() => getAlarmSortOptions(t), [t])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -74,7 +84,7 @@ export function AlarmTable() {
               }}
             >
               <Eye className="mr-2 h-4 w-4" />
-              Kişiye Git
+              {t.alarmlar.goToPerson}
             </ContextMenuItem>
             <ContextMenuSeparator />
           </>
@@ -87,7 +97,7 @@ export function AlarmTable() {
             }}
           >
             <Check className="mr-2 h-4 w-4" />
-            Görüldü İşaretle
+            {t.alarmlar.markAsRead}
           </ContextMenuItem>
         )}
         <ContextMenuItem
@@ -99,12 +109,12 @@ export function AlarmTable() {
           {row.isPaused ? (
             <>
               <Play className="mr-2 h-4 w-4" />
-              Devam Ettir
+              {t.alarmlar.resume}
             </>
           ) : (
             <>
               <Pause className="mr-2 h-4 w-4" />
-              Duraklat
+              {t.alarmlar.pause}
             </>
           )}
         </ContextMenuItem>
@@ -117,7 +127,7 @@ export function AlarmTable() {
           }}
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Sil
+          {t.common.delete}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -128,29 +138,34 @@ export function AlarmTable() {
       <DataTable
         columns={columns}
         data={data?.data || []}
-        searchPlaceholder="Alarm ara (başlık, kişi adı, numara...)"
+        searchPlaceholder={t.alarmlar.searchPlaceholder}
         isLoading={isLoading}
-        sortOptions={alarmSortOptions}
-        defaultSort={{ column: "tetikTarihi", direction: "asc" }}
+        sortOptions={sortOptions}
+        defaultSort={prefs.defaultSort}
+        pageSize={prefs.pageSize}
+        defaultColumnVisibility={prefs.columnVisibility}
         onRowClick={handleRowClick}
         rowWrapper={rowWrapper}
+        onColumnVisibilityChange={prefs.setColumnVisibility}
+        onSortChange={prefs.setSorting}
+        onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
-          durum: "Durum",
-          tip: "Tip",
-          baslik: "Başlık / Mesaj",
-          kisi: "Kişi",
-          tetikTarihi: "Tetik Tarihi",
-          gunOnce: "Gün Önce",
-          olusturan: "Oluşturan",
+          durum: t.alarmlar.durum,
+          tip: t.alarmlar.tip,
+          baslik: t.alarmlar.baslikMesaj,
+          kisi: t.alarmlar.person,
+          tetikTarihi: t.alarmlar.tetikTarihi,
+          gunOnce: t.alarmlar.gunOnce,
+          olusturan: t.alarmlar.olusturan,
         }}
       />
 
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Alarmı Sil"
-        description="Bu alarmı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-        confirmText="Sil"
+        title={t.alarmlar.deleteAlarm}
+        description={t.alarmlar.deleteAlarmConfirm}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deleteAlarm.isPending}
       />

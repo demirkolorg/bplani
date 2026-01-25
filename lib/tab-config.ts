@@ -1,66 +1,67 @@
 // Tab sistemi konfigürasyonu - route başlıkları ve ikonları
+import type { TabsTranslations } from "@/types/locale"
 
 export interface RouteConfig {
-  title: string
+  titleKey: keyof TabsTranslations
   icon: string
   isDynamic?: boolean
 }
 
-// Static route tanımları
+// Static route tanımları - translation key kullanır
 export const ROUTE_CONFIG: Record<string, RouteConfig> = {
-  "/": { title: "Ana Sayfa", icon: "Home" },
+  "/": { titleKey: "home", icon: "Home" },
 
   // Kayıtlar
-  "/kisiler": { title: "Kişiler", icon: "Users" },
-  "/kisiler/yeni": { title: "Yeni Kişi", icon: "UserPlus" },
-  "/kisiler/[id]": { title: "Kişi Detay", icon: "User", isDynamic: true },
+  "/kisiler": { titleKey: "kisiler", icon: "Users" },
+  "/kisiler/yeni": { titleKey: "kisiYeni", icon: "UserPlus" },
+  "/kisiler/[id]": { titleKey: "kisiDetay", icon: "User", isDynamic: true },
 
-  "/numaralar": { title: "Numaralar", icon: "Phone" },
+  "/numaralar": { titleKey: "numaralar", icon: "Phone" },
 
-  "/araclar": { title: "Araçlar", icon: "Car" },
+  "/araclar": { titleKey: "araclar", icon: "Car" },
 
   // Faaliyetler
-  "/takipler": { title: "Takipler", icon: "CalendarClock" },
-  "/takipler/yeni": { title: "Yeni Takip", icon: "CalendarPlus" },
-  "/takipler/[id]": { title: "Takip Detay", icon: "CalendarClock", isDynamic: true },
+  "/takipler": { titleKey: "takipler", icon: "CalendarClock" },
+  "/takipler/yeni": { titleKey: "takipYeni", icon: "CalendarPlus" },
+  "/takipler/[id]": { titleKey: "takipDetay", icon: "CalendarClock", isDynamic: true },
 
-  "/tanitimlar": { title: "Tanıtımlar", icon: "Megaphone" },
-  "/tanitimlar/yeni": { title: "Yeni Tanıtım", icon: "Megaphone" },
-  "/tanitimlar/[id]": { title: "Tanıtım Detay", icon: "Megaphone", isDynamic: true },
+  "/tanitimlar": { titleKey: "tanitimlar", icon: "Megaphone" },
+  "/tanitimlar/yeni": { titleKey: "tanitimYeni", icon: "Megaphone" },
+  "/tanitimlar/[id]": { titleKey: "tanitimDetay", icon: "Megaphone", isDynamic: true },
 
-  "/operasyonlar": { title: "Operasyonlar", icon: "Workflow" },
-  "/operasyonlar/yeni": { title: "Yeni Operasyon", icon: "Workflow" },
-  "/operasyonlar/[id]": { title: "Operasyon Detay", icon: "Workflow", isDynamic: true },
+  "/operasyonlar": { titleKey: "operasyonlar", icon: "Workflow" },
+  "/operasyonlar/yeni": { titleKey: "operasyonYeni", icon: "Workflow" },
+  "/operasyonlar/[id]": { titleKey: "operasyonDetay", icon: "Workflow", isDynamic: true },
 
-  "/alarmlar": { title: "Alarmlar", icon: "Bell" },
+  "/alarmlar": { titleKey: "alarmlar", icon: "Bell" },
 
   // Tanımlar
-  "/tanimlamalar": { title: "Tanımlamalar", icon: "ListTree" },
+  "/tanimlamalar": { titleKey: "tanimlamalar", icon: "ListTree" },
 
-  "/lokasyonlar": { title: "Lokasyonlar", icon: "MapPin" },
-  "/lokasyonlar/iller": { title: "İller", icon: "MapPin" },
-  "/lokasyonlar/iller/yeni": { title: "Yeni İl", icon: "MapPin" },
-  "/lokasyonlar/ilceler": { title: "İlçeler", icon: "MapPin" },
-  "/lokasyonlar/ilceler/yeni": { title: "Yeni İlçe", icon: "MapPin" },
-  "/lokasyonlar/mahalleler": { title: "Mahalleler", icon: "MapPin" },
-  "/lokasyonlar/mahalleler/yeni": { title: "Yeni Mahalle", icon: "MapPin" },
+  "/lokasyonlar": { titleKey: "lokasyonlar", icon: "MapPin" },
+  "/lokasyonlar/iller": { titleKey: "iller", icon: "MapPin" },
+  "/lokasyonlar/iller/yeni": { titleKey: "ilYeni", icon: "MapPin" },
+  "/lokasyonlar/ilceler": { titleKey: "ilceler", icon: "MapPin" },
+  "/lokasyonlar/ilceler/yeni": { titleKey: "ilceYeni", icon: "MapPin" },
+  "/lokasyonlar/mahalleler": { titleKey: "mahalleler", icon: "MapPin" },
+  "/lokasyonlar/mahalleler/yeni": { titleKey: "mahalleYeni", icon: "MapPin" },
 
-  "/marka-model": { title: "Marka Model", icon: "Car" },
-  "/marka-model/markalar": { title: "Markalar", icon: "Car" },
-  "/marka-model/markalar/yeni": { title: "Yeni Marka", icon: "Car" },
-  "/marka-model/modeller": { title: "Modeller", icon: "Car" },
-  "/marka-model/modeller/yeni": { title: "Yeni Model", icon: "Car" },
+  "/marka-model": { titleKey: "markaModel", icon: "Car" },
+  "/marka-model/markalar": { titleKey: "markalar", icon: "Car" },
+  "/marka-model/markalar/yeni": { titleKey: "markaYeni", icon: "Car" },
+  "/marka-model/modeller": { titleKey: "modeller", icon: "Car" },
+  "/marka-model/modeller/yeni": { titleKey: "modelYeni", icon: "Car" },
 
   // Yönetim
-  "/personel": { title: "Personel", icon: "UserCog" },
-  "/personel/yeni": { title: "Yeni Personel", icon: "UserPlus" },
-  "/personel/[id]": { title: "Personel Detay", icon: "UserCog", isDynamic: true },
+  "/personel": { titleKey: "personel", icon: "UserCog" },
+  "/personel/yeni": { titleKey: "personelYeni", icon: "UserPlus" },
+  "/personel/[id]": { titleKey: "personelDetay", icon: "UserCog", isDynamic: true },
 
-  "/ayarlar": { title: "Ayarlar", icon: "Settings" },
+  "/ayarlar": { titleKey: "ayarlar", icon: "Settings" },
 
   // Sistem
-  "/loglar": { title: "Loglar", icon: "Activity" },
-  "/loglar/[id]": { title: "Log Detay", icon: "Activity", isDynamic: true },
+  "/loglar": { titleKey: "loglar", icon: "Activity" },
+  "/loglar/[id]": { titleKey: "logDetay", icon: "Activity", isDynamic: true },
 }
 
 // Dynamic route pattern matching
@@ -141,16 +142,22 @@ export function matchRoute(path: string): RouteMatch | null {
   return {
     pattern: path,
     config: {
-      title: segments[segments.length - 1] || "Sayfa",
+      titleKey: "sayfa",
       icon: "FileText",
     },
     params: {},
   }
 }
 
-export function getRouteTitle(path: string): string {
+export function getRouteTitle(path: string, tabs: TabsTranslations): string {
   const match = matchRoute(path)
-  return match?.config.title || "Sayfa"
+  if (!match) return tabs.sayfa
+  return tabs[match.config.titleKey] || tabs.sayfa
+}
+
+export function getRouteTitleKey(path: string): keyof TabsTranslations {
+  const match = matchRoute(path)
+  return match?.config.titleKey || "sayfa"
 }
 
 export function getRouteIcon(path: string): string {

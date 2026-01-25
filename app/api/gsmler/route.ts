@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       const where: Record<string, unknown> = {}
 
       // Filter to only MÜŞTERİ kişi GSMs (leads can't have takip)
-      where.kisi = { tip: "MUSTERI" }
+      where.kisi = { tt: true }
 
       // Search by numara or kisi name
       if (search) {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
               id: true,
               ad: true,
               soyad: true,
-              tip: true,
+              tt: true,
             },
           },
         },

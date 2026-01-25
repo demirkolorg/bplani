@@ -189,7 +189,7 @@ export default function TanitimDetayPage() {
             {tanitim.katilimcilar?.length || 0}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            ({tanitim.katilimcilar?.filter(k => k.kisi?.tip === 'MUSTERI').length || 0} Müşteri, {tanitim.katilimcilar?.filter(k => k.kisi?.tip === 'LEAD').length || 0} Aday)
+            ({tanitim.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} Müşteri, {tanitim.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} Aday)
           </span>
         </div>
         {fullAddress && (

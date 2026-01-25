@@ -6,8 +6,11 @@ import { Check, ChevronsUpDown, X, Plus } from "lucide-react"
 import { useCreateArac, useUpdateArac } from "@/hooks/use-araclar-vehicles"
 import { useMarkalar, useModeller, useCreateMarka, useCreateModel } from "@/hooks/use-araclar"
 import { useKisiler } from "@/hooks/use-kisiler"
-import { createAracSchema, aracRenkLabels, type CreateAracInput, type AracRenk } from "@/lib/validations"
+import { useLocale } from "@/components/providers/locale-provider"
+import { createAracSchema, type CreateAracInput, type AracRenk } from "@/lib/validations"
 import { cn } from "@/lib/utils"
+import { interpolate } from "@/locales"
+import { getAracRenkLabels } from "./arac-columns"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -49,10 +52,8 @@ interface AracFormProps {
   defaultKisiId?: string
 }
 
-// Renk seçenekleri
-const renkOptions = Object.entries(aracRenkLabels) as [AracRenk, string][]
-
 export function AracForm({ initialData, onSuccess, onCancel, inModal = false, defaultKisiId }: AracFormProps) {
+  const { t } = useLocale()
   const router = useRouter()
   const createArac = useCreateArac()
   const updateArac = useUpdateArac()
@@ -62,6 +63,13 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
   const { data: kisilerData, isLoading: isLoadingKisiler } = useKisiler({ limit: 100 })
 
   const isEditing = !!initialData?.id
+
+  // Get translated color labels and options
+  const renkLabels = React.useMemo(() => getAracRenkLabels(t), [t])
+  const renkOptions = React.useMemo(() =>
+    Object.entries(renkLabels) as [AracRenk, string][],
+    [renkLabels]
+  )
 
   // Find initial marka from model
   const initialMarka = React.useMemo(() => {
@@ -228,7 +236,7 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
         {/* Marka Selection with + button */}
         <div className="space-y-2">
           <Label htmlFor="markaId">
-            Marka <span className="text-destructive">*</span>
+            {t.araclar.marka} <span className="text-destructive">*</span>
           </Label>
           <div className="flex gap-2">
             <Popover open={markaOpen} onOpenChange={setMarkaOpen}>
@@ -240,15 +248,15 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
                   className="flex-1 justify-between"
                   disabled={isLoadingMarkalar}
                 >
-                  {selectedMarka ? selectedMarka.ad : "Marka seçin..."}
+                  {selectedMarka ? selectedMarka.ad : t.araclar.selectMarka}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[300px] p-0">
                 <Command>
-                  <CommandInput placeholder="Marka ara..." />
+                  <CommandInput placeholder={t.araclar.searchMarkaPlaceholder} />
                   <CommandList>
-                    <CommandEmpty>Marka bulunamadı.</CommandEmpty>
+                    <CommandEmpty>{t.araclar.markaNotFound}</CommandEmpty>
                     <CommandGroup>
                       {markalar?.map((marka) => (
                         <CommandItem
@@ -278,7 +286,7 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
               variant="outline"
               size="icon"
               onClick={() => setNewMarkaModalOpen(true)}
-              title="Yeni Marka Ekle"
+              title={t.araclar.addNewMarka}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -288,7 +296,7 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
         {/* Model Selection with + button */}
         <div className="space-y-2">
           <Label htmlFor="modelId">
-            Model <span className="text-destructive">*</span>
+            {t.araclar.model} <span className="text-destructive">*</span>
           </Label>
           <div className="flex gap-2">
             <Popover open={modelOpen} onOpenChange={setModelOpen}>
@@ -300,15 +308,15 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
                   className="flex-1 justify-between"
                   disabled={!selectedMarkaId || isLoadingModeller}
                 >
-                  {selectedModel ? selectedModel.ad : "Model seçin..."}
+                  {selectedModel ? selectedModel.ad : t.araclar.selectModel}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[300px] p-0">
                 <Command>
-                  <CommandInput placeholder="Model ara..." />
+                  <CommandInput placeholder={t.araclar.searchModelPlaceholder} />
                   <CommandList>
-                    <CommandEmpty>Model bulunamadı.</CommandEmpty>
+                    <CommandEmpty>{t.araclar.modelNotFound}</CommandEmpty>
                     <CommandGroup>
                       {modeller?.map((model) => (
                         <CommandItem
@@ -339,7 +347,7 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
               size="icon"
               onClick={() => setNewModelModalOpen(true)}
               disabled={!selectedMarkaId}
-              title="Yeni Model Ekle"
+              title={t.araclar.addNewModel}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -350,7 +358,7 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
         {/* Plaka */}
         <div className="space-y-2">
           <Label htmlFor="plaka">
-            Plaka <span className="text-destructive">*</span>
+            {t.araclar.plaka} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="plaka"
@@ -364,13 +372,13 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
 
         {/* Renk - Select */}
         <div className="space-y-2">
-          <Label htmlFor="renk">Renk</Label>
+          <Label htmlFor="renk">{t.araclar.renk}</Label>
           <Select
             value={formData.renk || ""}
             onValueChange={(value) => handleChange("renk", value || null)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Renk seçin..." />
+              <SelectValue placeholder={t.araclar.selectRenk} />
             </SelectTrigger>
             <SelectContent>
               {renkOptions.map(([value, label]) => (
@@ -386,7 +394,7 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
 
       {/* Kişi Selection */}
       <div className="space-y-2">
-        <Label>Kişiler</Label>
+        <Label>{t.araclar.kisiler}</Label>
         <Popover open={kisiOpen} onOpenChange={setKisiOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -397,16 +405,16 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
               disabled={isLoadingKisiler}
             >
               {selectedKisiler.length > 0
-                ? `${selectedKisiler.length} kişi seçildi`
-                : "Kişi seçin..."}
+                ? interpolate(t.araclar.kisilerSelected, { count: selectedKisiler.length })
+                : t.araclar.selectKisi}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[400px] p-0">
             <Command>
-              <CommandInput placeholder="Kişi ara..." />
+              <CommandInput placeholder={t.araclar.searchKisi} />
               <CommandList>
-                <CommandEmpty>Kişi bulunamadı.</CommandEmpty>
+                <CommandEmpty>{t.araclar.kisiNotFound}</CommandEmpty>
                 <CommandGroup>
                   {kisilerData?.data.map((kisi) => (
                     <CommandItem
@@ -430,12 +438,12 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
                         variant="outline"
                         className={cn(
                           "ml-auto",
-                          kisi.tip === "MUSTERI"
+                          kisi.tt
                             ? "bg-green-50 text-green-700 border-green-300"
                             : "bg-amber-50 text-amber-700 border-amber-300"
                         )}
                       >
-                        {kisi.tip === "MUSTERI" ? "Müşteri" : "Aday"}
+                        {kisi.tt ? t.araclar.musteri : t.araclar.aday}
                       </Badge>
                     </CommandItem>
                   ))}
@@ -470,13 +478,13 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
           onClick={handleCancel}
           disabled={isPending}
         >
-          İptal
+          {t.common.cancel}
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && (
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {isEditing ? "Güncelle" : "Oluştur"}
+          {isEditing ? t.common.update : t.common.create}
         </Button>
       </div>
 
@@ -484,16 +492,16 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
       <Dialog open={newMarkaModalOpen} onOpenChange={setNewMarkaModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Yeni Marka</DialogTitle>
+            <DialogTitle>{t.araclar.newMarka}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="newMarkaAd">Marka Adı</Label>
+              <Label htmlFor="newMarkaAd">{t.araclar.markaAdi}</Label>
               <Input
                 id="newMarkaAd"
                 value={newMarkaAd}
                 onChange={(e) => setNewMarkaAd(e.target.value)}
-                placeholder="Örn: Toyota, Ford, BMW"
+                placeholder="Toyota, Ford, BMW"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault()
@@ -511,14 +519,14 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
                   setNewMarkaModalOpen(false)
                 }}
               >
-                İptal
+                {t.common.cancel}
               </Button>
               <Button
                 type="button"
                 onClick={handleCreateMarka}
                 disabled={!newMarkaAd.trim() || createMarka.isPending}
               >
-                {createMarka.isPending ? "Ekleniyor..." : "Ekle"}
+                {createMarka.isPending ? t.araclar.adding : t.common.add}
               </Button>
             </div>
           </div>
@@ -529,11 +537,11 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
       <Dialog open={newModelModalOpen} onOpenChange={setNewModelModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Yeni Model</DialogTitle>
+            <DialogTitle>{t.araclar.newModel}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Marka</Label>
+              <Label>{t.araclar.marka}</Label>
               <Input
                 value={selectedMarka?.ad || ""}
                 disabled
@@ -541,12 +549,12 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="newModelAd">Model Adı</Label>
+              <Label htmlFor="newModelAd">{t.araclar.modelAdi}</Label>
               <Input
                 id="newModelAd"
                 value={newModelAd}
                 onChange={(e) => setNewModelAd(e.target.value)}
-                placeholder="Örn: Corolla, Focus, 320i"
+                placeholder="Corolla, Focus, 320i"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault()
@@ -564,14 +572,14 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
                   setNewModelModalOpen(false)
                 }}
               >
-                İptal
+                {t.common.cancel}
               </Button>
               <Button
                 type="button"
                 onClick={handleCreateModel}
                 disabled={!newModelAd.trim() || createModel.isPending}
               >
-                {createModel.isPending ? "Ekleniyor..." : "Ekle"}
+                {createModel.isPending ? t.araclar.adding : t.common.add}
               </Button>
             </div>
           </div>
@@ -592,7 +600,7 @@ export function AracForm({ initialData, onSuccess, onCancel, inModal = false, de
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>{isEditing ? "Araç Düzenle" : "Yeni Araç"}</CardTitle>
+          <CardTitle>{isEditing ? t.araclar.editArac : t.araclar.newArac}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {formContent}

@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useChangePassword, type Personel } from "@/hooks/use-personel"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
 interface PersonelPasswordModalProps {
   open: boolean
@@ -27,6 +29,7 @@ export function PersonelPasswordModal({
   personel,
   onSuccess,
 }: PersonelPasswordModalProps) {
+  const { t } = useLocale()
   const changePassword = useChangePassword()
 
   const [newPassword, setNewPassword] = React.useState("")
@@ -48,14 +51,14 @@ export function PersonelPasswordModal({
     // Validation
     const newErrors: Record<string, string> = {}
     if (!newPassword) {
-      newErrors.newPassword = "Yeni şifre zorunludur"
+      newErrors.newPassword = t.personel.passwordRequired
     } else if (newPassword.length < 6) {
-      newErrors.newPassword = "Şifre en az 6 karakter olmalıdır"
+      newErrors.newPassword = t.personel.passwordMin6
     }
     if (!confirmPassword) {
-      newErrors.confirmPassword = "Şifre tekrarı zorunludur"
+      newErrors.confirmPassword = t.personel.passwordRepeatRequired
     } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = "Şifreler eşleşmiyor"
+      newErrors.confirmPassword = t.personel.passwordsDoNotMatch
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -72,7 +75,7 @@ export function PersonelPasswordModal({
       onOpenChange(false)
     } catch (error) {
       setErrors({
-        submit: error instanceof Error ? error.message : "Şifre değiştirilemedi",
+        submit: error instanceof Error ? error.message : t.personel.passwordChangeFailed,
       })
     }
   }
@@ -81,9 +84,9 @@ export function PersonelPasswordModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>Şifre Değiştir</DialogTitle>
+          <DialogTitle>{t.personel.changePassword}</DialogTitle>
           <DialogDescription>
-            {personel.ad} {personel.soyad} için yeni şifre belirleyin
+            {interpolate(t.personel.passwordDescription, { name: `${personel.ad} ${personel.soyad}` })}
           </DialogDescription>
         </DialogHeader>
 
@@ -95,13 +98,13 @@ export function PersonelPasswordModal({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="newPassword">Yeni Şifre</Label>
+            <Label htmlFor="newPassword">{t.personel.newPassword}</Label>
             <Input
               id="newPassword"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="En az 6 karakter"
+              placeholder={t.personel.passwordMin6}
             />
             {errors.newPassword && (
               <p className="text-sm text-destructive">{errors.newPassword}</p>
@@ -109,13 +112,13 @@ export function PersonelPasswordModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Şifre Tekrar</Label>
+            <Label htmlFor="confirmPassword">{t.personel.passwordRepeat}</Label>
             <Input
               id="confirmPassword"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Şifreyi tekrar girin"
+              placeholder={t.personel.passwordRepeat}
             />
             {errors.confirmPassword && (
               <p className="text-sm text-destructive">{errors.confirmPassword}</p>
@@ -129,10 +132,10 @@ export function PersonelPasswordModal({
               onClick={() => onOpenChange(false)}
               disabled={changePassword.isPending}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={changePassword.isPending}>
-              {changePassword.isPending ? "Kaydediliyor..." : "Şifreyi Değiştir"}
+              {changePassword.isPending ? t.common.saving : t.personel.setNewPassword}
             </Button>
           </div>
         </form>

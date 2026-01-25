@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             id: true,
             ad: true,
             soyad: true,
-            tip: true,
+            tt: true,
             gsmler: {
               orderBy: { isPrimary: "desc" },
             },
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             id: true,
             ad: true,
             soyad: true,
-            tip: true,
+            tt: true,
             gsmler: {
               orderBy: { isPrimary: "desc" },
             },

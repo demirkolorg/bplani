@@ -68,18 +68,16 @@ model Personel {
   createdFaaliyetAlanlari FaaliyetAlani[] @relation("FaaliyetAlaniCreatedBy")
   updatedFaaliyetAlanlari FaaliyetAlani[] @relation("FaaliyetAlaniUpdatedBy")
 
+  // Kullanıcı tercihleri
+  tercihler KullaniciTercihi[]
+
   @@map("personeller")
 }
 
 // ==================== KISI (Müşteri + Lead Birleşimi) ====================
-enum KisiTip {
-  LEAD
-  MUSTERI
-}
-
 model Kisi {
   id         String   @id @default(cuid())
-  tip        KisiTip  @default(LEAD)
+  tt         Boolean  @default(false) // true = Müşteri, false = Aday
   tc         String?  @unique // TC Kimlik No
   ad         String
   soyad      String
@@ -108,7 +106,7 @@ model Kisi {
 
   @@index([ad, soyad])
   @@index([tc])
-  @@index([tip])
+  @@index([tt])
   @@map("kisiler")
 }
 
@@ -594,4 +592,27 @@ model KisiFaaliyetAlani {
   @@index([kisiId])
   @@index([faaliyetAlaniId])
   @@map("kisi_faaliyet_alanlari")
+}
+
+// ==================== KULLANICI TERCİHLERİ ====================
+// Esnek anahtar-değer yapısı ile kullanıcı tercihlerini saklar
+// Kategoriler: "tablo", "tema", "genel"
+// Örnek anahtarlar:
+//   - tablo: "kisiler", "takipler", "tanitimlar"
+//   - tema: "mode" (dark/light)
+//   - genel: "sidebar", "notifications"
+model KullaniciTercihi {
+  id         String   @id @default(cuid())
+  personelId String
+  personel   Personel @relation(fields: [personelId], references: [id], onDelete: Cascade)
+  kategori   String   // "tablo", "tema", "genel"
+  anahtar    String   // Kategori içindeki spesifik tercih (ör: "kisiler", "mode")
+  deger      Json     // Tercih değeri (JSON formatında esnek yapı)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([personelId, kategori, anahtar])
+  @@index([personelId])
+  @@index([kategori])
+  @@map("kullanici_tercihleri")
 }

@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Plus, Trash2, Star, StarOff, MapPin, MoreHorizontal } from "lucide-react"
 import { useAdreslerByKisi, useCreateAdres, useUpdateAdres, useDeleteAdres } from "@/hooks/use-adres"
+import { useLocale } from "@/components/providers/locale-provider"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,6 +32,7 @@ interface KisiAdresListProps {
 }
 
 export function KisiAdresList({ kisiId }: KisiAdresListProps) {
+  const { t } = useLocale()
   const { data: adresler, isLoading } = useAdreslerByKisi(kisiId)
   const createAdres = useCreateAdres()
   const updateAdres = useUpdateAdres()
@@ -49,7 +51,7 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
 
   const handleAdd = async () => {
     if (!lokasyon.mahalleId) {
-      setError("Lütfen mahalle seçin")
+      setError(t.validation.selectNeighborhood)
       return
     }
 
@@ -102,7 +104,7 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <MapPin className="h-5 w-5 text-green-600" />
-            Adresler
+            {t.kisiler.addresses}
             {adresler && adresler.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">({adresler.length})</span>
             )}
@@ -128,8 +130,8 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
               <li
                 key={adres.id}
                 className={`flex items-start gap-4 rounded-xl border p-4 transition-all duration-200 shadow-sm hover:shadow-md ${
-                  adres.isPrimary 
-                    ? 'border-primary/30 bg-gradient-to-r from-primary/5 to-transparent dark:from-primary/10' 
+                  adres.isPrimary
+                    ? 'border-primary/30 bg-gradient-to-r from-primary/5 to-transparent dark:from-primary/10'
                     : 'border-border/50 bg-card'
                 }`}
               >
@@ -146,11 +148,11 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
                       {adres.isPrimary && (
                         <div className="flex items-center gap-1">
                           <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                          <span className="text-xs font-medium text-amber-600">Birincil</span>
+                          <span className="text-xs font-medium text-amber-600">{t.common.primary}</span>
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Mahalle ve Lokasyon */}
                     <div className="text-sm">
                       <span className="font-medium text-muted-foreground">{adres.mahalle.ad} Mah.</span>
@@ -158,7 +160,7 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
                         <span className="text-muted-foreground"> {adres.detay}</span>
                       )}
                     </div>
-                    
+
                     {/* İlçe / İl */}
                     <div className="text-sm text-muted-foreground">
                       {adres.mahalle.ilce.ad} / {adres.mahalle.ilce.il.ad}
@@ -181,7 +183,7 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
                       ) : (
                         <StarOff className="mr-2 h-4 w-4" />
                       )}
-                      {adres.isPrimary ? "Zaten Birincil" : "Birincil Yap"}
+                      {adres.isPrimary ? t.common.alreadyPrimary : t.common.makePrimary}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -189,7 +191,7 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
                       onClick={() => setDeleteId(adres.id)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Sil
+                      {t.common.delete}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -198,16 +200,16 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
           </ul>
         ) : (
           <p className="text-center text-sm text-muted-foreground py-4">
-            Henüz adres eklenmemiş
+            {t.kisiler.noAddressYet}
           </p>
         )}
 
         <ConfirmDialog
           open={!!deleteId}
           onOpenChange={(open) => !open && setDeleteId(null)}
-          title="Adresi Sil"
-          description="Bu adresi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-          confirmText="Sil"
+          title={t.kisiler.deleteAddress}
+          description={t.kisiler.deleteAddressConfirm}
+          confirmText={t.common.delete}
           onConfirm={handleDelete}
           isLoading={deleteAdres.isPending}
         />
@@ -218,19 +220,19 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
     <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Yeni Adres Ekle</DialogTitle>
+          <DialogTitle>{t.kisiler.newAddress}</DialogTitle>
           <DialogDescription>
-            Kişi için yeni bir adres ekleyin.
+            {t.kisiler.newAddressDescription}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="adresAd">Adres Adı</Label>
+            <Label htmlFor="adresAd">{t.kisiler.addressName}</Label>
             <Input
               id="adresAd"
               value={adresAd}
               onChange={(e) => setAdresAd(e.target.value)}
-              placeholder="Ev, İş, vb."
+              placeholder={t.kisiler.addressNamePlaceholder}
             />
           </div>
           <LokasyonSelector
@@ -239,12 +241,12 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
             required
           />
           <div className="space-y-2">
-            <Label htmlFor="adresDetay">Adres Detayı</Label>
+            <Label htmlFor="adresDetay">{t.kisiler.addressDetail}</Label>
             <Textarea
               id="adresDetay"
               value={detay}
               onChange={(e) => setDetay(e.target.value)}
-              placeholder="Sokak, kapı no, daire, kat vb. detaylar..."
+              placeholder={t.kisiler.addressDetailPlaceholder}
               rows={3}
             />
           </div>
@@ -260,7 +262,7 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
                 setError("")
               }}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button
               onClick={handleAdd}
@@ -269,7 +271,7 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
               {createAdres.isPending && (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               )}
-              Ekle
+              {t.common.add}
             </Button>
           </div>
         </div>

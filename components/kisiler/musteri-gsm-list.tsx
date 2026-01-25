@@ -3,9 +3,11 @@
 import * as React from "react"
 import { Plus, Star, StarOff, MoreHorizontal, Trash2, Phone, RefreshCw, PlusCircle, ChevronDown, ChevronRight, Clock } from "lucide-react"
 import { format } from "date-fns"
-import { tr } from "date-fns/locale"
+import { tr as trLocale, enUS } from "date-fns/locale"
 import { useGsmlerByKisi, useUpdateGsm, useDeleteGsm, type GsmWithTakipler, type GsmTakip } from "@/hooks/use-gsm"
 import { takipDurumLabels, type TakipDurum } from "@/lib/validations"
+import { useLocale } from "@/components/providers/locale-provider"
+import type { Translations } from "@/types/locale"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -39,9 +41,9 @@ function getKalanGun(bitisTarihi: string): number {
   return Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-function KalanGunBadge({ kalanGun }: { kalanGun: number }) {
+function KalanGunBadge({ kalanGun, t }: { kalanGun: number; t: Translations }) {
   if (kalanGun <= 0) {
-    return <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Doldu</Badge>
+    return <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{t.takipler.expired}</Badge>
   }
   if (kalanGun <= 7) {
     return <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-orange-500 border-orange-500">{kalanGun}g</Badge>
@@ -52,13 +54,17 @@ function KalanGunBadge({ kalanGun }: { kalanGun: number }) {
 function TakipRow({
   takip,
   isActive,
-  onDurumChange
+  onDurumChange,
+  locale,
 }: {
   takip: GsmTakip
   isActive?: boolean
   onDurumChange?: () => void
+  locale: "tr" | "en"
 }) {
   const kalanGun = getKalanGun(takip.bitisTarihi)
+  const { t } = useLocale()
+  const dateLocale = locale === "tr" ? trLocale : enUS
 
   return (
     <div className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-colors ${isActive ? 'bg-gradient-to-r from-blue-50 to-blue-25 border border-blue-200 dark:from-blue-950/50 dark:to-blue-900/30 dark:border-blue-800/50' : 'bg-muted/30 border border-transparent'}`}>
@@ -68,15 +74,15 @@ function TakipRow({
 
       <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0 flex-1">
         <span className="whitespace-nowrap font-medium">
-          {format(new Date(takip.baslamaTarihi), "dd.MM.yy", { locale: tr })}
+          {format(new Date(takip.baslamaTarihi), "dd.MM.yy", { locale: dateLocale })}
         </span>
         <span className="text-muted-foreground/50">→</span>
         <span className="whitespace-nowrap font-medium">
-          {format(new Date(takip.bitisTarihi), "dd.MM.yy", { locale: tr })}
+          {format(new Date(takip.bitisTarihi), "dd.MM.yy", { locale: dateLocale })}
         </span>
       </div>
 
-      <KalanGunBadge kalanGun={kalanGun} />
+      <KalanGunBadge kalanGun={kalanGun} t={t} />
 
       {isActive && onDurumChange && (
         <Button
@@ -99,6 +105,8 @@ function GsmRow({
   onDurumChange,
   onTakipEkle,
   isUpdating,
+  t,
+  locale,
 }: {
   gsm: GsmWithTakipler
   onSetPrimary: (id: string) => void
@@ -106,6 +114,8 @@ function GsmRow({
   onDurumChange: (takip: GsmTakip) => void
   onTakipEkle: (gsm: GsmWithTakipler) => void
   isUpdating: boolean
+  t: Translations
+  locale: "tr" | "en"
 }) {
   const [isExpanded, setIsExpanded] = React.useState(false)
   const activeTakip = gsm.takipler.find((t) => t.isActive)
@@ -125,7 +135,7 @@ function GsmRow({
             {gsm.isPrimary && (
               <div className="flex items-center gap-1 mt-0.5">
                 <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                <span className="text-xs font-medium text-amber-600">Birincil</span>
+                <span className="text-xs font-medium text-amber-600">{t.common.primary}</span>
               </div>
             )}
           </div>
@@ -137,11 +147,11 @@ function GsmRow({
             <Badge variant={durumVariants[activeTakip.durum as TakipDurum]} className="text-[10px] px-1.5 py-0">
               {takipDurumLabels[activeTakip.durum as TakipDurum]}
             </Badge>
-            <KalanGunBadge kalanGun={getKalanGun(activeTakip.bitisTarihi)} />
+            <KalanGunBadge kalanGun={getKalanGun(activeTakip.bitisTarihi)} t={t} />
           </div>
         ) : (
           <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground hidden sm:flex">
-            Takip Yok
+            {t.kisiler.noTakip}
           </Badge>
         )}
 
@@ -154,7 +164,7 @@ function GsmRow({
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onTakipEkle(gsm)}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Takip Ekle
+              {t.kisiler.takipEkle}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -166,7 +176,7 @@ function GsmRow({
               ) : (
                 <StarOff className="mr-2 h-4 w-4" />
               )}
-              {gsm.isPrimary ? "Zaten Birincil" : "Birincil Yap"}
+              {gsm.isPrimary ? t.common.alreadyPrimary : t.common.makePrimary}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -174,7 +184,7 @@ function GsmRow({
               onClick={() => onDelete(gsm.id)}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Sil
+              {t.common.delete}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -187,6 +197,7 @@ function GsmRow({
             takip={activeTakip}
             isActive
             onDurumChange={() => onDurumChange(activeTakip)}
+            locale={locale}
           />
         ) : (
           <button
@@ -194,7 +205,7 @@ function GsmRow({
             className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border-2 border-dashed border-muted-foreground/30 text-sm text-muted-foreground hover:border-primary/50 hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 transition-all duration-200"
           >
             <Plus className="h-4 w-4" />
-            Takip Ekle
+            {t.kisiler.takipEkle}
           </button>
         )}
 
@@ -206,12 +217,12 @@ function GsmRow({
               className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground py-1"
             >
               {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-              Geçmiş ({pastTakipler.length})
+              {t.kisiler.history} ({pastTakipler.length})
             </button>
             {isExpanded && (
               <div className="space-y-1 mt-1">
                 {pastTakipler.map((takip) => (
-                  <TakipRow key={takip.id} takip={takip} />
+                  <TakipRow key={takip.id} takip={takip} locale={locale} />
                 ))}
               </div>
             )}
@@ -223,6 +234,7 @@ function GsmRow({
 }
 
 export function KisiGsmList({ kisiId }: KisiGsmListProps) {
+  const { t, locale } = useLocale()
   const { data: gsmler, isLoading } = useGsmlerByKisi(kisiId)
   const updateGsm = useUpdateGsm()
   const deleteGsm = useDeleteGsm()
@@ -248,7 +260,7 @@ export function KisiGsmList({ kisiId }: KisiGsmListProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Phone className="h-5 w-5 text-blue-600" />
-            GSM Numaraları
+            {t.kisiler.gsmNumbers}
             {gsmler && gsmler.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">({gsmler.length})</span>
             )}
@@ -274,12 +286,14 @@ export function KisiGsmList({ kisiId }: KisiGsmListProps) {
               onDurumChange={(takip) => setDurumTakip({ takip, gsmNumara: gsm.numara })}
               onTakipEkle={setTakipEkleGsm}
               isUpdating={updateGsm.isPending}
+              t={t}
+              locale={locale}
             />
           ))
         ) : (
           <div className="text-center py-6">
             <Phone className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-            <p className="text-sm text-muted-foreground">GSM numarası yok</p>
+            <p className="text-sm text-muted-foreground">{t.kisiler.noGsmNumber}</p>
           </div>
         )}
       </CardContent>
@@ -310,9 +324,9 @@ export function KisiGsmList({ kisiId }: KisiGsmListProps) {
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="GSM Sil"
-        description="Bu GSM ve tüm takip kayıtları silinecek. Devam edilsin mi?"
-        confirmText="Sil"
+        title={t.kisiler.deleteGsm}
+        description={t.kisiler.deleteGsmConfirm}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deleteGsm.isPending}
       />

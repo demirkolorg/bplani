@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Plus, Pencil, Trash2, FileText, MoreHorizontal } from "lucide-react"
 import { useNotlarByKisi, useCreateNot, useUpdateNot, useDeleteNot } from "@/hooks/use-not"
+import { useLocale } from "@/components/providers/locale-provider"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +31,7 @@ interface KisiNotListProps {
 }
 
 export function KisiNotList({ kisiId }: KisiNotListProps) {
+  const { t, locale } = useLocale()
   const { data: notlar, isLoading } = useNotlarByKisi(kisiId)
   const createNot = useCreateNot()
   const updateNot = useUpdateNot()
@@ -43,7 +45,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
 
   const handleAdd = async () => {
     if (!icerik.trim()) {
-      setError("Not içeriği zorunludur")
+      setError(t.kisiler.noteRequired)
       return
     }
 
@@ -64,7 +66,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
 
   const handleUpdate = async () => {
     if (!editingNot || !icerik.trim()) {
-      setError("Not içeriği zorunludur")
+      setError(t.kisiler.noteRequired)
       return
     }
 
@@ -103,7 +105,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
   }
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("tr-TR", {
+    return new Date(date).toLocaleDateString(locale === "tr" ? "tr-TR" : "en-US", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -121,7 +123,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <FileText className="h-5 w-5 text-orange-600" />
-            Notlar
+            {t.common.notes}
             {notlar && notlar.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">({notlar.length})</span>
             )}
@@ -178,7 +180,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openEditModal({ id: not.id, icerik: not.icerik })}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Düzenle
+                        {t.common.edit}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -186,7 +188,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
                         onClick={() => setDeleteId(not.id)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Sil
+                        {t.common.delete}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -196,7 +198,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
           </ul>
         ) : (
           <p className="text-center text-sm text-muted-foreground py-4">
-            Henüz not eklenmemiş
+            {t.kisiler.noNotesYet}
           </p>
         )}
 
@@ -204,19 +206,19 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
         <Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>{isEditing ? "Notu Düzenle" : "Yeni Not"}</DialogTitle>
+              <DialogTitle>{isEditing ? t.kisiler.editNote : t.kisiler.newNote}</DialogTitle>
               <DialogDescription>
-                {isEditing ? "Not içeriğini güncelleyin." : "Kişi için yeni bir not ekleyin."}
+                {isEditing ? t.kisiler.editNoteDescription : t.kisiler.noteDescription}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="icerik">Not İçeriği</Label>
+                <Label htmlFor="icerik">{t.kisiler.noteContent}</Label>
                 <Textarea
                   id="icerik"
                   value={icerik}
                   onChange={(e) => setIcerik(e.target.value)}
-                  placeholder="Not içeriğini yazın..."
+                  placeholder={t.kisiler.noteContentPlaceholder}
                   rows={6}
                 />
               </div>
@@ -224,7 +226,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={closeModal}>
-                İptal
+                {t.common.cancel}
               </Button>
               <Button
                 onClick={isEditing ? handleUpdate : handleAdd}
@@ -233,7 +235,7 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
                 {(createNot.isPending || updateNot.isPending) && (
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 )}
-                {isEditing ? "Güncelle" : "Ekle"}
+                {isEditing ? t.common.update : t.common.add}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -243,9 +245,9 @@ export function KisiNotList({ kisiId }: KisiNotListProps) {
         <ConfirmDialog
           open={!!deleteId}
           onOpenChange={(open) => !open && setDeleteId(null)}
-          title="Notu Sil"
-          description="Bu notu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-          confirmText="Sil"
+          title={t.kisiler.deleteNote}
+          description={t.kisiler.deleteNoteConfirm}
+          confirmText={t.common.delete}
           onConfirm={handleDelete}
           isLoading={deleteNot.isPending}
         />

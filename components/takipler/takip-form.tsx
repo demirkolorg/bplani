@@ -3,11 +3,12 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { format, parse, isValid } from "date-fns"
-import { tr } from "date-fns/locale"
+import { tr as trLocale, enUS } from "date-fns/locale"
 import { CalendarIcon } from "lucide-react"
 import { useCreateTakip, useUpdateTakip } from "@/hooks/use-takip"
 import { useAllGsmler } from "@/hooks/use-gsm"
 import { createTakipSchema, takipDurumLabels, type TakipDurum } from "@/lib/validations"
+import { useLocale } from "@/components/providers/locale-provider"
 
 // Kullanıcı tarafından seçilebilir durumlar (UZATILDI hariç - o otomatik atanır)
 const selectableDurumOptions: TakipDurum[] = ["UZATILACAK", "DEVAM_EDECEK", "SONLANDIRILACAK"]
@@ -42,11 +43,13 @@ interface TakipFormProps {
 
 export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFormProps) {
   const router = useRouter()
+  const { t, locale } = useLocale()
   const createTakip = useCreateTakip()
   const updateTakip = useUpdateTakip()
   const { data: gsmler, isLoading: gsmlerLoading } = useAllGsmler()
 
   const isEditing = !!initialData?.id
+  const dateLocale = locale === "tr" ? trLocale : enUS
 
   const [formData, setFormData] = React.useState({
     gsmId: initialData?.gsmId || "",
@@ -158,14 +161,14 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
       {!isEditing && (
         <div className="space-y-2">
           <Label>
-            GSM <span className="text-destructive">*</span>
+            {t.takipler.selectGsm} <span className="text-destructive">*</span>
           </Label>
           <GsmSelector
             value={formData.gsmId}
             onChange={(value) => handleChange("gsmId", value)}
             gsmler={gsmler || []}
             isLoading={gsmlerLoading}
-            placeholder="GSM numarası seçin..."
+            placeholder={t.takipler.selectGsmPlaceholder}
           />
           {errors.gsmId && <p className="text-sm text-destructive">{errors.gsmId}</p>}
         </div>
@@ -174,7 +177,7 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
       {/* Tarihler */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Başlama Tarihi</Label>
+          <Label>{t.takipler.startDate}</Label>
           <div className="flex gap-2">
             <Input
               type="text"
@@ -199,7 +202,7 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
                   mode="single"
                   selected={formData.baslamaTarihi}
                   onSelect={(date) => date && handleBaslamaTarihiChange(date)}
-                  locale={tr}
+                  locale={dateLocale}
                 />
               </PopoverContent>
             </Popover>
@@ -210,7 +213,7 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
         </div>
 
         <div className="space-y-2">
-          <Label>Bitiş Tarihi</Label>
+          <Label>{t.takipler.endDate}</Label>
           <div className="flex gap-2">
             <Input
               type="text"
@@ -235,7 +238,7 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
                   mode="single"
                   selected={formData.bitisTarihi}
                   onSelect={(date) => date && handleChange("bitisTarihi", date)}
-                  locale={tr}
+                  locale={dateLocale}
                 />
               </PopoverContent>
             </Popover>
@@ -248,13 +251,13 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
 
       {/* Durum */}
       <div className="space-y-2">
-        <Label htmlFor="durum">Durum</Label>
+        <Label htmlFor="durum">{t.takipler.durum}</Label>
         <Select
           value={formData.durum}
           onValueChange={(value) => handleChange("durum", value)}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Durum seçin" />
+            <SelectValue placeholder={t.takipler.selectStatus} />
           </SelectTrigger>
           <SelectContent>
             {selectableDurumOptions.map((durum) => (
@@ -275,13 +278,13 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
           onClick={handleCancel}
           disabled={isPending}
         >
-          İptal
+          {t.common.cancel}
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && (
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {isEditing ? "Güncelle" : "Oluştur"}
+          {isEditing ? t.common.update : t.common.create}
         </Button>
       </div>
     </div>
@@ -295,7 +298,7 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>{isEditing ? "Takip Düzenle" : "Yeni Takip"}</CardTitle>
+          <CardTitle>{isEditing ? t.takipler.editTakip : t.takipler.newTakip}</CardTitle>
         </CardHeader>
         <CardContent>{formContent}</CardContent>
       </Card>

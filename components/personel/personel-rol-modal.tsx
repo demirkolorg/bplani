@@ -19,7 +19,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useChangeRol, type Personel } from "@/hooks/use-personel"
-import { personelRolLabels, personelRolValues, type PersonelRol } from "@/lib/validations"
+import { personelRolValues, type PersonelRol } from "@/lib/validations"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
 interface PersonelRolModalProps {
   open: boolean
@@ -34,9 +36,17 @@ export function PersonelRolModal({
   personel,
   onSuccess,
 }: PersonelRolModalProps) {
+  const { t } = useLocale()
   const changeRol = useChangeRol()
   const [selectedRol, setSelectedRol] = React.useState<PersonelRol>(personel.rol)
   const [error, setError] = React.useState<string | null>(null)
+
+  // Localized role labels
+  const rolLabels: Record<PersonelRol, string> = React.useMemo(() => ({
+    ADMIN: t.personel.rolAdmin,
+    YONETICI: t.personel.rolYonetici,
+    PERSONEL: t.personel.rolPersonel,
+  }), [t])
 
   React.useEffect(() => {
     if (open) {
@@ -58,7 +68,7 @@ export function PersonelRolModal({
       onSuccess?.()
       onOpenChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Rol değiştirilemedi")
+      setError(err instanceof Error ? err.message : t.personel.roleChangeFailed)
     }
   }
 
@@ -66,9 +76,9 @@ export function PersonelRolModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>Rol Değiştir</DialogTitle>
+          <DialogTitle>{t.personel.changeRole}</DialogTitle>
           <DialogDescription>
-            {personel.ad} {personel.soyad} için yeni rol seçin
+            {interpolate(t.personel.roleDescription, { name: `${personel.ad} ${personel.soyad}` })}
           </DialogDescription>
         </DialogHeader>
 
@@ -80,7 +90,7 @@ export function PersonelRolModal({
           )}
 
           <div className="space-y-2">
-            <Label>Rol</Label>
+            <Label>{t.personel.rol}</Label>
             <Select value={selectedRol} onValueChange={(v) => setSelectedRol(v as PersonelRol)}>
               <SelectTrigger>
                 <SelectValue />
@@ -88,7 +98,7 @@ export function PersonelRolModal({
               <SelectContent>
                 {personelRolValues.map((rol) => (
                   <SelectItem key={rol} value={rol}>
-                    {personelRolLabels[rol]}
+                    {rolLabels[rol]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -96,11 +106,11 @@ export function PersonelRolModal({
           </div>
 
           <div className="rounded-lg border p-3 text-sm space-y-2">
-            <p className="font-medium">Rol Açıklamaları:</p>
+            <p className="font-medium">{t.personel.rolDescriptions}</p>
             <ul className="text-muted-foreground space-y-1">
-              <li><strong>Admin:</strong> Tüm yetkilere sahip, kullanıcı yönetimi yapabilir</li>
-              <li><strong>Yönetici:</strong> Personel listesini görüntüleyebilir, düzenleme yapabilir</li>
-              <li><strong>Personel:</strong> Temel işlemleri yapabilir, personel modülünü göremez</li>
+              <li><strong>{t.personel.rolAdmin}:</strong> {t.personel.adminDescription}</li>
+              <li><strong>{t.personel.rolYonetici}:</strong> {t.personel.yoneticiDescription}</li>
+              <li><strong>{t.personel.rolPersonel}:</strong> {t.personel.personelDescription}</li>
             </ul>
           </div>
         </div>
@@ -112,10 +122,10 @@ export function PersonelRolModal({
             onClick={() => onOpenChange(false)}
             disabled={changeRol.isPending}
           >
-            İptal
+            {t.common.cancel}
           </Button>
           <Button onClick={handleSubmit} disabled={changeRol.isPending}>
-            {changeRol.isPending ? "Kaydediliyor..." : "Rolü Değiştir"}
+            {changeRol.isPending ? t.common.saving : t.personel.changeRole}
           </Button>
         </div>
       </DialogContent>

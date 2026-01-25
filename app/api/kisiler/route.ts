@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { page, limit, search, tip, isArchived, pio, asli, sortBy, sortOrder } = validatedQuery.data
+    const { page, limit, search, tt, isArchived, pio, asli, sortBy, sortOrder } = validatedQuery.data
 
     // Build where clause
     const where: Record<string, unknown> = {}
 
-    if (tip) {
-      where.tip = tip
+    if (typeof tt === "boolean") {
+      where.tt = tt
     }
 
     if (typeof isArchived === "boolean") {
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    await logList("Kişi", { page, limit, search, tip, isArchived, pio, asli, sortBy, sortOrder }, kisiler.length)
+    await logList("Kişi", { page, limit, search, tt, isArchived, pio, asli, sortBy, sortOrder }, kisiler.length)
 
     return NextResponse.json({
       data: kisiler,

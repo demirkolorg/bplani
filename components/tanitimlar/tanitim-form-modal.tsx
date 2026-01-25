@@ -2,11 +2,12 @@
 
 import * as React from "react"
 import { format, parse, isValid } from "date-fns"
-import { tr } from "date-fns/locale"
+import { tr as trLocale, enUS } from "date-fns/locale"
 import { CalendarIcon, Clock, MapPin, FileText } from "lucide-react"
 
 import { useUpdateTanitim } from "@/hooks/use-tanitimlar"
 import type { TanitimMahalle } from "@/hooks/use-tanitimlar"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -43,7 +44,9 @@ export function TanitimFormModal({
   onOpenChange,
   initialData,
 }: TanitimFormModalProps) {
+  const { t, locale } = useLocale()
   const updateTanitim = useUpdateTanitim()
+  const dateLocale = locale === "tr" ? trLocale : enUS
 
   const isEditing = !!initialData?.id
 
@@ -120,9 +123,9 @@ export function TanitimFormModal({
       <DialogContent className="max-w-2xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Tanıtımı Düzenle</DialogTitle>
+            <DialogTitle>{t.tanitimlar.editTanitim}</DialogTitle>
             <DialogDescription>
-              Tanıtım bilgilerini güncelleyin. Katılımcıları detay sayfasından yönetebilirsiniz.
+              {t.tanitimlar.editTanitimDescription}
             </DialogDescription>
           </DialogHeader>
 
@@ -137,7 +140,7 @@ export function TanitimFormModal({
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                Tanıtım Tarihi ve Saati
+                {t.tanitimlar.dateTime}
               </Label>
               <div className="flex gap-2">
                 <Input
@@ -163,7 +166,7 @@ export function TanitimFormModal({
                       mode="single"
                       selected={tarih}
                       onSelect={(date) => date && setTarih(date)}
-                      locale={tr}
+                      locale={dateLocale}
                     />
                   </PopoverContent>
                 </Popover>
@@ -177,7 +180,7 @@ export function TanitimFormModal({
                   onChange={(e) => setSaat(e.target.value)}
                   className="w-32"
                 />
-                <span className="text-xs text-muted-foreground">(Opsiyonel)</span>
+                <span className="text-xs text-muted-foreground">({t.common.optional})</span>
               </div>
             </div>
 
@@ -185,7 +188,7 @@ export function TanitimFormModal({
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-green-600" />
-                Tanıtım Adresi
+                {t.tanitimlar.tanitimAddress}
               </Label>
               <LokasyonSelector
                 value={lokasyon}
@@ -196,12 +199,12 @@ export function TanitimFormModal({
 
             {/* Adres Detay */}
             <div className="space-y-2">
-              <Label htmlFor="adresDetay">Adres Detayı</Label>
+              <Label htmlFor="adresDetay">{t.tanitimlar.addressDetail}</Label>
               <Textarea
                 id="adresDetay"
                 value={adresDetay}
                 onChange={(e) => setAdresDetay(e.target.value)}
-                placeholder="Sokak, bina no, daire..."
+                placeholder={t.tanitimlar.addressDetailPlaceholder}
                 rows={2}
               />
             </div>
@@ -210,13 +213,13 @@ export function TanitimFormModal({
             <div className="space-y-2">
               <Label htmlFor="notlar" className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-orange-600" />
-                Notlar
+                {t.common.notes}
               </Label>
               <Textarea
                 id="notlar"
                 value={notlar}
                 onChange={(e) => setNotlar(e.target.value)}
-                placeholder="Tanıtım hakkında notlar..."
+                placeholder={t.tanitimlar.notesPlaceholder}
                 rows={4}
               />
             </div>
@@ -229,13 +232,13 @@ export function TanitimFormModal({
               onClick={() => onOpenChange(false)}
               disabled={updateTanitim.isPending}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={updateTanitim.isPending}>
               {updateTanitim.isPending && (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               )}
-              Güncelle
+              {t.common.update}
             </Button>
           </DialogFooter>
         </form>

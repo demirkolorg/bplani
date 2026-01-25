@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           isArchived: false,
         },
         take: limit,
-        select: { id: true, ad: true, soyad: true, tc: true, tip: true },
+        select: { id: true, ad: true, soyad: true, tc: true, tt: true },
       }),
 
       // GSM (with kisi info)
@@ -331,7 +331,7 @@ export async function GET(request: NextRequest) {
       kisiler: kisiler.map((k) => ({
         id: k.id,
         title: `${k.ad} ${k.soyad}`,
-        subtitle: k.tc ? `TC: ${k.tc}` : k.tip,
+        subtitle: k.tc ? `TC: ${k.tc}` : (k.tt ? "Müşteri" : "Aday"),
         url: `/kisiler/${k.id}`,
         category: "Kişiler",
       })),

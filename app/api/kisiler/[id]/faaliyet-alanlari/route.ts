@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import prisma from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
+import { logUpdate } from "@/lib/logger"
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -64,14 +65,31 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Check if kisi exists
-    const kisi = await prisma.kisi.findUnique({ where: { id } })
+    // Check if kisi exists and get previous faaliyet alanlari
+    const kisi = await prisma.kisi.findUnique({
+      where: { id },
+      include: {
+        faaliyetAlanlari: {
+          include: {
+            faaliyetAlani: {
+              select: { id: true, ad: true },
+            },
+          },
+        },
+      },
+    })
     if (!kisi) {
       return NextResponse.json(
         { error: "Kişi bulunamadı" },
         { status: 404 }
       )
     }
+
+    // Store previous state for logging
+    const oncekiFaaliyetAlanlari = kisi.faaliyetAlanlari.map((f) => ({
+      id: f.faaliyetAlani.id,
+      ad: f.faaliyetAlani.ad,
+    }))
 
     const { faaliyetAlaniIds } = validatedData.data
 
@@ -119,6 +137,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         },
       },
     })
+
+    // Log the update
+    const yeniFaaliyetAlanlari = updatedFaaliyetAlanlari.map((f) => ({
+      id: f.faaliyetAlani.id,
+      ad: f.faaliyetAlani.ad,
+    }))
+
+    await logUpdate(
+      "Kişi Faaliyet Alanları",
+      id,
+      { faaliyetAlanlari: oncekiFaaliyetAlanlari },
+      { faaliyetAlanlari: yeniFaaliyetAlanlari },
+      `${kisi.ad} ${kisi.soyad}`,
+      session
+    )
 
     return NextResponse.json(updatedFaaliyetAlanlari)
   } catch (error) {

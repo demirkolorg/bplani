@@ -2,26 +2,37 @@
 
 import * as React from "react"
 import { useTakipler, useDeleteTakip, type Takip } from "@/hooks/use-takip"
+import { useDataTablePreferences } from "@/hooks/use-table-preferences"
+import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { TakipFormModal } from "./takip-form-modal"
-import { getTakipColumns, takipSortOptions } from "./takip-columns"
+import { getTakipColumns, getTakipSortOptions } from "./takip-columns"
 
 export function TakipTable() {
+  const { t } = useLocale()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [editingTakip, setEditingTakip] = React.useState<Takip | null>(null)
 
   const { data, isLoading } = useTakipler()
   const deleteTakip = useDeleteTakip()
 
+  // Table preferences
+  const prefs = useDataTablePreferences("takipler", {
+    defaultSort: { column: "bitisTarihi", direction: "asc" },
+    defaultPageSize: 20,
+  })
+
   const columns = React.useMemo(
     () =>
-      getTakipColumns({
+      getTakipColumns(t, {
         onEdit: setEditingTakip,
         onDelete: setDeleteId,
       }),
-    []
+    [t]
   )
+
+  const sortOptions = React.useMemo(() => getTakipSortOptions(t), [t])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -34,19 +45,24 @@ export function TakipTable() {
       <DataTable
         columns={columns}
         data={data?.data || []}
-        searchPlaceholder="Müşteri adı veya GSM ile ara..."
+        searchPlaceholder={t.takipler.searchPlaceholder}
         isLoading={isLoading}
-        sortOptions={takipSortOptions}
-        defaultSort={{ column: "bitisTarihi", direction: "asc" }}
+        sortOptions={sortOptions}
+        defaultSort={prefs.defaultSort}
+        pageSize={prefs.pageSize}
+        defaultColumnVisibility={prefs.columnVisibility}
+        onColumnVisibilityChange={prefs.setColumnVisibility}
+        onSortChange={prefs.setSorting}
+        onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
-          kisi: "Kişi",
+          kisi: t.takipler.person,
           gsm: "GSM",
-          baslamaTarihiDisplay: "Başlama",
-          bitisTarihiDisplay: "Bitiş",
-          kalanGun: "Kalan Gün",
-          durum: "Durum",
-          alarmlar: "Alarm",
-          actions: "İşlemler",
+          baslamaTarihiDisplay: t.takipler.startDate,
+          bitisTarihiDisplay: t.takipler.endDate,
+          kalanGun: t.takipler.remainingDays,
+          durum: t.takipler.durum,
+          alarmlar: t.takipler.alarm,
+          actions: t.common.actions,
         }}
       />
 
@@ -71,9 +87,9 @@ export function TakipTable() {
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Takibi Sil"
-        description="Bu takibi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve bağlı alarmlar da silinecektir."
-        confirmText="Sil"
+        title={t.takipler.deleteTakip}
+        description={t.takipler.deleteTakipConfirm}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deleteTakip.isPending}
       />

@@ -7,18 +7,21 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import type { Kisi } from "@/hooks/use-kisiler"
 import type { SortOption } from "@/components/shared/data-table"
+import type { Translations } from "@/types/locale"
 
 // Kişi tablosu için özel sıralama seçenekleri
-export const kisiSortOptions: SortOption[] = [
-  { label: "Ad (A → Z)", value: "ad-asc", column: "ad", direction: "asc" },
-  { label: "Ad (Z → A)", value: "ad-desc", column: "ad", direction: "desc" },
-  { label: "Soyad (A → Z)", value: "soyad-asc", column: "soyad", direction: "asc" },
-  { label: "Soyad (Z → A)", value: "soyad-desc", column: "soyad", direction: "desc" },
-  { label: "TC (Küçük → Büyük)", value: "tc-asc", column: "tc", direction: "asc" },
-  { label: "TC (Büyük → Küçük)", value: "tc-desc", column: "tc", direction: "desc" },
-]
+export function getKisiSortOptions(t: Translations): SortOption[] {
+  return [
+    { label: `${t.common.firstName} (A → Z)`, value: "ad-asc", column: "ad", direction: "asc" },
+    { label: `${t.common.firstName} (Z → A)`, value: "ad-desc", column: "ad", direction: "desc" },
+    { label: `${t.common.lastName} (A → Z)`, value: "soyad-asc", column: "soyad", direction: "asc" },
+    { label: `${t.common.lastName} (Z → A)`, value: "soyad-desc", column: "soyad", direction: "desc" },
+    { label: `TC (↑)`, value: "tc-asc", column: "tc", direction: "asc" },
+    { label: `TC (↓)`, value: "tc-desc", column: "tc", direction: "desc" },
+  ]
+}
 
-export function getKisiColumns(): ColumnDef<Kisi>[] {
+export function getKisiColumns(t: Translations): ColumnDef<Kisi>[] {
   return [
     // Hidden columns for sorting (date fields)
     {
@@ -44,21 +47,21 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
     },
     // Visible columns
     {
-      id: "tip",
-      accessorKey: "tip",
-      header: "Tip",
+      id: "tt",
+      accessorKey: "tt",
+      header: t.kisiler.tip,
       cell: ({ row }) => {
-        const tip = row.original.tip
+        const tt = row.original.tt
         return (
           <Badge
             variant="outline"
             className={
-              tip === "MUSTERI"
+              tt
                 ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
                 : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
             }
           >
-            {tip === "MUSTERI" ? "Müşteri" : "Aday"}
+            {tt ? t.kisiler.tipMusteri : t.kisiler.tipAday}
           </Badge>
         )
       },
@@ -66,7 +69,7 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
     {
       id: "tc",
       accessorKey: "tc",
-      header: "TC Kimlik",
+      header: t.kisiler.tcKimlik,
       cell: ({ row }) => {
         const tc = row.original.tc
         return tc ? (
@@ -84,7 +87,7 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Ad Soyad
+            {t.common.fullName}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )
@@ -101,7 +104,7 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
     },
     {
       id: "faaliyet",
-      header: "Faaliyet",
+      header: t.kisiler.faaliyet,
       cell: ({ row }) => {
         const faaliyetAlanlari = row.original.faaliyetAlanlari
         if (!faaliyetAlanlari || faaliyetAlanlari.length === 0) {
@@ -148,7 +151,7 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
       header: () => (
         <div className="flex items-center gap-1">
           <MapPin className="h-4 w-4 text-green-600" />
-          <span>Adres</span>
+          <span>{t.kisiler.addresses}</span>
         </div>
       ),
       cell: ({ row }) => {
@@ -172,7 +175,7 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
       header: () => (
         <div className="flex items-center gap-1">
           <Megaphone className="h-4 w-4 text-purple-600" />
-          <span>Tanıtım</span>
+          <span>{t.navigation.tanitimlar}</span>
         </div>
       ),
       cell: ({ row }) => {
@@ -191,7 +194,7 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
       header: () => (
         <div className="flex items-center gap-1">
           <FileText className="h-4 w-4 text-orange-600" />
-          <span>Not</span>
+          <span>{t.common.note}</span>
         </div>
       ),
       cell: ({ row }) => {
@@ -207,25 +210,25 @@ export function getKisiColumns(): ColumnDef<Kisi>[] {
     },
     {
       accessorKey: "pio",
-      header: "PIO",
+      header: t.kisiler.pio,
       cell: ({ row }) => {
         const pio = row.getValue("pio") as boolean
         return pio ? (
-          <Badge variant="default">Evet</Badge>
+          <Badge variant="default">{t.common.yes}</Badge>
         ) : (
-          <Badge variant="secondary">Hayır</Badge>
+          <Badge variant="secondary">{t.common.no}</Badge>
         )
       },
     },
     {
       accessorKey: "asli",
-      header: "Asli",
+      header: t.kisiler.asli,
       cell: ({ row }) => {
         const asli = row.getValue("asli") as boolean
         return asli ? (
-          <Badge variant="default">Evet</Badge>
+          <Badge variant="default">{t.common.yes}</Badge>
         ) : (
-          <Badge variant="secondary">Hayır</Badge>
+          <Badge variant="secondary">{t.common.no}</Badge>
         )
       },
     },

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLocale } from "@/components/providers/locale-provider"
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ export function TakipFormModal({
   onOpenChange,
   initialData,
 }: TakipFormModalProps) {
+  const { t } = useLocale()
   const isEditing = !!initialData?.id
 
   return (
@@ -34,12 +36,12 @@ export function TakipFormModal({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Takip Düzenle" : "Yeni Takip"}
+            {isEditing ? t.takipler.editTakip : t.takipler.newTakip}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Takip bilgilerini güncelleyin."
-              : "Yeni bir takip kaydı oluşturun."}
+              ? t.takipler.editTakipDescription
+              : t.takipler.newTakipDescription}
           </DialogDescription>
         </DialogHeader>
         <TakipForm

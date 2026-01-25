@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 id: true,
                 ad: true,
                 soyad: true,
-                tip: true,
+                tt: true,
                 fotograf: true,
               },
             },
@@ -130,7 +130,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
                 id: true,
                 ad: true,
                 soyad: true,
-                tip: true,
+                tt: true,
               },
             },
           },
@@ -206,10 +206,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         await prisma.kisi.updateMany({
           where: {
             id: kisiId,
-            tip: "MUSTERI",
+            tt: true,
           },
           data: {
-            tip: "LEAD",
+            tt: false,
             updatedUserId: validUserId,
           },
         })
@@ -293,10 +293,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         await prisma.kisi.updateMany({
           where: {
             id: kisiId,
-            tip: "MUSTERI",
+            tt: true,
           },
           data: {
-            tip: "LEAD",
+            tt: false,
             updatedUserId: validUserId,
           },
         })

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { Eye, Pencil, Trash2, Key, Shield, Power } from "lucide-react"
 
 import { usePersoneller, useDeletePersonel, useToggleActive, type Personel } from "@/hooks/use-personel"
+import { useDataTablePreferences } from "@/hooks/use-table-preferences"
+import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import {
@@ -14,7 +16,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
-import { getPersonelColumns, personelSortOptions } from "./personel-columns"
+import { getPersonelColumns, getPersonelSortOptions } from "./personel-columns"
 import { PersonelPasswordModal } from "./personel-password-modal"
 import { PersonelRolModal } from "./personel-rol-modal"
 
@@ -25,6 +27,7 @@ interface PersonelTableProps {
 
 export function PersonelTable({ currentUserRol, currentUserId }: PersonelTableProps) {
   const router = useRouter()
+  const { t, locale } = useLocale()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [passwordPersonel, setPasswordPersonel] = React.useState<Personel | null>(null)
   const [rolPersonel, setRolPersonel] = React.useState<Personel | null>(null)
@@ -33,7 +36,14 @@ export function PersonelTable({ currentUserRol, currentUserId }: PersonelTablePr
   const deletePersonel = useDeletePersonel()
   const toggleActive = useToggleActive()
 
-  const columns = React.useMemo(() => getPersonelColumns(), [])
+  // Table preferences
+  const prefs = useDataTablePreferences("personel", {
+    defaultSort: { column: "createdAt", direction: "desc" },
+    defaultPageSize: 20,
+  })
+
+  const columns = React.useMemo(() => getPersonelColumns(t, locale), [t, locale])
+  const sortOptions = React.useMemo(() => getPersonelSortOptions(t), [t])
 
   const isAdmin = currentUserRol === "ADMIN"
 
@@ -78,7 +88,7 @@ export function PersonelTable({ currentUserRol, currentUserId }: PersonelTablePr
           }}
         >
           <Eye className="mr-2 h-4 w-4" />
-          Görüntüle
+          {t.common.view}
         </ContextMenuItem>
         <ContextMenuItem
           onClick={(e) => {
@@ -87,7 +97,7 @@ export function PersonelTable({ currentUserRol, currentUserId }: PersonelTablePr
           }}
         >
           <Pencil className="mr-2 h-4 w-4" />
-          Düzenle
+          {t.common.edit}
         </ContextMenuItem>
 
         <ContextMenuSeparator />
@@ -101,7 +111,7 @@ export function PersonelTable({ currentUserRol, currentUserId }: PersonelTablePr
               }}
             >
               <Key className="mr-2 h-4 w-4" />
-              Şifre Değiştir
+              {t.personel.changePassword}
             </ContextMenuItem>
             <ContextMenuItem
               onClick={(e) => {
@@ -111,7 +121,7 @@ export function PersonelTable({ currentUserRol, currentUserId }: PersonelTablePr
               disabled={row.id === currentUserId}
             >
               <Shield className="mr-2 h-4 w-4" />
-              Rol Değiştir
+              {t.personel.changeRole}
             </ContextMenuItem>
           </>
         )}
@@ -124,7 +134,7 @@ export function PersonelTable({ currentUserRol, currentUserId }: PersonelTablePr
           disabled={row.id === currentUserId}
         >
           <Power className="mr-2 h-4 w-4" />
-          {row.isActive ? "Deaktive Et" : "Aktive Et"}
+          {row.isActive ? t.personel.deactivate : t.personel.activate}
         </ContextMenuItem>
 
         {isAdmin && (
@@ -139,7 +149,7 @@ export function PersonelTable({ currentUserRol, currentUserId }: PersonelTablePr
               disabled={row.id === currentUserId}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Sil
+              {t.common.delete}
             </ContextMenuItem>
           </>
         )}
@@ -152,28 +162,33 @@ export function PersonelTable({ currentUserRol, currentUserId }: PersonelTablePr
       <DataTable
         columns={columns}
         data={data?.data || []}
-        searchPlaceholder="Ad, soyad veya ID ile ara..."
+        searchPlaceholder={t.personel.searchPlaceholder}
         isLoading={isLoading}
-        sortOptions={personelSortOptions}
-        defaultSort={{ column: "createdAt", direction: "desc" }}
+        sortOptions={sortOptions}
+        defaultSort={prefs.defaultSort}
+        pageSize={prefs.pageSize}
+        defaultColumnVisibility={prefs.columnVisibility}
         onRowClick={handleRowClick}
         rowWrapper={rowWrapper}
+        onColumnVisibilityChange={prefs.setColumnVisibility}
+        onSortChange={prefs.setSorting}
+        onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
           visibleId: "ID",
-          adSoyad: "Ad Soyad",
-          rol: "Rol",
-          isActive: "Durum",
-          aktivite: "Aktivite",
-          sonGiris: "Son Giriş",
+          adSoyad: t.personel.fullName,
+          rol: t.personel.rol,
+          isActive: t.personel.status,
+          aktivite: t.personel.activity,
+          sonGiris: t.personel.lastLogin,
         }}
       />
 
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Personeli Sil"
-        description="Bu personeli silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-        confirmText="Sil"
+        title={t.personel.deletePersonel}
+        description={t.personel.deletePersonelConfirm}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deletePersonel.isPending}
       />

@@ -27,8 +27,8 @@ export async function GET() {
         where: { isArchived: false },
       }).then(async (total) => {
         const [musteri, lead] = await Promise.all([
-          prisma.kisi.count({ where: { tip: "MUSTERI", isArchived: false } }),
-          prisma.kisi.count({ where: { tip: "LEAD", isArchived: false } }),
+          prisma.kisi.count({ where: { tt: true, isArchived: false } }),
+          prisma.kisi.count({ where: { tt: false, isArchived: false } }),
         ])
         return { total: total._count.id, musteri, lead }
       }),
@@ -122,7 +122,7 @@ export async function GET() {
             id: true,
             ad: true,
             soyad: true,
-            tip: true,
+            tt: true,
             createdAt: true,
           },
         }),

@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { useCreateMahalle, useUpdateMahalle, useIller, useIlceler } from "@/hooks/use-lokasyon"
+import { useLocale } from "@/components/providers/locale-provider"
 import { createMahalleSchema, type CreateMahalleInput } from "@/lib/validations"
 import { cn } from "@/lib/utils"
 
@@ -43,6 +44,7 @@ export function MahalleForm({
   defaultIlId,
   defaultIlceId,
 }: MahalleFormProps) {
+  const { t } = useLocale()
   const router = useRouter()
   const createMahalle = useCreateMahalle()
   const updateMahalle = useUpdateMahalle()
@@ -142,7 +144,7 @@ export function MahalleForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="ilId">
-            İl <span className="text-destructive">*</span>
+            {t.lokasyon.il} <span className="text-destructive">*</span>
           </Label>
           <Popover open={ilOpen} onOpenChange={setIlOpen}>
             <PopoverTrigger asChild>
@@ -155,15 +157,15 @@ export function MahalleForm({
               >
                 {selectedIl
                   ? `${selectedIl.plaka ? `${selectedIl.plaka} - ` : ""}${selectedIl.ad}`
-                  : "İl seçin..."}
+                  : t.lokasyon.selectIl}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
               <Command>
-                <CommandInput placeholder="İl ara..." />
+                <CommandInput placeholder={t.lokasyon.searchIl} />
                 <CommandList>
-                  <CommandEmpty>İl bulunamadı.</CommandEmpty>
+                  <CommandEmpty>{t.lokasyon.ilNotFound}</CommandEmpty>
                   <CommandGroup>
                     {iller?.map((il) => (
                       <CommandItem
@@ -192,7 +194,7 @@ export function MahalleForm({
 
         <div className="space-y-2">
           <Label htmlFor="ilceId">
-            İlçe <span className="text-destructive">*</span>
+            {t.lokasyon.ilce} <span className="text-destructive">*</span>
           </Label>
           <Popover open={ilceOpen} onOpenChange={setIlceOpen}>
             <PopoverTrigger asChild>
@@ -203,15 +205,15 @@ export function MahalleForm({
                 className="w-full justify-between"
                 disabled={isEditing || !selectedIlId || isLoadingIlceler}
               >
-                {selectedIlce ? selectedIlce.ad : "İlçe seçin..."}
+                {selectedIlce ? selectedIlce.ad : t.lokasyon.selectIlce}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
               <Command>
-                <CommandInput placeholder="İlçe ara..." />
+                <CommandInput placeholder={t.lokasyon.searchIlce} />
                 <CommandList>
-                  <CommandEmpty>İlçe bulunamadı.</CommandEmpty>
+                  <CommandEmpty>{t.lokasyon.ilceNotFound}</CommandEmpty>
                   <CommandGroup>
                     {ilceler?.map((ilce) => (
                       <CommandItem
@@ -242,13 +244,13 @@ export function MahalleForm({
 
       <div className="space-y-2">
         <Label htmlFor="ad">
-          Mahalle Adı <span className="text-destructive">*</span>
+          {t.lokasyon.mahalleAdi} <span className="text-destructive">*</span>
         </Label>
         <Input
           id="ad"
           value={formData.ad}
           onChange={(e) => handleChange("ad", e.target.value)}
-          placeholder="Mahalle adı"
+          placeholder={t.lokasyon.mahalleAdi}
           required
         />
         {errors.ad && <p className="text-sm text-destructive">{errors.ad}</p>}
@@ -261,7 +263,7 @@ export function MahalleForm({
           onCheckedChange={(checked) => handleChange("isActive", checked)}
         />
         <Label htmlFor="isActive" className="cursor-pointer">
-          Aktif
+          {t.common.active}
         </Label>
       </div>
 
@@ -272,13 +274,13 @@ export function MahalleForm({
           onClick={handleCancel}
           disabled={isPending}
         >
-          İptal
+          {t.common.cancel}
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && (
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {isEditing ? "Güncelle" : "Oluştur"}
+          {isEditing ? t.common.update : t.common.create}
         </Button>
       </div>
     </>
@@ -296,7 +298,7 @@ export function MahalleForm({
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>{isEditing ? "Mahalle Düzenle" : "Yeni Mahalle"}</CardTitle>
+          <CardTitle>{isEditing ? t.lokasyon.editMahalle : t.lokasyon.newMahalle}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {formContent}

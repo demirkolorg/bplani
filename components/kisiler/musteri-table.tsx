@@ -2,9 +2,11 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Eye, Pencil, Trash2 } from "lucide-react"
+import { Eye, Trash2 } from "lucide-react"
 
 import { useKisiler, useDeleteKisi, type Kisi } from "@/hooks/use-kisiler"
+import { useDataTablePreferences } from "@/hooks/use-table-preferences"
+import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
 import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import {
@@ -14,17 +16,25 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
-import { getKisiColumns, kisiSortOptions } from "./musteri-columns"
+import { getKisiColumns, getKisiSortOptions } from "./musteri-columns"
 
 export function KisiTable() {
   const router = useRouter()
+  const { t } = useLocale()
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
   const [contextKisi, setContextKisi] = React.useState<Kisi | null>(null)
 
   const { data, isLoading } = useKisiler()
   const deleteKisi = useDeleteKisi()
 
-  const columns = React.useMemo(() => getKisiColumns(), [])
+  // Table preferences (column visibility, sorting, page size)
+  const prefs = useDataTablePreferences("kisiler", {
+    defaultSort: { column: "createdAt", direction: "desc" },
+    defaultPageSize: 20,
+  })
+
+  const columns = React.useMemo(() => getKisiColumns(t), [t])
+  const sortOptions = React.useMemo(() => getKisiSortOptions(t), [t])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -56,16 +66,7 @@ export function KisiTable() {
           }}
         >
           <Eye className="mr-2 h-4 w-4" />
-          Görüntüle
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={(e) => {
-            e.stopPropagation()
-            router.push(`/kisiler/${row.id}?edit=true`)
-          }}
-        >
-          <Pencil className="mr-2 h-4 w-4" />
-          Düzenle
+          {t.common.view}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem
@@ -76,7 +77,7 @@ export function KisiTable() {
           }}
         >
           <Trash2 className="mr-2 h-4 w-4" />
-          Sil
+          {t.common.delete}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -87,32 +88,37 @@ export function KisiTable() {
       <DataTable
         columns={columns}
         data={data?.data || []}
-        searchPlaceholder="Ad, soyad, TC veya GSM ile ara..."
+        searchPlaceholder={t.kisiler.searchPlaceholder}
         isLoading={isLoading}
-        sortOptions={kisiSortOptions}
-        defaultSort={{ column: "createdAt", direction: "desc" }}
+        sortOptions={sortOptions}
+        defaultSort={prefs.defaultSort}
+        pageSize={prefs.pageSize}
+        defaultColumnVisibility={prefs.columnVisibility}
         onRowClick={handleRowClick}
         rowWrapper={rowWrapper}
+        onColumnVisibilityChange={prefs.setColumnVisibility}
+        onSortChange={prefs.setSorting}
+        onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
-          tip: "Tip",
-          tc: "TC Kimlik",
-          adSoyad: "Ad Soyad",
-          faaliyet: "Faaliyet",
+          tip: t.kisiler.tip,
+          tc: t.kisiler.tcKimlik,
+          adSoyad: t.common.fullName,
+          faaliyet: t.kisiler.faaliyet,
           gsm: "GSM",
-          adres: "Adres",
-          tanitim: "Tanıtım",
-          not: "Not",
-          pio: "PIO",
-          asli: "Asli",
+          adres: t.kisiler.addresses,
+          tanitim: t.navigation.tanitimlar,
+          not: t.common.note,
+          pio: t.kisiler.pio,
+          asli: t.kisiler.asli,
         }}
       />
 
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Kişiyi Sil"
-        description="Bu kişiyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-        confirmText="Sil"
+        title={`${t.navigation.kisiler} ${t.common.delete}`}
+        description={t.dialog.deleteDescription}
+        confirmText={t.common.delete}
         onConfirm={handleDelete}
         isLoading={deleteKisi.isPending}
       />

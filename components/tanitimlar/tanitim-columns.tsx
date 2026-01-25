@@ -7,8 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import type { Tanitim } from "@/hooks/use-tanitimlar"
 import type { SortOption } from "@/components/shared/data-table"
+import type { Translations } from "@/types/locale"
 
 // Tanıtım tablosu için özel sıralama seçenekleri
+export function getTanitimSortOptions(t: Translations): SortOption[] {
+  return [
+    { label: t.tanitimlar.dateNewOld, value: "tarih-desc", column: "tarih", direction: "desc" },
+    { label: t.tanitimlar.dateOldNew, value: "tarih-asc", column: "tarih", direction: "asc" },
+    { label: t.tanitimlar.createdNewOld, value: "createdAt-desc", column: "createdAt", direction: "desc" },
+    { label: t.tanitimlar.createdOldNew, value: "createdAt-asc", column: "createdAt", direction: "asc" },
+  ]
+}
+
+// Legacy export for backwards compatibility
 export const tanitimSortOptions: SortOption[] = [
   { label: "Tarih (Yeni → Eski)", value: "tarih-desc", column: "tarih", direction: "desc" },
   { label: "Tarih (Eski → Yeni)", value: "tarih-asc", column: "tarih", direction: "asc" },
@@ -16,7 +27,9 @@ export const tanitimSortOptions: SortOption[] = [
   { label: "Oluşturulma (Eski → Yeni)", value: "createdAt-asc", column: "createdAt", direction: "asc" },
 ]
 
-export function getTanitimColumns(): ColumnDef<Tanitim>[] {
+export function getTanitimColumns(t: Translations, locale: string): ColumnDef<Tanitim>[] {
+  const dateLocale = locale === "tr" ? "tr-TR" : "en-US"
+
   return [
     // Hidden columns for sorting
     {
@@ -40,7 +53,7 @@ export function getTanitimColumns(): ColumnDef<Tanitim>[] {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             <Calendar className="mr-2 h-4 w-4" />
-            Tarih
+            {t.tanitimlar.date}
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )
@@ -50,7 +63,7 @@ export function getTanitimColumns(): ColumnDef<Tanitim>[] {
         const saat = row.original.saat
         return (
           <div className="font-medium">
-            {tarih.toLocaleDateString("tr-TR", {
+            {tarih.toLocaleDateString(dateLocale, {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
@@ -69,7 +82,7 @@ export function getTanitimColumns(): ColumnDef<Tanitim>[] {
       header: () => (
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4" />
-          Adres
+          {t.tanitimlar.address}
         </div>
       ),
       cell: ({ row }) => {
@@ -105,7 +118,7 @@ export function getTanitimColumns(): ColumnDef<Tanitim>[] {
       header: () => (
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4" />
-          Katılımcılar
+          {t.tanitimlar.participants}
         </div>
       ),
       cell: ({ row }) => {
@@ -125,12 +138,12 @@ export function getTanitimColumns(): ColumnDef<Tanitim>[] {
                 key={k.id}
                 variant="outline"
                 className={
-                  k.kisi?.tip === "MUSTERI"
+                  k.kisi?.tt
                     ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
                     : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
                 }
               >
-                {k.kisi ? `${k.kisi.ad} ${k.kisi.soyad}` : "Bilinmeyen"}
+                {k.kisi ? `${k.kisi.ad} ${k.kisi.soyad}` : t.tanitimlar.unknownPerson}
               </Badge>
             ))}
             {remainingCount > 0 && (
@@ -142,7 +155,7 @@ export function getTanitimColumns(): ColumnDef<Tanitim>[] {
     },
     {
       id: "katilimciSayisi",
-      header: "Sayı",
+      header: t.tanitimlar.count,
       cell: ({ row }) => {
         const count = row.original.katilimcilar?.length || 0
         return (
@@ -154,7 +167,7 @@ export function getTanitimColumns(): ColumnDef<Tanitim>[] {
     },
     {
       id: "notlar",
-      header: "Notlar",
+      header: t.tanitimlar.notes,
       cell: ({ row }) => {
         const notlar = row.original.notlar
         if (!notlar) {

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLocale } from "@/components/providers/locale-provider"
 import {
   Dialog,
   DialogContent,
@@ -17,17 +18,18 @@ interface MarkaFormModalProps {
 }
 
 export function MarkaFormModal({ open, onOpenChange, initialData }: MarkaFormModalProps) {
+  const { t } = useLocale()
   const isEditing = !!initialData?.id
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Marka Düzenle" : "Yeni Marka"}</DialogTitle>
+          <DialogTitle>{isEditing ? t.araclar.editMarka : t.araclar.newMarka}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Marka bilgilerini güncelleyin."
-              : "Yeni bir marka eklemek için aşağıdaki formu doldurun."}
+              ? t.araclar.editMarkaDescription
+              : t.araclar.newMarkaDescription}
           </DialogDescription>
         </DialogHeader>
         <MarkaForm

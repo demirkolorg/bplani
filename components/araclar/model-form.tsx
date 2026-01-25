@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { useCreateModel, useUpdateModel, useMarkalar } from "@/hooks/use-araclar"
+import { useLocale } from "@/components/providers/locale-provider"
 import { createModelSchema, type CreateModelInput } from "@/lib/validations"
 import { cn } from "@/lib/utils"
 
@@ -34,6 +35,7 @@ interface ModelFormProps {
 }
 
 export function ModelForm({ initialData, onSuccess, onCancel, inModal = false, defaultMarkaId }: ModelFormProps) {
+  const { t } = useLocale()
   const router = useRouter()
   const createModel = useCreateModel()
   const updateModel = useUpdateModel()
@@ -119,7 +121,7 @@ export function ModelForm({ initialData, onSuccess, onCancel, inModal = false, d
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="markaId">
-            Marka <span className="text-destructive">*</span>
+            {t.araclar.marka} <span className="text-destructive">*</span>
           </Label>
           <Popover open={markaOpen} onOpenChange={setMarkaOpen}>
             <PopoverTrigger asChild>
@@ -130,15 +132,15 @@ export function ModelForm({ initialData, onSuccess, onCancel, inModal = false, d
                 className="w-full justify-between"
                 disabled={isEditing || isLoadingMarkalar}
               >
-                {selectedMarka ? selectedMarka.ad : "Marka seçin..."}
+                {selectedMarka ? selectedMarka.ad : t.araclar.selectMarka}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
               <Command>
-                <CommandInput placeholder="Marka ara..." />
+                <CommandInput placeholder={t.araclar.searchMarkaPlaceholder} />
                 <CommandList>
-                  <CommandEmpty>Marka bulunamadı.</CommandEmpty>
+                  <CommandEmpty>{t.araclar.markaNotFound}</CommandEmpty>
                   <CommandGroup>
                     {markalar?.map((marka) => (
                       <CommandItem
@@ -168,13 +170,13 @@ export function ModelForm({ initialData, onSuccess, onCancel, inModal = false, d
 
         <div className="space-y-2">
           <Label htmlFor="ad">
-            Model Adı <span className="text-destructive">*</span>
+            {t.araclar.modelAdi} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="ad"
             value={formData.ad}
             onChange={(e) => handleChange("ad", e.target.value)}
-            placeholder="Model adı"
+            placeholder={t.araclar.modelAdi}
             required
           />
           {errors.ad && <p className="text-sm text-destructive">{errors.ad}</p>}
@@ -188,13 +190,13 @@ export function ModelForm({ initialData, onSuccess, onCancel, inModal = false, d
           onClick={handleCancel}
           disabled={isPending}
         >
-          İptal
+          {t.common.cancel}
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && (
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {isEditing ? "Güncelle" : "Oluştur"}
+          {isEditing ? t.common.update : t.common.create}
         </Button>
       </div>
     </>
@@ -212,7 +214,7 @@ export function ModelForm({ initialData, onSuccess, onCancel, inModal = false, d
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>{isEditing ? "Model Düzenle" : "Yeni Model"}</CardTitle>
+          <CardTitle>{isEditing ? t.araclar.editModel : t.araclar.newModel}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {formContent}

@@ -1,5 +1,6 @@
 "use client"
 
+import { useLocale } from "@/components/providers/locale-provider"
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ export function KisiFormModal({
   onOpenChange,
   initialData,
 }: KisiFormModalProps) {
+  const { t } = useLocale()
   const isEditing = !!initialData?.id
 
   return (
@@ -47,12 +49,12 @@ export function KisiFormModal({
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Kişi Düzenle" : "Yeni Kişi"}
+            {isEditing ? t.kisiler.editKisi : t.kisiler.newKisi}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Kişi bilgilerini güncelleyin."
-              : "Yeni bir kişi eklemek için aşağıdaki formu doldurun."}
+              ? t.kisiler.editKisiDescription
+              : t.kisiler.newKisiDescription}
           </DialogDescription>
         </DialogHeader>
         <KisiForm

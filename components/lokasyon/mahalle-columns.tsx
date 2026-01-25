@@ -3,26 +3,27 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import type { Mahalle } from "@/hooks/use-lokasyon"
+import type { Translations } from "@/types/locale"
 
-export function getMahalleColumns(): ColumnDef<Mahalle>[] {
+export function getMahalleColumns(t: Translations): ColumnDef<Mahalle>[] {
   return [
     {
       accessorKey: "ad",
-      header: "Mahalle Adı",
+      header: t.lokasyon.mahalleAdi,
       cell: ({ row }) => {
         return <span className="font-medium">{row.getValue("ad")}</span>
       },
     },
     {
       id: "ilce",
-      header: "İlçe",
+      header: t.lokasyon.ilce,
       cell: ({ row }) => {
         return <span className="text-sm">{row.original.ilce.ad}</span>
       },
     },
     {
       id: "il",
-      header: "İl",
+      header: t.lokasyon.il,
       cell: ({ row }) => {
         const il = row.original.ilce.il
         return (
@@ -40,7 +41,7 @@ export function getMahalleColumns(): ColumnDef<Mahalle>[] {
     },
     {
       id: "adresSayisi",
-      header: "Adres Sayısı",
+      header: t.lokasyon.adresSayisi,
       cell: ({ row }) => {
         const count = row.original._count.adresler
         return (

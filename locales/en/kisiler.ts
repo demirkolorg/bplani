@@ -1,0 +1,109 @@
+import type { KisilerTranslations } from "@/types/locale"
+
+export const kisiler: KisilerTranslations = {
+  // Page
+  pageTitle: "Persons",
+  pageDescription: "View and manage all persons",
+  newKisiButton: "New Person",
+  newKisi: "New Person",
+  editKisi: "Edit Person",
+  kisiDetails: "Person Details",
+
+  // Sections
+  personalInfo: "Personal Information",
+  contactInfo: "Contact Information",
+  additionalInfo: "Additional Information",
+  overview: "Overview",
+
+  // Fields
+  tcKimlik: "ID Number",
+  tc11Digit: "11 digits",
+  tip: "Type",
+  tt: "TT",
+  tipMusteri: "Customer",
+  tipAday: "Lead",
+  tipLead: "Lead",
+  faaliyet: "Activity",
+  pio: "PIO",
+  pioFull: "PIO (Potential Business Partner)",
+  asli: "Primary",
+  asliFull: "Primary Person",
+  faaliyetAlanlari: "Activity Areas",
+
+  // Photo
+  photo: "Photo",
+  profile: "Profile",
+  uploadPhoto: "Upload Photo",
+  changePhoto: "Change Photo",
+  editPhoto: "Edit Photo",
+  editPhotoDescription: "Change or remove the person's profile photo.",
+  photoFormats: "JPEG, PNG, WebP or GIF. Max 5MB",
+  maxFileSize: "Max. 5MB",
+
+  // Additional info
+  additionalInfoPlaceholder: "Additional info or notes...",
+
+  // GSM
+  gsmNumbers: "Phone Numbers",
+  gsmPlaceholder: "05XX XXX XX XX",
+  addGsm: "Add Phone",
+  noGsmYet: "No phone number added yet",
+  addNumberFromAbove: "Add a number from above",
+  noGsmNumber: "No phone number",
+  deleteGsm: "Delete Phone",
+  deleteGsmConfirm: "This phone and all tracking records will be deleted. Continue?",
+
+  // Address
+  addresses: "Addresses",
+  newAddress: "Add New Address",
+  newAddressDescription: "Add a new address for this person.",
+  addressName: "Address Name",
+  addressNamePlaceholder: "Home, Work, etc.",
+  addressDetail: "Address Detail",
+  addressDetailPlaceholder: "Street, building number, apartment, floor, etc.",
+  addressDetailShort: "Street, building no...",
+  addAddress: "Add Address",
+  noAddressYet: "No address added yet",
+  deleteAddress: "Delete Address",
+  deleteAddressConfirm: "Are you sure you want to delete this address? This action cannot be undone.",
+  neighborhoodSelected: "Neighborhood selected",
+
+  // Relations
+  takipVar: "Has Follow-up",
+  takipEkle: "Add Follow-up",
+  activeTakipSummary: "Active Follow-up Summary",
+  noTakip: "No Follow-up",
+  history: "History",
+
+  // Notes
+  newNote: "New Note",
+  editNote: "Edit Note",
+  noteContent: "Note Content",
+  noteContentPlaceholder: "Write note content...",
+  noNotesYet: "No notes added yet",
+  deleteNote: "Delete Note",
+  deleteNoteConfirm: "Are you sure you want to delete this note? This action cannot be undone.",
+  noteRequired: "Note content is required",
+  noteDescription: "Add a new note for this person.",
+  editNoteDescription: "Update the note content.",
+  addGsmTitle: "Add New Phone",
+  addGsmDescription: "Add a new phone number for this person",
+  gsmRequired: "Phone number is required",
+  editKisiDescription: "Update person information.",
+  newKisiDescription: "Fill out the form below to add a new person.",
+
+  // Edit modals
+  editDetails: "Edit Details",
+  editDetailsDescription: "Update basic person information.",
+  editFaaliyetAlanlari: "Edit Activity Areas",
+  editFaaliyetAlanlariDescription: "Update activity areas for this person.",
+  selectFaaliyetAlanlari: "Select activity areas...",
+
+  // Validation
+  nameRequired: "First name is required",
+  surnameRequired: "Last name is required",
+  tcInvalid: "ID number must be 11 digits",
+
+  // Search
+  searchPlaceholder: "Search by name, ID or phone...",
+}

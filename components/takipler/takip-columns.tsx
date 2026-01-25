@@ -15,9 +15,21 @@ import {
 import { Badge } from "@/components/ui/badge"
 import type { Takip } from "@/hooks/use-takip"
 import type { SortOption } from "@/components/shared/data-table"
+import type { Translations } from "@/types/locale"
 import { takipDurumLabels, type TakipDurum } from "@/lib/validations"
+import { interpolate } from "@/locales"
 
 // Takip tablosu için özel sıralama seçenekleri
+export function getTakipSortOptions(t: Translations): SortOption[] {
+  return [
+    { label: t.takipler.endDateNearFar, value: "bitisTarihi-asc", column: "bitisTarihi", direction: "asc" },
+    { label: t.takipler.endDateFarNear, value: "bitisTarihi-desc", column: "bitisTarihi", direction: "desc" },
+    { label: t.takipler.startDateOldNew, value: "baslamaTarihi-asc", column: "baslamaTarihi", direction: "asc" },
+    { label: t.takipler.startDateNewOld, value: "baslamaTarihi-desc", column: "baslamaTarihi", direction: "desc" },
+  ]
+}
+
+// Legacy export for backwards compatibility
 export const takipSortOptions: SortOption[] = [
   { label: "Bitiş Tarihi (Yakın → Uzak)", value: "bitisTarihi-asc", column: "bitisTarihi", direction: "asc" },
   { label: "Bitiş Tarihi (Uzak → Yakın)", value: "bitisTarihi-desc", column: "bitisTarihi", direction: "desc" },
@@ -38,7 +50,7 @@ interface ColumnOptions {
   onDelete?: (id: string) => void
 }
 
-export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): ColumnDef<Takip>[] {
+export function getTakipColumns(t: Translations, { onEdit, onDelete }: ColumnOptions = {}): ColumnDef<Takip>[] {
   return [
     // Hidden columns for sorting
     {
@@ -64,7 +76,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
     // Visible columns
     {
       id: "kisi",
-      header: "Kişi",
+      header: t.takipler.person,
       cell: ({ row }) => {
         const kisi = row.original.gsm.kisi
         if (!kisi) return <span className="text-muted-foreground">-</span>
@@ -87,7 +99,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
     },
     {
       id: "baslamaTarihiDisplay",
-      header: "Başlama",
+      header: t.takipler.startDate,
       cell: ({ row }) => {
         const date = new Date(row.original.baslamaTarihi)
         return (
@@ -99,7 +111,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
     },
     {
       id: "bitisTarihiDisplay",
-      header: "Bitiş",
+      header: t.takipler.endDate,
       cell: ({ row }) => {
         const date = new Date(row.original.bitisTarihi)
         return (
@@ -111,7 +123,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
     },
     {
       id: "kalanGun",
-      header: "Kalan Gün",
+      header: t.takipler.remainingDays,
       cell: ({ row }) => {
         const date = new Date(row.original.bitisTarihi)
         const now = new Date()
@@ -123,7 +135,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
           const daysPassed = Math.abs(daysLeft)
           return (
             <Badge variant="destructive" className="text-xs">
-              {daysPassed} gün geçti
+              {interpolate(t.takipler.daysPassed, { days: daysPassed })}
             </Badge>
           )
         }
@@ -131,21 +143,21 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
         if (isExpiringSoon) {
           return (
             <Badge variant="outline" className="text-xs text-orange-500 border-orange-500">
-              {daysLeft} gün
+              {interpolate(t.takipler.daysRemaining, { days: daysLeft })}
             </Badge>
           )
         }
 
         return (
           <span className="text-sm font-medium">
-            {daysLeft} gün
+            {interpolate(t.takipler.daysRemaining, { days: daysLeft })}
           </span>
         )
       },
     },
     {
       id: "durum",
-      header: "Durum",
+      header: t.takipler.durum,
       cell: ({ row }) => {
         const durum = row.original.durum as TakipDurum
         const isActive = row.original.isActive
@@ -155,7 +167,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
               {takipDurumLabels[durum]}
             </Badge>
             {isActive && (
-              <span className="inline-flex items-center justify-center w-2 h-2 bg-green-500 rounded-full" title="Aktif takip" />
+              <span className="inline-flex items-center justify-center w-2 h-2 bg-green-500 rounded-full" title={t.takipler.activeTakip} />
             )}
           </div>
         )
@@ -163,7 +175,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
     },
     {
       id: "alarmlar",
-      header: "Alarm",
+      header: t.takipler.alarm,
       cell: ({ row }) => {
         const count = row.original._count?.alarmlar || 0
         if (count === 0) return <span className="text-muted-foreground">-</span>
@@ -185,7 +197,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Menüyü aç</span>
+                <span className="sr-only">{t.common.actions}</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -193,12 +205,12 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
               <DropdownMenuItem asChild>
                 <Link href={`/takipler/${takip.id}`}>
                   <Eye className="mr-2 h-4 w-4" />
-                  Görüntüle
+                  {t.common.view}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onEdit?.(takip)}>
                 <Pencil className="mr-2 h-4 w-4" />
-                Düzenle
+                {t.common.edit}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -206,7 +218,7 @@ export function getTakipColumns({ onEdit, onDelete }: ColumnOptions = {}): Colum
                 onClick={() => onDelete?.(takip.id)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Sil
+                {t.common.delete}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
