@@ -49,6 +49,18 @@ export function getKisiColumns(t: Translations): ColumnDef<Kisi>[] {
     {
       id: "tt",
       accessorKey: "tt",
+      header: t.kisiler.tt,
+      cell: ({ row }) => {
+        const tt = row.original.tt
+        return (
+          <Badge variant={tt ? "default" : "secondary"}>
+            {tt ? t.common.yes : t.common.no}
+          </Badge>
+        )
+      },
+    },
+    {
+      id: "tip",
       header: t.kisiler.tip,
       cell: ({ row }) => {
         const tt = row.original.tt

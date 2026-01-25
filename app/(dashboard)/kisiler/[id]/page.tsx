@@ -265,6 +265,14 @@ export default function KisiDetayPage() {
               <DetailRow
                 label="TT"
                 value={
+                  <Badge variant={kisi.tt ? "default" : "secondary"}>
+                    {kisi.tt ? "Evet" : "Hayır"}
+                  </Badge>
+                }
+              />
+              <DetailRow
+                label="Tip"
+                value={
                   <Badge
                     variant="outline"
                     className={

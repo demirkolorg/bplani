@@ -100,6 +100,7 @@ export function KisiTable() {
         onSortChange={prefs.setSorting}
         onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
+          tt: t.kisiler.tt,
           tip: t.kisiler.tip,
           tc: t.kisiler.tcKimlik,
           adSoyad: t.common.fullName,
