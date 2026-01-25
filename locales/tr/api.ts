@@ -23,4 +23,5 @@ export const api: ApiMessagesTranslations = {
   uploadError: "Dosya yüklenirken bir hata oluştu",
   invalidQueryParams: "Geçersiz sorgu parametreleri",
   invalidData: "Geçersiz veri",
+  searchError: "Arama yapılırken bir hata oluştu",
 }

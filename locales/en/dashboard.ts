@@ -1,0 +1,34 @@
+import type { DashboardTranslations } from "@/types/locale"
+
+export const dashboard: DashboardTranslations = {
+  // Welcome
+  welcomeMessage: "Welcome, {name}",
+  subtitle: "ALTAY - Analysis Tracking Management System",
+
+  // Search
+  searchPlaceholder: "Search by TC, Phone, Name, Address...",
+  searchTagTc: "TC: 11 digits",
+  searchTagPhone: "Phone: 10-12 digits",
+  searchTagName: "Name: First Last",
+  searchTagAddress: "Address: Province/District",
+
+  // Stats
+  kisiler: "People",
+  gsm: "Phone Numbers",
+  takipler: "Follow-ups",
+  tanitimlar: "Introductions",
+  operasyonlar: "Operations",
+  araclar: "Vehicles",
+  alarmlar: "Alarms",
+
+  // Quick Actions
+  quickActions: "Quick Actions",
+  newKisi: "New Person",
+  newTakip: "New Follow-up",
+  newTanitim: "New Introduction",
+  newOperasyon: "New Operation",
+
+  // Alerts
+  expiringSoon: "Expiring Soon",
+  pendingAlarms: "{count} pending alarms",
+}

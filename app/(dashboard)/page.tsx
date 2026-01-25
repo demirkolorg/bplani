@@ -17,6 +17,8 @@ import {
 
 import { useDashboardStats } from "@/hooks/use-dashboard-stats"
 import { useUser } from "@/components/providers/auth-provider"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GlobalSearch } from "@/components/search/global-search"
@@ -60,6 +62,7 @@ function StatCard({
 
 export default function DashboardPage() {
   const { user } = useUser()
+  const { t } = useLocale()
   const { data: stats, isLoading } = useDashboardStats()
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -80,10 +83,10 @@ export default function DashboardPage() {
           {/* Welcome Text */}
           <div className="text-center mb-6">
             <h1 className="text-2xl md:text-3xl font-bold">
-              Hoş Geldin, {user?.ad || "Kullanıcı"}
+              {interpolate(t.dashboard.welcomeMessage, { name: user?.ad || t.auth.user })}
             </h1>
             <p className="text-muted-foreground mt-1">
-              ALTAY - Analiz Takip Yönetim Sistemi
+              {t.dashboard.subtitle}
             </p>
           </div>
 
@@ -95,7 +98,7 @@ export default function DashboardPage() {
             >
               <Search className="h-6 w-6 text-muted-foreground" />
               <span className="flex-1 text-lg text-muted-foreground">
-                TC, Telefon, İsim, Adres ile arama yapın...
+                {t.dashboard.searchPlaceholder}
               </span>
               <kbd className="hidden sm:flex h-7 select-none items-center gap-1 rounded-lg border bg-muted px-2.5 font-mono text-sm font-medium text-muted-foreground">
                 Ctrl K
@@ -105,16 +108,16 @@ export default function DashboardPage() {
             {/* Quick Search Tags */}
             <div className="flex flex-wrap justify-center gap-2 mt-5">
               <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 px-3 py-1">
-                TC: 11 rakam
+                {t.dashboard.searchTagTc}
               </Badge>
               <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 px-3 py-1">
-                Tel: 10-12 rakam
+                {t.dashboard.searchTagPhone}
               </Badge>
               <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 px-3 py-1">
-                İsim: Ad Soyad
+                {t.dashboard.searchTagName}
               </Badge>
               <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 px-3 py-1">
-                Adres: İl/İlçe
+                {t.dashboard.searchTagAddress}
               </Badge>
             </div>
           </div>
@@ -137,7 +140,7 @@ export default function DashboardPage() {
           ) : (
             <>
               <StatCard
-                title="Kişiler"
+                title={t.dashboard.kisiler}
                 value={stats?.kisi.total || 0}
                 icon={Users}
                 bgColor="bg-blue-50/80 dark:bg-blue-950/20"
@@ -145,7 +148,7 @@ export default function DashboardPage() {
                 href="/kisiler"
               />
               <StatCard
-                title="GSM"
+                title={t.dashboard.gsm}
                 value={stats?.gsm || 0}
                 icon={Phone}
                 bgColor="bg-green-50/80 dark:bg-green-950/20"
@@ -153,7 +156,7 @@ export default function DashboardPage() {
                 href="/numaralar"
               />
               <StatCard
-                title="Takipler"
+                title={t.dashboard.takipler}
                 value={stats?.takip.active || 0}
                 icon={CalendarClock}
                 bgColor="bg-purple-50/80 dark:bg-purple-950/20"
@@ -161,7 +164,7 @@ export default function DashboardPage() {
                 href="/takipler"
               />
               <StatCard
-                title="Tanıtımlar"
+                title={t.dashboard.tanitimlar}
                 value={stats?.tanitim.total || 0}
                 icon={Megaphone}
                 bgColor="bg-orange-50/80 dark:bg-orange-950/20"
@@ -169,7 +172,7 @@ export default function DashboardPage() {
                 href="/tanitimlar"
               />
               <StatCard
-                title="Operasyonlar"
+                title={t.dashboard.operasyonlar}
                 value={stats?.operasyon.total || 0}
                 icon={Workflow}
                 bgColor="bg-indigo-50/80 dark:bg-indigo-950/20"
@@ -177,7 +180,7 @@ export default function DashboardPage() {
                 href="/operasyonlar"
               />
               <StatCard
-                title="Araçlar"
+                title={t.dashboard.araclar}
                 value={stats?.arac || 0}
                 icon={Car}
                 bgColor="bg-cyan-50/80 dark:bg-cyan-950/20"
@@ -185,7 +188,7 @@ export default function DashboardPage() {
                 href="/araclar"
               />
               <StatCard
-                title="Alarmlar"
+                title={t.dashboard.alarmlar}
                 value={stats?.alarm.pending || 0}
                 icon={Bell}
                 bgColor="bg-amber-50/80 dark:bg-amber-950/20"
@@ -200,30 +203,30 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-2 gap-6 mt-2">
           {/* Quick Actions */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">Hızlı İşlemler</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">{t.dashboard.quickActions}</h3>
             <div className="space-y-1">
               <TabLink href="/kisiler/yeni">
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                   <UserPlus className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Yeni Kişi</span>
+                  <span className="text-sm">{t.dashboard.newKisi}</span>
                 </div>
               </TabLink>
               <TabLink href="/takipler/yeni">
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                   <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Yeni Takip</span>
+                  <span className="text-sm">{t.dashboard.newTakip}</span>
                 </div>
               </TabLink>
               <TabLink href="/tanitimlar/yeni">
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                   <Megaphone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Yeni Tanıtım</span>
+                  <span className="text-sm">{t.dashboard.newTanitim}</span>
                 </div>
               </TabLink>
               <TabLink href="/operasyonlar/yeni">
                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                   <Workflow className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Yeni Operasyon</span>
+                  <span className="text-sm">{t.dashboard.newOperasyon}</span>
                 </div>
               </TabLink>
             </div>
@@ -235,7 +238,7 @@ export default function DashboardPage() {
               <>
                 <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
-                  Yakında Bitecek Takipler
+                  {t.dashboard.expiringSoon}
                 </h3>
                 <div className="space-y-1">
                   {stats.takip.expiringSoonList.map((takip) => (
@@ -259,7 +262,7 @@ export default function DashboardPage() {
               <TabLink href="/alarmlar">
                 <div className="flex items-center gap-2 px-3 py-2 mt-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer text-red-600 dark:text-red-400">
                   <Bell className="h-4 w-4" />
-                  <span className="text-sm">{stats.alarm.pending} bekleyen alarm</span>
+                  <span className="text-sm">{interpolate(t.dashboard.pendingAlarms, { count: stats.alarm.pending })}</span>
                 </div>
               </TabLink>
             ) : null}

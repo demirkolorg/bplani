@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { useTabParams } from "@/components/providers/params-provider"
 import { useTabTitle } from "@/hooks/use-tab-title"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Pencil, Calendar, MapPin, FileText, Info, Users } from "lucide-react"
 
 import { useOperasyon } from "@/hooks/use-operasyonlar"
@@ -24,6 +25,7 @@ import { OperasyonFormModal } from "@/components/operasyonlar/operasyon-form-mod
 import { OperasyonKatilimciList } from "@/components/operasyonlar/operasyon-katilimci-list"
 
 export default function OperasyonDetayPage() {
+  const { t } = useLocale()
   const params = useTabParams<{ id: string }>()
   const id = params.id
 
@@ -60,10 +62,10 @@ export default function OperasyonDetayPage() {
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">
-              {error instanceof Error ? error.message : "Operasyon bulunamadı"}
+              {error instanceof Error ? error.message : t.operasyonlar.notFound}
             </p>
             <Button asChild className="mt-4">
-              <Link href="/operasyonlar">Operasyonlara Dön</Link>
+              <Link href="/operasyonlar">{t.common.backToOperations}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -184,12 +186,12 @@ export default function OperasyonDetayPage() {
       <div className="flex flex-wrap items-center gap-6 mb-6 p-4 bg-muted/50 rounded-lg">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-purple-600" />
-          <span className="text-sm text-muted-foreground">Katılımcı:</span>
+          <span className="text-sm text-muted-foreground">{t.operasyonlar.participants}:</span>
           <Badge variant="secondary" className="font-mono">
             {operasyon.katilimcilar?.length || 0}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            ({operasyon.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} Müşteri, {operasyon.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} Aday)
+            ({operasyon.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} {t.kisiler.tipMusteri}, {operasyon.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} {t.kisiler.tipAday})
           </span>
         </div>
         {fullAddress && (

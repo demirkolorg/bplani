@@ -6,6 +6,8 @@ export const kisiler: KisilerTranslations = {
   pageDescription: "Tüm kişileri görüntüleyin ve yönetin",
   newKisiButton: "Yeni Kişi",
   newKisi: "Yeni Kişi",
+  newKisiPageTitle: "Yeni Kişi",
+  newKisiPageDescription: "Yeni bir kişi kaydı oluşturun",
   editKisi: "Kişi Düzenle",
   kisiDetails: "Kişi Detayları",
 
@@ -18,6 +20,7 @@ export const kisiler: KisilerTranslations = {
   // Fields
   tcKimlik: "TC Kimlik No",
   tc11Digit: "11 haneli",
+  tcLabel: "TC:",
   tip: "Tip",
   tt: "TT",
   tipMusteri: "Müşteri",
@@ -29,6 +32,14 @@ export const kisiler: KisilerTranslations = {
   asli: "Asli",
   asliFull: "Asli Kişi",
   faaliyetAlanlari: "Faaliyet Alanları",
+  selectFaaliyetAlani: "Faaliyet alanı seçin...",
+  searchFaaliyetAlani: "Faaliyet alanı ara...",
+  updateFaaliyetError: "Faaliyet alanları güncellenirken hata oluştu",
+  addParticipantError: "Katılımcı eklenirken hata oluştu",
+  selectOperationToAdd: "{name} kişisini eklemek istediğiniz operasyonları seçin",
+  selectIntroductionToAdd: "{name} kişisini eklemek istediğiniz tanıtımları seçin",
+  searchOperasyon: "Operasyon ara (adres, tarih...)",
+  searchTanitim: "Tanıtım ara (adres, tarih...)",
 
   // Photo
   photo: "Fotoğraf",

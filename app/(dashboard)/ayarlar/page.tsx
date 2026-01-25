@@ -28,8 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
 export default function AyarlarPage() {
+  const { t } = useLocale()
   const { data: ayarlar, isLoading } = useAyarlar()
   const updateAyarlar = useUpdateAyarlar()
 
@@ -79,7 +82,7 @@ export default function AyarlarPage() {
       <div className="container mx-auto py-6">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin" />
-          <span className="ml-2">Yükleniyor...</span>
+          <span className="ml-2">{t.ayarlar.loading}</span>
         </div>
       </div>
     )
@@ -89,8 +92,8 @@ export default function AyarlarPage() {
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Ayarlar</h1>
-          <p className="text-muted-foreground">Sistem ayarlarını yapılandırın</p>
+          <h1 className="text-2xl font-bold">{t.ayarlar.pageTitle}</h1>
+          <p className="text-muted-foreground">{t.ayarlar.pageDescription}</p>
         </div>
         <Button onClick={handleSave} disabled={!hasChanges || updateAyarlar.isPending}>
           {updateAyarlar.isPending ? (
@@ -98,7 +101,7 @@ export default function AyarlarPage() {
           ) : (
             <Save className="mr-2 h-4 w-4" />
           )}
-          Kaydet
+          {t.ayarlar.save}
         </Button>
       </div>
 
@@ -106,19 +109,19 @@ export default function AyarlarPage() {
         <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
           <TabsTrigger value="alarm" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">Alarm</span>
+            <span className="hidden sm:inline">{t.ayarlar.alarmTab}</span>
           </TabsTrigger>
           <TabsTrigger value="takip" className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            <span className="hidden sm:inline">Takip</span>
+            <span className="hidden sm:inline">{t.ayarlar.takipTab}</span>
           </TabsTrigger>
           <TabsTrigger value="bildirim" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            <span className="hidden sm:inline">Bildirim</span>
+            <span className="hidden sm:inline">{t.ayarlar.bildirimTab}</span>
           </TabsTrigger>
           <TabsTrigger value="gorunum" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
-            <span className="hidden sm:inline">Görünüm</span>
+            <span className="hidden sm:inline">{t.ayarlar.gorunumTab}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -128,16 +131,16 @@ export default function AyarlarPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                Alarm Ayarları
+                {t.ayarlar.alarmTitle}
               </CardTitle>
               <CardDescription>
-                Takip bitiş alarmları için varsayılan gün sayılarını ayarlayın
+                {t.ayarlar.alarmDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="alarm1">İlk Alarm (gün önce)</Label>
+                  <Label htmlFor="alarm1">{t.ayarlar.firstAlarm}</Label>
                   <Input
                     id="alarm1"
                     type="number"
@@ -148,12 +151,12 @@ export default function AyarlarPage() {
                     placeholder="20"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Takip bitiş tarihinden kaç gün önce ilk alarm tetiklensin
+                    {t.ayarlar.firstAlarmDesc}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="alarm2">İkinci Alarm (gün önce)</Label>
+                  <Label htmlFor="alarm2">{t.ayarlar.secondAlarm}</Label>
                   <Input
                     id="alarm2"
                     type="number"
@@ -164,21 +167,21 @@ export default function AyarlarPage() {
                     placeholder="15"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Takip bitiş tarihinden kaç gün önce ikinci alarm tetiklensin
+                    {t.ayarlar.secondAlarmDesc}
                   </p>
                 </div>
               </div>
 
               <div className="rounded-lg bg-muted p-4">
-                <p className="font-medium mb-2">Mevcut Alarm Kuralları</p>
+                <p className="font-medium mb-2">{t.ayarlar.currentRules}</p>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-orange-500" />
-                    <span>Bitiş tarihinden <strong className="text-foreground">{alarmGunOnce1 || "20"}</strong> gün önce ilk alarm</span>
+                    <span>{interpolate(t.ayarlar.beforeEndDate1, { days: alarmGunOnce1 || "20" })}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-red-500" />
-                    <span>Bitiş tarihinden <strong className="text-foreground">{alarmGunOnce2 || "15"}</strong> gün önce ikinci alarm</span>
+                    <span>{interpolate(t.ayarlar.beforeEndDate2, { days: alarmGunOnce2 || "15" })}</span>
                   </div>
                 </div>
               </div>
@@ -192,15 +195,15 @@ export default function AyarlarPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Takip Ayarları
+                {t.ayarlar.takipTitle}
               </CardTitle>
               <CardDescription>
-                Yeni takip oluşturma için varsayılan değerleri ayarlayın
+                {t.ayarlar.takipDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="max-w-sm space-y-2">
-                <Label htmlFor="takipSure">Varsayılan Takip Süresi (gün)</Label>
+                <Label htmlFor="takipSure">{t.ayarlar.defaultDuration}</Label>
                 <Input
                   id="takipSure"
                   type="number"
@@ -211,16 +214,18 @@ export default function AyarlarPage() {
                   placeholder="90"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Yeni takip oluşturulduğunda varsayılan süre (başlama tarihinden itibaren)
+                  {t.ayarlar.defaultDurationDesc}
                 </p>
               </div>
 
               <div className="rounded-lg bg-muted p-4">
-                <p className="font-medium mb-2">Örnek Senaryo</p>
+                <p className="font-medium mb-2">{t.ayarlar.exampleScenario}</p>
                 <p className="text-sm text-muted-foreground">
-                  Bugün oluşturulan bir takip, <strong className="text-foreground">{takipSure || "90"}</strong> gün sonra sona erecek.
-                  İlk alarm <strong className="text-foreground">{Number(takipSure || 90) - Number(alarmGunOnce1 || 20)}</strong>. günde,
-                  ikinci alarm <strong className="text-foreground">{Number(takipSure || 90) - Number(alarmGunOnce2 || 15)}</strong>. günde tetiklenecek.
+                  {interpolate(t.ayarlar.exampleScenarioText, {
+                    duration: takipSure || "90",
+                    alarm1: Number(takipSure || 90) - Number(alarmGunOnce1 || 20),
+                    alarm2: Number(takipSure || 90) - Number(alarmGunOnce2 || 15),
+                  })}
                 </p>
               </div>
             </CardContent>
@@ -233,18 +238,18 @@ export default function AyarlarPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5" />
-                Bildirim Ayarları
+                {t.ayarlar.notificationTitle}
               </CardTitle>
               <CardDescription>
-                Bildirim tercihlerinizi yapılandırın
+                {t.ayarlar.notificationDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>E-posta Bildirimleri</Label>
+                  <Label>{t.ayarlar.emailNotifications}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Alarm tetiklendiğinde e-posta gönder
+                    {t.ayarlar.emailNotificationsDesc}
                   </p>
                 </div>
                 <Switch
@@ -256,9 +261,9 @@ export default function AyarlarPage() {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Tarayıcı Bildirimleri</Label>
+                  <Label>{t.ayarlar.browserNotifications}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Alarm tetiklendiğinde tarayıcı bildirimi göster
+                    {t.ayarlar.browserNotificationsDesc}
                   </p>
                 </div>
                 <Switch
@@ -269,26 +274,26 @@ export default function AyarlarPage() {
               </div>
 
               <div className="max-w-sm space-y-2">
-                <Label>Bildirim Kontrol Sıklığı</Label>
+                <Label>{t.ayarlar.checkFrequency}</Label>
                 <Select value={bildirimSikligi} onValueChange={setBildirimSikligi} disabled>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="30">30 saniye</SelectItem>
-                    <SelectItem value="60">1 dakika</SelectItem>
-                    <SelectItem value="300">5 dakika</SelectItem>
-                    <SelectItem value="600">10 dakika</SelectItem>
+                    <SelectItem value="30">{t.ayarlar.seconds30}</SelectItem>
+                    <SelectItem value="60">{t.ayarlar.minute1}</SelectItem>
+                    <SelectItem value="300">{t.ayarlar.minutes5}</SelectItem>
+                    <SelectItem value="600">{t.ayarlar.minutes10}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Yeni bildirimlerin ne sıklıkta kontrol edileceği
+                  {t.ayarlar.checkFrequencyDesc}
                 </p>
               </div>
 
               <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-4">
                 <p className="text-sm text-yellow-600 dark:text-yellow-500">
-                  Bildirim ayarları yakında aktif olacak.
+                  {t.ayarlar.notificationComingSoon}
                 </p>
               </div>
             </CardContent>
@@ -301,50 +306,50 @@ export default function AyarlarPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5" />
-                Görünüm Ayarları
+                {t.ayarlar.appearanceTitle}
               </CardTitle>
               <CardDescription>
-                Uygulama görünümünü özelleştirin
+                {t.ayarlar.appearanceDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="max-w-sm space-y-2">
-                <Label>Varsayılan Tema</Label>
+                <Label>{t.ayarlar.defaultTheme}</Label>
                 <Select value={varsayilanTema} onValueChange={setVarsayilanTema} disabled>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="light">Açık</SelectItem>
-                    <SelectItem value="dark">Koyu</SelectItem>
-                    <SelectItem value="system">Sistem</SelectItem>
+                    <SelectItem value="light">{t.ayarlar.themeLight}</SelectItem>
+                    <SelectItem value="dark">{t.ayarlar.themeDark}</SelectItem>
+                    <SelectItem value="system">{t.ayarlar.themeSystem}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Uygulama açıldığında kullanılacak tema
+                  {t.ayarlar.defaultThemeDesc}
                 </p>
               </div>
 
               <div className="max-w-sm space-y-2">
-                <Label>Tablo Yoğunluğu</Label>
+                <Label>{t.ayarlar.tableDensity}</Label>
                 <Select value={tabloYogunlugu} onValueChange={setTabloYogunlugu} disabled>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="compact">Sıkışık</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="wide">Geniş</SelectItem>
+                    <SelectItem value="compact">{t.ayarlar.densityCompact}</SelectItem>
+                    <SelectItem value="normal">{t.ayarlar.densityNormal}</SelectItem>
+                    <SelectItem value="wide">{t.ayarlar.densityWide}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Tablolardaki satır yüksekliği
+                  {t.ayarlar.tableDensityDesc}
                 </p>
               </div>
 
               <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-4">
                 <p className="text-sm text-yellow-600 dark:text-yellow-500">
-                  Görünüm ayarları yakında aktif olacak.
+                  {t.ayarlar.appearanceComingSoon}
                 </p>
               </div>
             </CardContent>

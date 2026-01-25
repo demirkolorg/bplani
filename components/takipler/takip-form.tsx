@@ -181,7 +181,7 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
           <div className="flex gap-2">
             <Input
               type="text"
-              placeholder="GG.AA.YYYY"
+              placeholder={t.common.dateFormatPlaceholder}
               value={format(formData.baslamaTarihi, "dd.MM.yyyy")}
               onChange={(e) => {
                 const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())
@@ -217,7 +217,7 @@ export function TakipForm({ initialData, onSuccess, onCancel, inModal }: TakipFo
           <div className="flex gap-2">
             <Input
               type="text"
-              placeholder="GG.AA.YYYY"
+              placeholder={t.common.dateFormatPlaceholder}
               value={format(formData.bitisTarihi, "dd.MM.yyyy")}
               onChange={(e) => {
                 const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())

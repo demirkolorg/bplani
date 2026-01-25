@@ -130,7 +130,7 @@ export function KisiDetayEditModal({ open, onOpenChange, kisi }: KisiDetayEditMo
                 id="tc"
                 value={tc}
                 onChange={(e) => setTc(e.target.value.replace(/\D/g, "").slice(0, 11))}
-                placeholder="11 haneli TC kimlik numarası"
+                placeholder={t.common.tcFormatPlaceholder}
                 maxLength={11}
               />
               {errors.tc && <p className="text-sm text-destructive">{errors.tc}</p>}

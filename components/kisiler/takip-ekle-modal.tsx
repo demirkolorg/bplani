@@ -109,7 +109,7 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="GG.AA.YYYY"
+                  placeholder={t.common.dateFormatPlaceholder}
                   value={format(baslamaTarihi, "dd.MM.yyyy")}
                   onChange={(e) => {
                     const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())
@@ -142,7 +142,7 @@ export function TakipEkleModal({ open, onOpenChange, gsmId, gsmNumara, onSuccess
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="GG.AA.YYYY"
+                  placeholder={t.common.dateFormatPlaceholder}
                   value={format(bitisTarihi, "dd.MM.yyyy")}
                   onChange={(e) => {
                     const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())

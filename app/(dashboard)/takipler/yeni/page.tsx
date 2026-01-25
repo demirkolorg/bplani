@@ -9,6 +9,7 @@ import { tr } from "date-fns/locale"
 
 import { useAllGsmler, type GsmWithKisi } from "@/hooks/use-gsm"
 import { useBulkCreateTakip } from "@/hooks/use-takip"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils"
 
 export default function YeniTakipPage() {
   const router = useRouter()
+  const { t } = useLocale()
   const { data: allGsmler, isLoading } = useAllGsmler()
   const bulkCreateTakip = useBulkCreateTakip()
 
@@ -96,12 +98,12 @@ export default function YeniTakipPage() {
 
   const handleSubmit = async () => {
     if (selectedGsmIds.size === 0) {
-      setError("En az bir GSM seçmelisiniz")
+      setError(t.takipler.selectAtLeastOne)
       return
     }
 
     if (bitisTarihi < baslamaTarihi) {
-      setError("Bitiş tarihi başlama tarihinden önce olamaz")
+      setError(t.validation.endDateBeforeStart)
       return
     }
 
@@ -167,9 +169,9 @@ export default function YeniTakipPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Yeni Takip Ekle</h1>
+          <h1 className="text-2xl font-bold">{t.takipler.newTakipPageTitle}</h1>
           <p className="text-muted-foreground">
-            Takip eklemek istediğiniz GSM numaralarını seçin
+            {t.takipler.newTakipPageDescription}
           </p>
         </div>
       </div>
@@ -188,16 +190,16 @@ export default function YeniTakipPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                Mevcut GSM'ler
+                {t.takipler.availableGsms}
               </CardTitle>
               <span className="text-sm text-muted-foreground">
-                {filteredAvailable.length} adet
+                {t.takipler.itemsCount.replace("{count}", filteredAvailable.length.toString())}
               </span>
             </div>
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="GSM veya müşteri ara..."
+                placeholder={t.takipler.searchGsmOrCustomer}
                 value={searchLeft}
                 onChange={(e) => setSearchLeft(e.target.value)}
                 className="pl-9"
@@ -210,7 +212,7 @@ export default function YeniTakipPage() {
                 className="mt-2 w-full"
                 onClick={handleSelectAll}
               >
-                Tümünü Seç
+                {t.common.selectAll}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             )}
@@ -236,7 +238,7 @@ export default function YeniTakipPage() {
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
-                  {searchLeft ? "Sonuç bulunamadı" : "Tüm GSM'ler seçildi"}
+                  {searchLeft ? t.takipler.noResultsFound : t.takipler.allGsmsSelected}
                 </p>
               )}
             </ScrollArea>
@@ -249,16 +251,16 @@ export default function YeniTakipPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Check className="h-4 w-4" />
-                Seçilen GSM'ler
+                {t.takipler.selectedGsms}
               </CardTitle>
               <span className="text-sm text-muted-foreground">
-                {selectedGsmler.length} adet
+                {t.takipler.itemsCount.replace("{count}", selectedGsmler.length.toString())}
               </span>
             </div>
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Seçilenler içinde ara..."
+                placeholder={t.takipler.searchInSelected}
                 value={searchRight}
                 onChange={(e) => setSearchRight(e.target.value)}
                 className="pl-9"
@@ -272,7 +274,7 @@ export default function YeniTakipPage() {
                 onClick={handleDeselectAll}
               >
                 <X className="mr-2 h-4 w-4" />
-                Tümünü Kaldır
+                {t.takipler.removeAll}
               </Button>
             )}
           </CardHeader>
@@ -294,8 +296,8 @@ export default function YeniTakipPage() {
               ) : (
                 <p className="text-center text-muted-foreground py-8">
                   {searchRight
-                    ? "Sonuç bulunamadı"
-                    : "Takip eklemek için sol listeden GSM seçin"}
+                    ? t.takipler.noResultsFound
+                    : t.takipler.selectGsmInstructions}
                 </p>
               )}
             </ScrollArea>
@@ -305,15 +307,15 @@ export default function YeniTakipPage() {
         {/* Right Column - Date Settings */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="text-base">Takip Ayarları</CardTitle>
+            <CardTitle className="text-base">{t.takipler.takipSettings}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label>Başlama Tarihi</Label>
+              <Label>{t.takipler.startDate}</Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="GG.AA.YYYY"
+                  placeholder={t.common.dateFormatPlaceholder}
                   value={format(baslamaTarihi, "dd.MM.yyyy")}
                   onChange={(e) => {
                     const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())
@@ -342,11 +344,11 @@ export default function YeniTakipPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Bitiş Tarihi</Label>
+              <Label>{t.takipler.endDate}</Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="GG.AA.YYYY"
+                  placeholder={t.common.dateFormatPlaceholder}
                   value={format(bitisTarihi, "dd.MM.yyyy")}
                   onChange={(e) => {
                     const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())
@@ -373,13 +375,13 @@ export default function YeniTakipPage() {
                 </Popover>
               </div>
               <p className="text-xs text-muted-foreground">
-                Varsayılan: Başlama + 90 gün
+                {t.takipler.defaultPlusDays}
               </p>
             </div>
 
             <div className="pt-4 border-t">
               <div className="flex items-center justify-between text-sm mb-4">
-                <span className="text-muted-foreground">Seçilen GSM:</span>
+                <span className="text-muted-foreground">{t.takipler.selectedGsmCount}</span>
                 <span className="font-bold text-lg">{selectedGsmIds.size}</span>
               </div>
 
@@ -392,20 +394,20 @@ export default function YeniTakipPage() {
                 {bulkCreateTakip.isPending ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Oluşturuluyor...
+                    {t.takipler.creating}
                   </>
                 ) : (
                   <>
-                    {selectedGsmIds.size} Takip Oluştur
+                    {t.takipler.createMultipleTakip.replace("{count}", selectedGsmIds.size.toString())}
                   </>
                 )}
               </Button>
             </div>
 
             <p className="text-xs text-muted-foreground text-center">
-              Her GSM için ayrı takip kaydı oluşturulacak.
+              {t.takipler.eachGsmWillGetSeparateTakip}
               <br />
-              Sonrasında her birinin durumunu ayrı ayrı değiştirebilirsiniz.
+              {t.takipler.canUpdateStatusIndividually}
             </p>
           </CardContent>
         </Card>

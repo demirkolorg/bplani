@@ -5,6 +5,8 @@ export const takipler: TakiplerTranslations = {
   pageTitle: "Follow-ups",
   pageDescription: "Manage customer follow-ups",
   newTakipButton: "New Follow-up",
+  newTakipPageTitle: "Add New Follow-up",
+  newTakipPageDescription: "Select phone numbers to add follow-ups",
 
   newTakip: "New Follow-up",
   editTakip: "Edit Follow-up",
@@ -36,6 +38,10 @@ export const takipler: TakiplerTranslations = {
   addTakipDescription: "Create a new follow-up record for phone {gsm}.",
   activeWillBeExtended: "Existing active follow-up records will automatically be marked as \"Extended\".",
   endDateBeforeStart: "End date cannot be before start date",
+  createModalTitle: "Create New Follow-up",
+  createModalDescription: "Create a new follow-up. It will be automatically created for {name}.",
+  optional: "(Optional)",
+  creating: "Creating...",
 
   // Selection
   selectedGsms: "Selected Phones",
@@ -66,4 +72,22 @@ export const takipler: TakiplerTranslations = {
 
   // Search
   searchPlaceholder: "Search by customer name or phone...",
+
+  // New Takip Page
+  availableGsms: "Available Phones",
+  itemsCount: "{count} items",
+  searchGsmOrCustomer: "Search phone or customer...",
+  removeAll: "Remove All",
+  noResultsFound: "No results found",
+  allGsmsSelected: "All phones selected",
+  selectGsmInstructions: "Select phones from the left list to add follow-ups",
+  takipSettings: "Follow-up Settings",
+  selectedGsmCount: "Selected Phones:",
+  createMultipleTakip: "Create {count} Follow-ups",
+  defaultPlusDays: "Default: Start date + 90 days",
+  eachGsmWillGetSeparateTakip: "A separate follow-up record will be created for each phone.",
+  canUpdateStatusIndividually: "You can update the status of each one individually later.",
+
+  // Validation
+  selectAtLeastOne: "You must select at least one phone number",
 }

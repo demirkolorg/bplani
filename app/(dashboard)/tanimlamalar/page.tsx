@@ -16,12 +16,14 @@ import { ModelTable } from "@/components/araclar/model-table"
 import { MarkaFormModal } from "@/components/araclar/marka-form-modal"
 import { ModelFormModal } from "@/components/araclar/model-form-modal"
 import { FaaliyetAlaniTreeManager } from "@/components/faaliyet/faaliyet-alani-tree-manager"
+import { useLocale } from "@/components/providers/locale-provider"
 
 type MainTab = "lokasyonlar" | "marka-model" | "faaliyet-alanlari"
 type LokasyonSubTab = "iller" | "ilceler" | "mahalleler"
 type MarkaModelSubTab = "markalar" | "modeller"
 
 export default function TanimlamalarPage() {
+  const { t } = useLocale()
   const [mainTab, setMainTab] = React.useState<MainTab>("lokasyonlar")
   const [lokasyonTab, setLokasyonTab] = React.useState<LokasyonSubTab>("iller")
   const [markaModelTab, setMarkaModelTab] = React.useState<MarkaModelSubTab>("markalar")
@@ -65,21 +67,21 @@ export default function TanimlamalarPage() {
     if (mainTab === "lokasyonlar") {
       switch (lokasyonTab) {
         case "iller":
-          return "Yeni İl"
+          return t.tanimlamalar.newIl
         case "ilceler":
-          return "Yeni İlçe"
+          return t.tanimlamalar.newIlce
         case "mahalleler":
-          return "Yeni Mahalle"
+          return t.tanimlamalar.newMahalle
       }
     } else if (mainTab === "marka-model") {
       switch (markaModelTab) {
         case "markalar":
-          return "Yeni Marka"
+          return t.tanimlamalar.newMarka
         case "modeller":
-          return "Yeni Model"
+          return t.tanimlamalar.newModel
       }
     }
-    return "Yeni"
+    return t.tanimlamalar.newButton
   }
 
   // Hide add button for faaliyet-alanlari (it has its own)
@@ -89,8 +91,8 @@ export default function TanimlamalarPage() {
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Tanımlamalar</h1>
-          <p className="text-muted-foreground">Lokasyon ve araç tanımlarını yönetin</p>
+          <h1 className="text-2xl font-bold">{t.tanimlamalar.pageTitle}</h1>
+          <p className="text-muted-foreground">{t.tanimlamalar.pageDescription}</p>
         </div>
         {showAddButton && (
           <Button onClick={handleAddNew}>
@@ -105,15 +107,15 @@ export default function TanimlamalarPage() {
         <TabsList className="mb-4">
           <TabsTrigger value="lokasyonlar" className="gap-2">
             <MapPin className="h-4 w-4" />
-            Lokasyonlar
+            {t.tanimlamalar.lokasyonlar}
           </TabsTrigger>
           <TabsTrigger value="marka-model" className="gap-2">
             <Car className="h-4 w-4" />
-            Marka Model
+            {t.tanimlamalar.markaModel}
           </TabsTrigger>
           <TabsTrigger value="faaliyet-alanlari" className="gap-2">
             <Briefcase className="h-4 w-4" />
-            Faaliyet Alanları
+            {t.tanimlamalar.faaliyetAlanlari}
           </TabsTrigger>
         </TabsList>
 
@@ -121,9 +123,9 @@ export default function TanimlamalarPage() {
         <TabsContent value="lokasyonlar">
           <Tabs value={lokasyonTab} onValueChange={(v) => setLokasyonTab(v as LokasyonSubTab)}>
             <TabsList>
-              <TabsTrigger value="iller">İller</TabsTrigger>
-              <TabsTrigger value="ilceler">İlçeler</TabsTrigger>
-              <TabsTrigger value="mahalleler">Mahalleler</TabsTrigger>
+              <TabsTrigger value="iller">{t.tanimlamalar.iller}</TabsTrigger>
+              <TabsTrigger value="ilceler">{t.tanimlamalar.ilceler}</TabsTrigger>
+              <TabsTrigger value="mahalleler">{t.tanimlamalar.mahalleler}</TabsTrigger>
             </TabsList>
             <TabsContent value="iller" className="mt-4">
               <IlTable />
@@ -141,8 +143,8 @@ export default function TanimlamalarPage() {
         <TabsContent value="marka-model">
           <Tabs value={markaModelTab} onValueChange={(v) => setMarkaModelTab(v as MarkaModelSubTab)}>
             <TabsList>
-              <TabsTrigger value="markalar">Markalar</TabsTrigger>
-              <TabsTrigger value="modeller">Modeller</TabsTrigger>
+              <TabsTrigger value="markalar">{t.tanimlamalar.markalar}</TabsTrigger>
+              <TabsTrigger value="modeller">{t.tanimlamalar.modeller}</TabsTrigger>
             </TabsList>
             <TabsContent value="markalar" className="mt-4">
               <MarkaTable />

@@ -21,6 +21,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { LokasyonSelector } from "@/components/lokasyon/lokasyon-selector"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
 interface YeniOperasyonModalProps {
   open: boolean
@@ -35,6 +37,7 @@ export function YeniOperasyonModal({
   kisiId,
   kisiAd,
 }: YeniOperasyonModalProps) {
+  const { t } = useLocale()
   const createOperasyon = useCreateOperasyon()
 
   // Form state
@@ -87,9 +90,9 @@ export function YeniOperasyonModal({
       <DialogContent className="max-w-2xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Yeni Operasyon Oluştur</DialogTitle>
+            <DialogTitle>{t.operasyonlar.createModalTitle}</DialogTitle>
             <DialogDescription>
-              Yeni bir operasyon oluşturun. <span className="font-medium">{kisiAd}</span> otomatik olarak katılımcı olarak eklenecek.
+              {interpolate(t.operasyonlar.createModalDescription, { name: kisiAd })}
             </DialogDescription>
           </DialogHeader>
 
@@ -104,12 +107,12 @@ export function YeniOperasyonModal({
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                Operasyon Tarihi ve Saati
+                {t.operasyonlar.dateTime}
               </Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="GG.AA.YYYY"
+                  placeholder={t.common.dateFormatPlaceholder}
                   value={format(tarih, "dd.MM.yyyy")}
                   onChange={(e) => {
                     const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())
@@ -139,12 +142,12 @@ export function YeniOperasyonModal({
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <Input
                   type="time"
-                  placeholder="SS:DD"
+                  placeholder={t.common.timeFormatPlaceholder}
                   value={saat}
                   onChange={(e) => setSaat(e.target.value)}
                   className="w-32"
                 />
-                <span className="text-xs text-muted-foreground">(Opsiyonel)</span>
+                <span className="text-xs text-muted-foreground">{t.operasyonlar.optional}</span>
               </div>
             </div>
 
@@ -152,7 +155,7 @@ export function YeniOperasyonModal({
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-green-600" />
-                Operasyon Adresi
+                {t.operasyonlar.operasyonAddress}
               </Label>
               <LokasyonSelector
                 value={lokasyon}
@@ -163,12 +166,12 @@ export function YeniOperasyonModal({
 
             {/* Adres Detay */}
             <div className="space-y-2">
-              <Label htmlFor="adresDetay">Adres Detayı</Label>
+              <Label htmlFor="adresDetay">{t.operasyonlar.addressDetail}</Label>
               <Textarea
                 id="adresDetay"
                 value={adresDetay}
                 onChange={(e) => setAdresDetay(e.target.value)}
-                placeholder="Sokak, bina no, daire..."
+                placeholder={t.operasyonlar.addressDetailPlaceholder}
                 rows={2}
               />
             </div>
@@ -177,13 +180,13 @@ export function YeniOperasyonModal({
             <div className="space-y-2">
               <Label htmlFor="notlar" className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-orange-600" />
-                Notlar
+                {t.common.notes}
               </Label>
               <Textarea
                 id="notlar"
                 value={notlar}
                 onChange={(e) => setNotlar(e.target.value)}
-                placeholder="Operasyon hakkında notlar..."
+                placeholder={t.operasyonlar.notesPlaceholder}
                 rows={3}
               />
             </div>
@@ -196,13 +199,13 @@ export function YeniOperasyonModal({
               onClick={() => onOpenChange(false)}
               disabled={createOperasyon.isPending}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={createOperasyon.isPending}>
               {createOperasyon.isPending && (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               )}
-              Oluştur
+              {createOperasyon.isPending ? t.operasyonlar.creating : t.common.create}
             </Button>
           </DialogFooter>
         </form>

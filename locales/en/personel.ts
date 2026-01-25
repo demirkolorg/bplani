@@ -5,6 +5,8 @@ export const personel: PersonelTranslations = {
   pageTitle: "Staff",
   pageDescription: "View and manage all staff",
   newPersonelButton: "New Staff",
+  newPersonelPageTitle: "New Staff",
+  newPersonelPageDescription: "Create a new system user",
 
   newPersonel: "New Staff",
   editPersonel: "Edit Staff",

@@ -529,7 +529,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                     onCheckedChange={(checked) => handleChange("pio", checked)}
                   />
                   <Label htmlFor="pio" className="cursor-pointer text-xs">
-                    PIO
+                    {t.kisiler.pio}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -539,7 +539,7 @@ export function KisiForm({ initialData, onSuccess, onCancel, inModal }: KisiForm
                     onCheckedChange={(checked) => handleChange("asli", checked)}
                   />
                   <Label htmlFor="asli" className="cursor-pointer text-xs">
-                    Asli
+                    {t.kisiler.asli}
                   </Label>
                 </div>
               </div>

@@ -2,7 +2,7 @@ import { z } from "zod"
 
 // Global search query validation
 export const globalSearchQuerySchema = z.object({
-  q: z.string().min(2, "Arama en az 2 karakter olmalıdır").max(100, "Arama en fazla 100 karakter olabilir"),
+  q: z.string().min(2, "Search must be at least 2 characters").max(100, "Search must be at most 100 characters"),
   limit: z.coerce.number().int().positive().max(10).default(5),
 })
 
@@ -15,6 +15,19 @@ export interface SearchResultItem {
   subtitle?: string
   url: string
   category: string
+  metadata?: {
+    // For kisiler
+    tt?: boolean
+    tc?: string
+
+    // For lokasyonlar
+    locationType?: "il" | "ilce" | "mahalle"
+    plaka?: string
+    parentLocation?: string
+
+    // For markalar
+    isMarka?: boolean
+  }
 }
 
 // Search response type

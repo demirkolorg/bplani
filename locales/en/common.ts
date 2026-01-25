@@ -89,4 +89,31 @@ export const common: CommonTranslations = {
   firstName: "First Name",
   lastName: "Last Name",
   fullName: "Full Name",
+
+  // Format placeholders
+  dateFormatPlaceholder: "DD.MM.YYYY",
+  timeFormatPlaceholder: "HH:MM",
+  tcFormatPlaceholder: "11 digit ID number",
+
+  // Search placeholders
+  searchGsmOrCustomer: "Search GSM number or customer...",
+  selectGsm: "Select GSM...",
+  noResultsFound: "No results found.",
+  gsmNotFound: "GSM not found.",
+  categoryNotFound: "Category not found.",
+
+  // Labels
+  tcLabel: "ID:",
+  gsmLabel: "GSM:",
+
+  // Status badges
+  added: "Added",
+  cleared: "Cleared",
+
+  // Navigation
+  backToOperations: "Back to Operations",
+  backToIntroductions: "Back to Introductions",
+
+  // Selection
+  selectedCount: "{count} selected",
 }

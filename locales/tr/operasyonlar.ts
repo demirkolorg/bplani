@@ -5,6 +5,8 @@ export const operasyonlar: OperasyonlarTranslations = {
   pageTitle: "Operasyonlar",
   pageDescription: "Tüm operasyonları görüntüleyin ve yönetin",
   newOperasyonButton: "Yeni Operasyon",
+  newOperasyonPageTitle: "Yeni Operasyon",
+  newOperasyonPageDescription: "Operasyona katılacak kişileri seçin ve operasyon bilgilerini girin",
 
   newOperasyon: "Yeni Operasyon",
   editOperasyon: "Operasyon Düzenle",
@@ -23,12 +25,20 @@ export const operasyonlar: OperasyonlarTranslations = {
   notesPlaceholder: "Operasyon hakkında notlar...",
   editOperasyonDescription: "Operasyon bilgilerini güncelleyin. Katılımcıları detay sayfasından yönetebilirsiniz.",
 
+  // Modal
+  createModalTitle: "Yeni Operasyon Oluştur",
+  createModalDescription: "Yeni bir operasyon oluşturun. {name} otomatik olarak katılımcı olarak eklenecek.",
+  optional: "(Opsiyonel)",
+  creating: "Oluşturuluyor...",
+
   // Table columns
   date: "Tarih",
   address: "Adres",
   count: "Sayı",
   notes: "Notlar",
   unknownPerson: "Bilinmeyen",
+  selectAtLeastOne: "En az bir katılımcı seçmelisiniz",
+  participantStats: "({mCount} Müşteri, {aCount} Aday)",
 
   // Sort options
   dateNewOld: "Tarih (Yeni → Eski)",
@@ -55,4 +65,20 @@ export const operasyonlar: OperasyonlarTranslations = {
   useAddButton: "Yukarıdaki Ekle butonunu kullanın",
   removeParticipant: "Katılımcıyı Kaldır",
   removeParticipantConfirm: "Bu kişiyi operasyondan kaldırmak istediğinizden emin misiniz?",
+
+  // New Operasyon Page
+  availablePeople: "Mevcut Kişiler",
+  itemsCount: "{count} adet",
+  searchByNameOrTc: "Ad, soyad veya TC ile ara...",
+  searchInSelected: "Seçilenler içinde ara...",
+  removeAll: "Tümünü Kaldır",
+  noResultsFound: "Sonuç bulunamadı",
+  allPeopleSelected: "Tüm kişiler seçildi",
+  selectPeopleInstructions: "Operasyona katılacak kişileri sol listeden seçin",
+  operasyonInfo: "Operasyon Bilgileri",
+  createOperasyonButton: "Operasyon Oluştur",
+
+  // Additional
+  selectedCountText: "operasyon seçildi",
+  notFound: "Operasyon bulunamadı",
 }

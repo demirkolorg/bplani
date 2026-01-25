@@ -4,6 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { useTabParams } from "@/components/providers/params-provider"
 import { useTabTitle } from "@/hooks/use-tab-title"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Pencil, Calendar, MapPin, FileText, Info, Users } from "lucide-react"
 
 import { useTanitim } from "@/hooks/use-tanitimlar"
@@ -24,6 +25,7 @@ import { TanitimFormModal } from "@/components/tanitimlar/tanitim-form-modal"
 import { TanitimKatilimciList } from "@/components/tanitimlar/tanitim-katilimci-list"
 
 export default function TanitimDetayPage() {
+  const { t } = useLocale()
   const params = useTabParams<{ id: string }>()
   const id = params.id
 
@@ -60,10 +62,10 @@ export default function TanitimDetayPage() {
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">
-              {error instanceof Error ? error.message : "Tanıtım bulunamadı"}
+              {error instanceof Error ? error.message : t.tanitimlar.notFound}
             </p>
             <Button asChild className="mt-4">
-              <Link href="/tanitimlar">Tanıtımlara Dön</Link>
+              <Link href="/tanitimlar">{t.common.backToIntroductions}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -184,12 +186,12 @@ export default function TanitimDetayPage() {
       <div className="flex flex-wrap items-center gap-6 mb-6 p-4 bg-muted/50 rounded-lg">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-blue-600" />
-          <span className="text-sm text-muted-foreground">Katılımcı:</span>
+          <span className="text-sm text-muted-foreground">{t.tanitimlar.participants}:</span>
           <Badge variant="secondary" className="font-mono">
             {tanitim.katilimcilar?.length || 0}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            ({tanitim.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} Müşteri, {tanitim.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} Aday)
+            ({tanitim.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} {t.kisiler.tipMusteri}, {tanitim.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} {t.kisiler.tipAday})
           </span>
         </div>
         {fullAddress && (

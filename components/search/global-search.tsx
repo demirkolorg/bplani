@@ -29,23 +29,25 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useGlobalSearch } from "@/hooks/use-global-search"
 import { SearchResultItemComponent } from "./search-result-item"
 import type { SearchResultItem } from "@/lib/validations"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
-// Category display names and icons
-const categoryConfig: Record<string, { label: string; icon: LucideIcon }> = {
-  kisiler: { label: "Kişiler", icon: Users },
-  gsmler: { label: "GSM Numaraları", icon: Phone },
-  adresler: { label: "Adresler", icon: MapPin },
-  personel: { label: "Personel", icon: UserCog },
-  tanitimlar: { label: "Tanıtımlar", icon: Megaphone },
-  operasyonlar: { label: "Operasyonlar", icon: Workflow },
-  alarmlar: { label: "Alarmlar", icon: Bell },
-  takipler: { label: "Takipler", icon: CalendarClock },
-  araclar: { label: "Araçlar", icon: Car },
-  markalar: { label: "Markalar", icon: Tag },
-  modeller: { label: "Modeller", icon: Tag },
-  lokasyonlar: { label: "Lokasyonlar", icon: MapPin },
-  notlar: { label: "Notlar", icon: StickyNote },
-  loglar: { label: "Loglar", icon: Activity },
+// Category icons mapping
+const categoryIcons: Record<string, LucideIcon> = {
+  kisiler: Users,
+  gsmler: Phone,
+  adresler: MapPin,
+  personel: UserCog,
+  tanitimlar: Megaphone,
+  operasyonlar: Workflow,
+  alarmlar: Bell,
+  takipler: CalendarClock,
+  araclar: Car,
+  markalar: Tag,
+  modeller: Tag,
+  lokasyonlar: MapPin,
+  notlar: StickyNote,
+  loglar: Activity,
 }
 
 // Category order for display
@@ -73,8 +75,31 @@ interface GlobalSearchProps {
 
 export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const router = useRouter()
+  const { t, locale } = useLocale()
   const [query, setQuery] = React.useState("")
-  const { data, isLoading, isFetching } = useGlobalSearch(query)
+  const { data, isLoading, isFetching } = useGlobalSearch(query, locale)
+
+  // Get category label from translations
+  const getCategoryLabel = React.useCallback((categoryKey: string): string => {
+    const keyMap: Record<string, keyof typeof t.search> = {
+      kisiler: "kisiler",
+      gsmler: "gsmNumaralari",
+      adresler: "adresler",
+      personel: "personel",
+      tanitimlar: "tanitimlar",
+      operasyonlar: "operasyonlar",
+      alarmlar: "alarmlar",
+      takipler: "takipler",
+      araclar: "araclar",
+      markalar: "markalar",
+      modeller: "modeller",
+      lokasyonlar: "lokasyonlar",
+      notlar: "notlar",
+      loglar: "loglar",
+    }
+    const translationKey = keyMap[categoryKey]
+    return translationKey ? t.search[translationKey] : categoryKey
+  }, [t.search])
 
   // Reset query when dialog closes
   React.useEffect(() => {
@@ -107,20 +132,20 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     <CommandDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Global Arama"
-      description="Tüm kayıtlarda arama yapın"
+      title={t.search.globalSearch}
+      description={t.search.searchDescription}
       className="sm:max-w-2xl max-w-[calc(100%-2rem)]"
     >
       <Command shouldFilter={false} className="rounded-xl">
         <CommandInput
-          placeholder="Ara... (en az 2 karakter)"
+          placeholder={t.search.searchPlaceholder}
           value={query}
           onValueChange={setQuery}
         />
         <CommandList className="max-h-[400px]">
           {showHint && (
             <div className="py-6 text-center text-sm text-muted-foreground">
-              Aramaya başlamak için en az 2 karakter girin
+              {t.search.startTypingToSearch}
             </div>
           )}
 
@@ -141,19 +166,19 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
           {showEmpty && (
             <CommandEmpty>
-              &quot;{query}&quot; için sonuç bulunamadı
+              {interpolate(t.search.noResultsFor, { query })}
             </CommandEmpty>
           )}
 
           {showResults && data && (
             <>
               <div className="px-3 py-2 text-xs text-muted-foreground border-b">
-                {data.totalResults} sonuç bulundu
+                {interpolate(t.search.resultsFound, { count: data.totalResults })}
               </div>
               {nonEmptyCategories.map((categoryKey) => {
-                const config = categoryConfig[categoryKey]
+                const Icon = categoryIcons[categoryKey]
                 const items = data.results[categoryKey as keyof typeof data.results] as SearchResultItem[]
-                const Icon = config?.icon
+                const categoryLabel = getCategoryLabel(categoryKey)
 
                 return (
                   <CommandGroup
@@ -161,7 +186,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                     heading={
                       <div className="flex items-center gap-2">
                         {Icon && <Icon className="h-3.5 w-3.5" />}
-                        <span>{config?.label || categoryKey}</span>
+                        <span>{categoryLabel}</span>
                         <span className="text-muted-foreground/60">({items.length})</span>
                       </div>
                     }

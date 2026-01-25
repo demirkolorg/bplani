@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Check, ChevronsUpDown, Briefcase, Folder, X, Search } from "lucide-react"
 import { useFaaliyetAlaniTree, type FaaliyetAlani } from "@/hooks/use-faaliyet-alani"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -65,9 +66,11 @@ export function FaaliyetSelector({
   value,
   onChange,
   disabled,
-  placeholder = "Faaliyet alanı seçin...",
+  placeholder,
   maxDisplay = 3,
 }: FaaliyetSelectorProps) {
+  const { t } = useLocale()
+  const defaultPlaceholder = placeholder || t.faaliyet.selectFaaliyetAlani
   const { data: tree = [], isLoading } = useFaaliyetAlaniTree()
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState("")
@@ -172,7 +175,7 @@ export function FaaliyetSelector({
                 )}
               </>
             ) : (
-              <span>{isLoading ? "Yükleniyor..." : placeholder}</span>
+              <span>{isLoading ? t.common.loading : defaultPlaceholder}</span>
             )}
           </div>
           <div className="flex items-center gap-1 ml-2 shrink-0">
@@ -198,7 +201,7 @@ export function FaaliyetSelector({
       <PopoverContent className="w-[450px] p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Faaliyet alanı ara..."
+            placeholder={t.faaliyet.searchFaaliyetAlani}
             value={search}
             onValueChange={setSearch}
           />
@@ -206,7 +209,7 @@ export function FaaliyetSelector({
             <CommandEmpty>
               <div className="flex flex-col items-center py-6 text-center">
                 <Search className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                <p className="text-sm text-muted-foreground">Sonuç bulunamadı.</p>
+                <p className="text-sm text-muted-foreground">{t.common.noResultsFound}</p>
               </div>
             </CommandEmpty>
             <CommandGroup>

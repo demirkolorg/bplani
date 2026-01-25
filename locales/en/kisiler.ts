@@ -6,6 +6,8 @@ export const kisiler: KisilerTranslations = {
   pageDescription: "View and manage all persons",
   newKisiButton: "New Person",
   newKisi: "New Person",
+  newKisiPageTitle: "New Person",
+  newKisiPageDescription: "Create a new person record",
   editKisi: "Edit Person",
   kisiDetails: "Person Details",
 
@@ -18,6 +20,7 @@ export const kisiler: KisilerTranslations = {
   // Fields
   tcKimlik: "ID Number",
   tc11Digit: "11 digits",
+  tcLabel: "ID:",
   tip: "Type",
   tt: "TT",
   tipMusteri: "Customer",
@@ -29,6 +32,14 @@ export const kisiler: KisilerTranslations = {
   asli: "Primary",
   asliFull: "Primary Person",
   faaliyetAlanlari: "Activity Areas",
+  selectFaaliyetAlani: "Select activity area...",
+  searchFaaliyetAlani: "Search activity area...",
+  updateFaaliyetError: "Error updating activity areas",
+  addParticipantError: "Error adding participant",
+  selectOperationToAdd: "Select operations to add {name} to",
+  selectIntroductionToAdd: "Select introductions to add {name} to",
+  searchOperasyon: "Search operation (address, date...)",
+  searchTanitim: "Search introduction (address, date...)",
 
   // Photo
   photo: "Photo",

@@ -5,6 +5,8 @@ export const takipler: TakiplerTranslations = {
   pageTitle: "Takipler",
   pageDescription: "Müşteri takiplerini yönetin",
   newTakipButton: "Yeni Takip",
+  newTakipPageTitle: "Yeni Takip Ekle",
+  newTakipPageDescription: "Takip eklemek istediğiniz GSM numaralarını seçin",
 
   newTakip: "Yeni Takip",
   editTakip: "Takip Düzenle",
@@ -36,6 +38,10 @@ export const takipler: TakiplerTranslations = {
   addTakipDescription: "{gsm} numaralı GSM için yeni takip kaydı oluşturun.",
   activeWillBeExtended: "Mevcut aktif takip kayıtları otomatik olarak \"Uzatıldı\" durumuna geçecektir.",
   endDateBeforeStart: "Bitiş tarihi başlama tarihinden önce olamaz",
+  createModalTitle: "Yeni Takip Oluştur",
+  createModalDescription: "Yeni bir takip oluşturun. {name} için otomatik olarak oluşturulacak.",
+  optional: "(Opsiyonel)",
+  creating: "Oluşturuluyor...",
 
   // Selection
   selectedGsms: "Seçilen GSM'ler",
@@ -66,4 +72,22 @@ export const takipler: TakiplerTranslations = {
 
   // Search
   searchPlaceholder: "Müşteri adı veya GSM ile ara...",
+
+  // New Takip Page
+  availableGsms: "Mevcut GSM'ler",
+  itemsCount: "{count} adet",
+  searchGsmOrCustomer: "GSM veya müşteri ara...",
+  removeAll: "Tümünü Kaldır",
+  noResultsFound: "Sonuç bulunamadı",
+  allGsmsSelected: "Tüm GSM'ler seçildi",
+  selectGsmInstructions: "Takip eklemek için sol listeden GSM seçin",
+  takipSettings: "Takip Ayarları",
+  selectedGsmCount: "Seçilen GSM:",
+  createMultipleTakip: "{count} Takip Oluştur",
+  defaultPlusDays: "Varsayılan: Başlama + 90 gün",
+  eachGsmWillGetSeparateTakip: "Her GSM için ayrı takip kaydı oluşturulacak.",
+  canUpdateStatusIndividually: "Sonrasında her birinin durumunu ayrı ayrı değiştirebilirsiniz.",
+
+  // Validation
+  selectAtLeastOne: "En az bir GSM seçmelisiniz",
 }

@@ -89,4 +89,31 @@ export const common: CommonTranslations = {
   firstName: "Ad",
   lastName: "Soyad",
   fullName: "Ad Soyad",
+
+  // Format placeholders
+  dateFormatPlaceholder: "GG.AA.YYYY",
+  timeFormatPlaceholder: "SS:DD",
+  tcFormatPlaceholder: "11 haneli TC kimlik numarası",
+
+  // Search placeholders
+  searchGsmOrCustomer: "GSM numarası veya müşteri ara...",
+  selectGsm: "GSM seçin...",
+  noResultsFound: "Sonuç bulunamadı.",
+  gsmNotFound: "GSM bulunamadı.",
+  categoryNotFound: "Kategori bulunamadı.",
+
+  // Labels
+  tcLabel: "TC:",
+  gsmLabel: "GSM:",
+
+  // Status badges
+  added: "Eklendi",
+  cleared: "Temizlendi",
+
+  // Navigation
+  backToOperations: "Operasyonlara Dön",
+  backToIntroductions: "Tanıtımlara Dön",
+
+  // Selection
+  selectedCount: "{count} seçildi",
 }

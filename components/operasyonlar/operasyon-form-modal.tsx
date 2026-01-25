@@ -145,7 +145,7 @@ export function OperasyonFormModal({
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="GG.AA.YYYY"
+                  placeholder={t.common.dateFormatPlaceholder}
                   value={format(tarih, "dd.MM.yyyy")}
                   onChange={(e) => {
                     const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())
@@ -175,7 +175,7 @@ export function OperasyonFormModal({
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <Input
                   type="time"
-                  placeholder="SS:DD"
+                  placeholder={t.common.timeFormatPlaceholder}
                   value={saat}
                   onChange={(e) => setSaat(e.target.value)}
                   className="w-32"

@@ -10,6 +10,7 @@ import {
   type FaaliyetAlani,
 } from "@/hooks/use-faaliyet-alani"
 import { createFaaliyetAlaniSchema, type CreateFaaliyetAlaniInput } from "@/lib/validations"
+import { useLocale } from "@/components/providers/locale-provider"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -62,6 +63,7 @@ export function FaaliyetAlaniForm({
   inModal = false,
 }: FaaliyetAlaniFormProps) {
   const router = useRouter()
+  const { t } = useLocale()
   const createFaaliyetAlani = useCreateFaaliyetAlani()
   const updateFaaliyetAlani = useUpdateFaaliyetAlani()
   const { data: tree = [] } = useFaaliyetAlaniTree()
@@ -176,7 +178,7 @@ export function FaaliyetAlaniForm({
           id="ad"
           value={formData.ad}
           onChange={(e) => handleChange("ad", e.target.value)}
-          placeholder="Faaliyet alanı adı"
+          placeholder={t.faaliyet.faaliyetAlaniAdiPlaceholder}
           required
         />
         {errors.ad && <p className="text-sm text-destructive">{errors.ad}</p>}
@@ -205,7 +207,7 @@ export function FaaliyetAlaniForm({
           </PopoverTrigger>
           <PopoverContent className="w-[400px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="Üst kategori ara..." />
+              <CommandInput placeholder={t.faaliyet.searchUstKategori} />
               <CommandList>
                 <CommandEmpty>Kategori bulunamadı.</CommandEmpty>
                 <CommandGroup>

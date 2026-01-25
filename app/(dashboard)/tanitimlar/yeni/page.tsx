@@ -9,6 +9,7 @@ import { tr } from "date-fns/locale"
 
 import { useKisiler, type Kisi } from "@/hooks/use-kisiler"
 import { useCreateTanitim } from "@/hooks/use-tanitimlar"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils"
 
 export default function YeniTanitimPage() {
   const router = useRouter()
+  const { t } = useLocale()
   const { data: kisilerData, isLoading } = useKisiler({ limit: 100 })
   const createTanitim = useCreateTanitim()
 
@@ -94,7 +96,7 @@ export default function YeniTanitimPage() {
 
   const handleSubmit = async () => {
     if (selectedKisiIds.size === 0) {
-      setError("En az bir katılımcı seçmelisiniz")
+      setError(t.operasyonlar.selectAtLeastOne)
       return
     }
 
@@ -148,12 +150,12 @@ export default function YeniTanitimPage() {
                   : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
               )}
             >
-              {kisi.tt ? "Müşteri" : "Aday"}
+              {kisi.tt ? t.kisiler.tipMusteri : t.kisiler.tipAday}
             </Badge>
           </div>
           <div className="text-xs text-muted-foreground space-y-0.5">
             {kisi.tc && (
-              <p><span className="text-muted-foreground/70">TC:</span> <span className="font-mono">{kisi.tc}</span></p>
+              <p><span className="text-muted-foreground/70">{t.kisiler.tcLabel}</span> <span className="font-mono">{kisi.tc}</span></p>
             )}
             {kisi.gsmler && kisi.gsmler.length > 0 && (
               <p><span className="text-muted-foreground/70">GSM:</span> <span className="font-mono">{kisi.gsmler[0].numara}</span></p>
@@ -175,9 +177,9 @@ export default function YeniTanitimPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Yeni Tanıtım</h1>
+          <h1 className="text-2xl font-bold">{t.tanitimlar.newTanitimPageTitle}</h1>
           <p className="text-muted-foreground">
-            Tanıtıma katılacak kişileri seçin ve tanıtım bilgilerini girin
+            {t.tanitimlar.newTanitimPageDescription}
           </p>
         </div>
       </div>
@@ -196,16 +198,16 @@ export default function YeniTanitimPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <User className="h-4 w-4" />
-                Mevcut Kişiler
+                {t.tanitimlar.availablePeople}
               </CardTitle>
               <span className="text-sm text-muted-foreground">
-                {filteredAvailable.length} adet
+                {t.tanitimlar.itemsCount.replace("{count}", filteredAvailable.length.toString())}
               </span>
             </div>
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Ad, soyad veya TC ile ara..."
+                placeholder={t.tanitimlar.searchByNameOrTc}
                 value={searchLeft}
                 onChange={(e) => setSearchLeft(e.target.value)}
                 className="pl-9"
@@ -218,7 +220,7 @@ export default function YeniTanitimPage() {
                 className="mt-2 w-full"
                 onClick={handleSelectAll}
               >
-                Tümünü Seç
+                {t.common.selectAll}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             )}
@@ -244,7 +246,7 @@ export default function YeniTanitimPage() {
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
-                  {searchLeft ? "Sonuç bulunamadı" : "Tüm kişiler seçildi"}
+                  {searchLeft ? t.tanitimlar.noResultsFound : t.tanitimlar.allPeopleSelected}
                 </p>
               )}
             </ScrollArea>
@@ -257,16 +259,16 @@ export default function YeniTanitimPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Check className="h-4 w-4" />
-                Seçilen Katılımcılar
+                {t.tanitimlar.selectedParticipants}
               </CardTitle>
               <span className="text-sm text-muted-foreground">
-                {selectedKisiler.length} adet
+                {t.tanitimlar.itemsCount.replace("{count}", selectedKisiler.length.toString())}
               </span>
             </div>
             <div className="relative mt-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Seçilenler içinde ara..."
+                placeholder={t.tanitimlar.searchInSelected}
                 value={searchRight}
                 onChange={(e) => setSearchRight(e.target.value)}
                 className="pl-9"
@@ -280,7 +282,7 @@ export default function YeniTanitimPage() {
                 onClick={handleDeselectAll}
               >
                 <X className="mr-2 h-4 w-4" />
-                Tümünü Kaldır
+                {t.tanitimlar.removeAll}
               </Button>
             )}
           </CardHeader>
@@ -302,8 +304,8 @@ export default function YeniTanitimPage() {
               ) : (
                 <p className="text-center text-muted-foreground py-8">
                   {searchRight
-                    ? "Sonuç bulunamadı"
-                    : "Tanıtıma katılacak kişileri sol listeden seçin"}
+                    ? t.tanitimlar.noResultsFound
+                    : t.tanitimlar.selectPeopleInstructions}
                 </p>
               )}
             </ScrollArea>
@@ -313,19 +315,19 @@ export default function YeniTanitimPage() {
         {/* Right Column - Tanıtım Ayarları */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="text-base">Tanıtım Bilgileri</CardTitle>
+            <CardTitle className="text-base">{t.tanitimlar.tanitimInfo}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Tarih ve Saat */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                Tanıtım Tarihi ve Saati
+                {t.tanitimlar.dateTime}
               </Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="GG.AA.YYYY"
+                  placeholder={t.common.dateFormatPlaceholder}
                   value={format(tarih, "dd.MM.yyyy")}
                   onChange={(e) => {
                     const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())
@@ -355,12 +357,12 @@ export default function YeniTanitimPage() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <Input
                   type="time"
-                  placeholder="SS:DD"
+                  placeholder={t.common.timeFormatPlaceholder}
                   value={saat}
                   onChange={(e) => setSaat(e.target.value)}
                   className="w-32"
                 />
-                <span className="text-xs text-muted-foreground">(Opsiyonel)</span>
+                <span className="text-xs text-muted-foreground">{t.tanitimlar.optional}</span>
               </div>
             </div>
 
@@ -368,7 +370,7 @@ export default function YeniTanitimPage() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-green-600" />
-                Tanıtım Adresi
+                {t.tanitimlar.tanitimAddress}
               </Label>
               <LokasyonSelector
                 value={lokasyon}
@@ -379,12 +381,12 @@ export default function YeniTanitimPage() {
 
             {/* Adres Detay */}
             <div className="space-y-2">
-              <Label htmlFor="adresDetay">Adres Detayı</Label>
+              <Label htmlFor="adresDetay">{t.tanitimlar.addressDetail}</Label>
               <Textarea
                 id="adresDetay"
                 value={adresDetay}
                 onChange={(e) => setAdresDetay(e.target.value)}
-                placeholder="Sokak, bina no, daire..."
+                placeholder={t.tanitimlar.addressDetailPlaceholder}
                 rows={2}
               />
             </div>
@@ -393,20 +395,20 @@ export default function YeniTanitimPage() {
             <div className="space-y-2">
               <Label htmlFor="notlar" className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-orange-600" />
-                Notlar
+                {t.common.notes}
               </Label>
               <Textarea
                 id="notlar"
                 value={notlar}
                 onChange={(e) => setNotlar(e.target.value)}
-                placeholder="Tanıtım hakkında notlar..."
+                placeholder={t.tanitimlar.notesPlaceholder}
                 rows={3}
               />
             </div>
 
             <div className="pt-4 border-t">
               <div className="flex items-center justify-between text-sm mb-4">
-                <span className="text-muted-foreground">Seçilen Katılımcı:</span>
+                <span className="text-muted-foreground">{t.tanitimlar.participantCount}</span>
                 <span className="font-bold text-lg">{selectedKisiIds.size}</span>
               </div>
 
@@ -419,18 +421,18 @@ export default function YeniTanitimPage() {
                 {createTanitim.isPending ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Oluşturuluyor...
+                    {t.tanitimlar.creating}
                   </>
                 ) : (
                   <>
-                    Tanıtım Oluştur
+                    {t.tanitimlar.createTanitimButton}
                   </>
                 )}
               </Button>
             </div>
 
             <p className="text-xs text-muted-foreground text-center">
-              Seçilen tüm kişiler bu tanıtıma katılımcı olarak eklenecektir.
+              {t.tanitimlar.allSelectedWillBeAdded}
             </p>
           </CardContent>
         </Card>

@@ -23,17 +23,6 @@ export function getPersonelSortOptions(t: Translations): SortOption[] {
   ]
 }
 
-// Legacy export for backwards compatibility
-export const personelSortOptions: SortOption[] = [
-  { label: "Ad (A → Z)", value: "ad-asc", column: "ad", direction: "asc" },
-  { label: "Ad (Z → A)", value: "ad-desc", column: "ad", direction: "desc" },
-  { label: "Soyad (A → Z)", value: "soyad-asc", column: "soyad", direction: "asc" },
-  { label: "Soyad (Z → A)", value: "soyad-desc", column: "soyad", direction: "desc" },
-  { label: "Son Giriş (Yeni → Eski)", value: "lastLoginAt-desc", column: "lastLoginAt", direction: "desc" },
-  { label: "Son Giriş (Eski → Yeni)", value: "lastLoginAt-asc", column: "lastLoginAt", direction: "asc" },
-  { label: "Oluşturma (Yeni → Eski)", value: "createdAt-desc", column: "createdAt", direction: "desc" },
-  { label: "Oluşturma (Eski → Yeni)", value: "createdAt-asc", column: "createdAt", direction: "asc" },
-]
 
 export function getPersonelColumns(t: Translations, locale: string): ColumnDef<Personel>[] {
   const dateLocale = locale === "tr" ? "tr-TR" : "en-US"

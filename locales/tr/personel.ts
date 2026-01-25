@@ -5,6 +5,8 @@ export const personel: PersonelTranslations = {
   pageTitle: "Personel",
   pageDescription: "Tüm personelleri görüntüleyin ve yönetin",
   newPersonelButton: "Yeni Personel",
+  newPersonelPageTitle: "Yeni Personel",
+  newPersonelPageDescription: "Yeni bir sistem kullanıcısı oluşturun",
 
   newPersonel: "Yeni Personel",
   editPersonel: "Personel Düzenle",

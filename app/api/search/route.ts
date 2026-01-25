@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { globalSearchQuerySchema, type SearchResultItem, type GlobalSearchResponse } from "@/lib/validations"
+import { getTranslations, type Locale } from "@/locales"
+
+// Get locale from request headers (default: "tr")
+function getLocaleFromRequest(request: NextRequest): Locale {
+  const locale = request.headers.get("x-locale") || "tr"
+  return locale === "en" ? "en" : "tr"
+}
 
 // GET /api/search - Global search across all tables
 export async function GET(request: NextRequest) {
   try {
+    const locale = getLocaleFromRequest(request)
+    const t = getTranslations(locale)
+
     const { searchParams } = new URL(request.url)
     const queryParams = Object.fromEntries(searchParams.entries())
 
     const validatedQuery = globalSearchQuerySchema.safeParse(queryParams)
     if (!validatedQuery.success) {
       return NextResponse.json(
-        { error: "Geçersiz sorgu parametreleri", details: validatedQuery.error.flatten() },
+        { error: t.api.invalidQueryParams, details: validatedQuery.error.flatten() },
         { status: 400 }
       )
     }
@@ -331,9 +341,13 @@ export async function GET(request: NextRequest) {
       kisiler: kisiler.map((k) => ({
         id: k.id,
         title: `${k.ad} ${k.soyad}`,
-        subtitle: k.tc ? `TC: ${k.tc}` : (k.tt ? "Müşteri" : "Aday"),
+        subtitle: k.tc || undefined,
         url: `/kisiler/${k.id}`,
-        category: "Kişiler",
+        category: "kisiler",
+        metadata: {
+          tt: k.tt,
+          tc: k.tc || undefined,
+        },
       })),
 
       gsmler: gsmler.map((g) => ({
@@ -341,7 +355,7 @@ export async function GET(request: NextRequest) {
         title: g.numara,
         subtitle: `${g.kisi.ad} ${g.kisi.soyad}`,
         url: `/kisiler/${g.kisiId}`,
-        category: "GSM",
+        category: "gsmler",
       })),
 
       adresler: adresler.map((a) => ({
@@ -349,7 +363,7 @@ export async function GET(request: NextRequest) {
         title: a.ad || `${a.mahalle.ilce.il.ad}, ${a.mahalle.ilce.ad}, ${a.mahalle.ad}`,
         subtitle: `${a.kisi.ad} ${a.kisi.soyad}${a.detay ? ` - ${a.detay}` : ""}`,
         url: `/kisiler/${a.kisiId}`,
-        category: "Adresler",
+        category: "adresler",
       })),
 
       personel: personelList.map((p) => ({
@@ -357,7 +371,7 @@ export async function GET(request: NextRequest) {
         title: `${p.ad} ${p.soyad}`,
         subtitle: `${p.visibleId} - ${p.rol}`,
         url: `/personel/${p.id}`,
-        category: "Personel",
+        category: "personel",
       })),
 
       tanitimlar: tanitimlar.map((t) => ({
@@ -365,7 +379,7 @@ export async function GET(request: NextRequest) {
         title: t.mahalle ? `${t.mahalle.ilce.ad}, ${t.mahalle.ad}` : "Tanıtım",
         subtitle: t.notlar?.slice(0, 50) || new Date(t.tarih).toLocaleDateString("tr-TR"),
         url: `/tanitimlar/${t.id}`,
-        category: "Tanıtımlar",
+        category: "tanitimlar",
       })),
 
       operasyonlar: operasyonlar.map((o) => ({
@@ -373,7 +387,7 @@ export async function GET(request: NextRequest) {
         title: o.mahalle ? `${o.mahalle.ilce.ad}, ${o.mahalle.ad}` : "Operasyon",
         subtitle: o.notlar?.slice(0, 50) || new Date(o.tarih).toLocaleDateString("tr-TR"),
         url: `/operasyonlar/${o.id}`,
-        category: "Operasyonlar",
+        category: "operasyonlar",
       })),
 
       alarmlar: alarmlar.map((a) => ({
@@ -381,7 +395,7 @@ export async function GET(request: NextRequest) {
         title: a.baslik || a.tip,
         subtitle: a.mesaj?.slice(0, 50) || a.durum,
         url: `/alarmlar`,
-        category: "Alarmlar",
+        category: "alarmlar",
       })),
 
       takipler: takipler.map((t) => ({
@@ -389,7 +403,7 @@ export async function GET(request: NextRequest) {
         title: t.gsm.numara,
         subtitle: `${t.gsm.kisi.ad} ${t.gsm.kisi.soyad} - ${t.durum}`,
         url: `/takipler/${t.id}`,
-        category: "Takipler",
+        category: "takipler",
       })),
 
       araclar: araclar.map((a) => ({
@@ -397,15 +411,18 @@ export async function GET(request: NextRequest) {
         title: a.plaka,
         subtitle: `${a.model.marka.ad} ${a.model.ad}${a.renk ? ` - ${a.renk}` : ""}`,
         url: `/araclar`,
-        category: "Araçlar",
+        category: "araclar",
       })),
 
       markalar: markalar.map((m) => ({
         id: m.id,
         title: m.ad,
-        subtitle: "Marka",
+        subtitle: undefined,
         url: `/tanimlamalar`,
-        category: "Markalar",
+        category: "markalar",
+        metadata: {
+          isMarka: true,
+        },
       })),
 
       modeller: modeller.map((m) => ({
@@ -413,30 +430,42 @@ export async function GET(request: NextRequest) {
         title: m.ad,
         subtitle: m.marka.ad,
         url: `/tanimlamalar`,
-        category: "Modeller",
+        category: "modeller",
       })),
 
       lokasyonlar: [
         ...iller.map((i) => ({
           id: i.id,
           title: i.ad,
-          subtitle: i.plaka ? `İl - Plaka: ${i.plaka}` : "İl",
+          subtitle: i.plaka ? String(i.plaka) : undefined,
           url: `/tanimlamalar`,
-          category: "Lokasyonlar",
+          category: "lokasyonlar",
+          metadata: {
+            locationType: "il" as const,
+            plaka: i.plaka ? String(i.plaka) : undefined,
+          },
         })),
         ...ilceler.map((i) => ({
           id: i.id,
           title: i.ad,
-          subtitle: `İlçe - ${i.il.ad}`,
+          subtitle: i.il.ad,
           url: `/tanimlamalar`,
-          category: "Lokasyonlar",
+          category: "lokasyonlar",
+          metadata: {
+            locationType: "ilce" as const,
+            parentLocation: i.il.ad,
+          },
         })),
         ...mahalleler.map((m) => ({
           id: m.id,
           title: m.ad,
-          subtitle: `Mahalle - ${m.ilce.il.ad}, ${m.ilce.ad}`,
+          subtitle: `${m.ilce.il.ad}, ${m.ilce.ad}`,
           url: `/tanimlamalar`,
-          category: "Lokasyonlar",
+          category: "lokasyonlar",
+          metadata: {
+            locationType: "mahalle" as const,
+            parentLocation: `${m.ilce.il.ad}, ${m.ilce.ad}`,
+          },
         })),
       ].slice(0, limit),
 
@@ -445,7 +474,7 @@ export async function GET(request: NextRequest) {
         title: n.icerik.slice(0, 50) + (n.icerik.length > 50 ? "..." : ""),
         subtitle: `${n.kisi.ad} ${n.kisi.soyad}`,
         url: `/kisiler/${n.kisiId}`,
-        category: "Notlar",
+        category: "notlar",
       })),
 
       loglar: loglar.map((l) => ({
@@ -453,7 +482,7 @@ export async function GET(request: NextRequest) {
         title: l.entityAd || l.aciklama || l.islem,
         subtitle: `${l.userAd || ""} ${l.userSoyad || ""} - ${l.entityType || ""}`.trim(),
         url: `/loglar`,
-        category: "Loglar",
+        category: "loglar",
       })),
     }
 
@@ -469,8 +498,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response)
   } catch (error) {
     console.error("Error in global search:", error)
+    const locale = getLocaleFromRequest(request)
+    const t = getTranslations(locale)
     return NextResponse.json(
-      { error: "Arama yapılırken bir hata oluştu" },
+      { error: t.api.searchError },
       { status: 500 }
     )
   }

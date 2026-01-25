@@ -89,6 +89,33 @@ export interface CommonTranslations {
   firstName: string
   lastName: string
   fullName: string
+
+  // Format placeholders
+  dateFormatPlaceholder: string
+  timeFormatPlaceholder: string
+  tcFormatPlaceholder: string
+
+  // Search placeholders
+  searchGsmOrCustomer: string
+  selectGsm: string
+  noResultsFound: string
+  gsmNotFound: string
+  categoryNotFound: string
+
+  // Labels
+  tcLabel: string
+  gsmLabel: string
+
+  // Status badges
+  added: string
+  cleared: string
+
+  // Navigation
+  backToOperations: string
+  backToIntroductions: string
+
+  // Selection
+  selectedCount: string
 }
 
 export interface SidebarTranslations {
@@ -237,6 +264,8 @@ export interface KisilerTranslations {
   pageDescription: string
   newKisiButton: string
   newKisi: string
+  newKisiPageTitle: string
+  newKisiPageDescription: string
   editKisi: string
   kisiDetails: string
 
@@ -260,6 +289,15 @@ export interface KisilerTranslations {
   asli: string
   asliFull: string
   faaliyetAlanlari: string
+  selectFaaliyetAlani: string
+  searchFaaliyetAlani: string
+  updateFaaliyetError: string
+  addParticipantError: string
+  selectOperationToAdd: string
+  selectIntroductionToAdd: string
+  searchOperasyon: string
+  searchTanitim: string
+  tcLabel: string
 
   // Photo
   photo: string
@@ -400,6 +438,8 @@ export interface TakiplerTranslations {
   pageTitle: string
   pageDescription: string
   newTakipButton: string
+  newTakipPageTitle: string
+  newTakipPageDescription: string
 
   newTakip: string
   editTakip: string
@@ -431,6 +471,10 @@ export interface TakiplerTranslations {
   addTakipDescription: string
   activeWillBeExtended: string
   endDateBeforeStart: string
+  createModalTitle: string
+  createModalDescription: string
+  optional: string
+  creating: string
 
   // Selection
   selectedGsms: string
@@ -461,6 +505,24 @@ export interface TakiplerTranslations {
 
   // Search
   searchPlaceholder: string
+
+  // New Takip Page
+  availableGsms: string
+  itemsCount: string
+  searchGsmOrCustomer: string
+  removeAll: string
+  noResultsFound: string
+  allGsmsSelected: string
+  selectGsmInstructions: string
+  takipSettings: string
+  selectedGsmCount: string
+  createMultipleTakip: string
+  defaultPlusDays: string
+  eachGsmWillGetSeparateTakip: string
+  canUpdateStatusIndividually: string
+
+  // Validation
+  selectAtLeastOne: string
 }
 
 export interface TanitimlarTranslations {
@@ -468,6 +530,8 @@ export interface TanitimlarTranslations {
   pageTitle: string
   pageDescription: string
   newTanitimButton: string
+  newTanitimPageTitle: string
+  newTanitimPageDescription: string
 
   newTanitim: string
   editTanitim: string
@@ -485,6 +549,12 @@ export interface TanitimlarTranslations {
   addressDetailPlaceholder: string
   notesPlaceholder: string
   editTanitimDescription: string
+
+  // Modal
+  createModalTitle: string
+  createModalDescription: string
+  optional: string
+  creating: string
 
   // Table columns
   date: string
@@ -519,6 +589,21 @@ export interface TanitimlarTranslations {
   useAddButton: string
   removeParticipant: string
   removeParticipantConfirm: string
+
+  // New Tanitim Page
+  availablePeople: string
+  itemsCount: string
+  searchByNameOrTc: string
+  removeAll: string
+  noResultsFound: string
+  allPeopleSelected: string
+  selectPeopleInstructions: string
+  tanitimInfo: string
+  createTanitimButton: string
+
+  // Additional
+  selectedCountText: string
+  notFound: string
 }
 
 export interface OperasyonlarTranslations {
@@ -526,6 +611,8 @@ export interface OperasyonlarTranslations {
   pageTitle: string
   pageDescription: string
   newOperasyonButton: string
+  newOperasyonPageTitle: string
+  newOperasyonPageDescription: string
 
   newOperasyon: string
   editOperasyon: string
@@ -544,12 +631,20 @@ export interface OperasyonlarTranslations {
   notesPlaceholder: string
   editOperasyonDescription: string
 
+  // Modal
+  createModalTitle: string
+  createModalDescription: string
+  optional: string
+  creating: string
+
   // Table columns
   date: string
   address: string
   count: string
   notes: string
   unknownPerson: string
+  selectAtLeastOne: string
+  participantStats: string
 
   // Sort options
   dateNewOld: string
@@ -576,6 +671,22 @@ export interface OperasyonlarTranslations {
   useAddButton: string
   removeParticipant: string
   removeParticipantConfirm: string
+
+  // New Operasyon Page
+  availablePeople: string
+  itemsCount: string
+  searchByNameOrTc: string
+  searchInSelected: string
+  removeAll: string
+  noResultsFound: string
+  allPeopleSelected: string
+  selectPeopleInstructions: string
+  operasyonInfo: string
+  createOperasyonButton: string
+
+  // Additional
+  selectedCountText: string
+  notFound: string
 }
 
 export interface AlarmlarTranslations {
@@ -643,6 +754,8 @@ export interface PersonelTranslations {
   pageTitle: string
   pageDescription: string
   newPersonelButton: string
+  newPersonelPageTitle: string
+  newPersonelPageDescription: string
 
   newPersonel: string
   editPersonel: string
@@ -792,7 +905,36 @@ export interface NumaralarTranslations {
   pageTitle: string
   pageDescription: string
 
-  // Table
+  // Table columns
+  numara: string
+  kisi: string
+  tip: string
+  takip: string
+  baslama: string
+  bitis: string
+  kalanGun: string
+
+  // Table values
+  musteri: string
+  aday: string
+  takipVar: string
+  takipYok: string
+  gunGecti: string
+  bugun: string
+  gun: string
+
+  // Sort options
+  numaraAZ: string
+  numaraZA: string
+  kisiAdAZ: string
+  kisiAdZA: string
+  enYeni: string
+  enEski: string
+
+  // Actions
+  goToPerson: string
+
+  // Legacy (keeping for backward compatibility)
   gsm: string
   owner: string
   isPrimary: string
@@ -914,12 +1056,20 @@ export interface FaaliyetTranslations {
   addFirstArea: string
   selectedArea: string
   hasLinkedKisiler: string
+  selectFaaliyetAlani: string
+  searchFaaliyetAlani: string
+  faaliyetAlaniAdiPlaceholder: string
+  searchUstKategori: string
 }
 
 export interface SearchTranslations {
   globalSearch: string
+  searchDescription: string
+  searchPlaceholder: string
   searchMinChars: string
   startTypingToSearch: string
+  noResultsFor: string
+  resultsFound: string
 
   // Categories
   kisiler: string
@@ -934,18 +1084,132 @@ export interface SearchTranslations {
   takipler: string
   alarmlar: string
   loglar: string
+  markalar: string
+  modeller: string
+
+  // Subtitles
+  markaLabel: string
+  ilLabel: string
+  ilceLabel: string
+  mahalleLabel: string
+  ilWithPlaka: string
 }
 
 export interface LoglarTranslations {
+  // Page
+  pageTitle: string
+  pageDescription: string
+
+  // Actions
   create: string
   update: string
   delete: string
   login: string
   logout: string
   failedLogin: string
+  bulkCreate: string
+  statusChange: string
+
+  // Filters
+  filters: string
+  refresh: string
+  clear: string
+  allOperations: string
+  all: string
+  operationType: string
+  dataType: string
+  startDate: string
+  endDate: string
+
+  // Table
+  date: string
+  user: string
+  operation: string
+  dataTypeColumn: string
+  description: string
+  noRecords: string
+
+  // Pagination
+  totalRecordsPage: string
+  previous: string
+  next: string
+
+  // Entities
+  kisi: string
+  gsm: string
+  takip: string
+  tanitim: string
+  alarm: string
+  personel: string
+  il: string
+  ilce: string
+  mahalle: string
+  system: string
 }
 
 export interface AyarlarTranslations {
+  // Page
+  pageTitle: string
+  pageDescription: string
+  save: string
+  loading: string
+
+  // Tab labels
+  alarmTab: string
+  takipTab: string
+  bildirimTab: string
+  gorunumTab: string
+
+  // Alarm settings
+  alarmTitle: string
+  alarmDescription: string
+  firstAlarm: string
+  firstAlarmDesc: string
+  secondAlarm: string
+  secondAlarmDesc: string
+  currentRules: string
+  beforeEndDate1: string
+  beforeEndDate2: string
+
+  // Takip settings
+  takipTitle: string
+  takipDescription: string
+  defaultDuration: string
+  defaultDurationDesc: string
+  exampleScenario: string
+  exampleScenarioText: string
+
+  // Notification settings
+  notificationTitle: string
+  notificationDescription: string
+  emailNotifications: string
+  emailNotificationsDesc: string
+  browserNotifications: string
+  browserNotificationsDesc: string
+  checkFrequency: string
+  checkFrequencyDesc: string
+  seconds30: string
+  minute1: string
+  minutes5: string
+  minutes10: string
+  notificationComingSoon: string
+
+  // Appearance settings
+  appearanceTitle: string
+  appearanceDescription: string
+  defaultTheme: string
+  defaultThemeDesc: string
+  themeLight: string
+  themeDark: string
+  themeSystem: string
+  tableDensity: string
+  tableDensityDesc: string
+  densityCompact: string
+  densityNormal: string
+  densityWide: string
+  appearanceComingSoon: string
+
+  // Legacy
   title: string
   takipDefaults: string
   takipDefaultsDesc: string
@@ -1022,10 +1286,72 @@ export interface ApiMessagesTranslations {
   uploadError: string
   invalidQueryParams: string
   invalidData: string
+  searchError: string
 }
 
 export interface NotFoundTranslations {
   pageNotFound: string
+}
+
+export interface TanimlamalarTranslations {
+  // Page
+  pageTitle: string
+  pageDescription: string
+
+  // Main Tabs
+  lokasyonlar: string
+  markaModel: string
+  faaliyetAlanlari: string
+
+  // Lokasyon Sub-tabs
+  iller: string
+  ilceler: string
+  mahalleler: string
+
+  // Marka-Model Sub-tabs
+  markalar: string
+  modeller: string
+
+  // Button texts
+  newIl: string
+  newIlce: string
+  newMahalle: string
+  newMarka: string
+  newModel: string
+  newButton: string
+}
+
+export interface DashboardTranslations {
+  // Welcome
+  welcomeMessage: string
+  subtitle: string
+
+  // Search
+  searchPlaceholder: string
+  searchTagTc: string
+  searchTagPhone: string
+  searchTagName: string
+  searchTagAddress: string
+
+  // Stats
+  kisiler: string
+  gsm: string
+  takipler: string
+  tanitimlar: string
+  operasyonlar: string
+  araclar: string
+  alarmlar: string
+
+  // Quick Actions
+  quickActions: string
+  newKisi: string
+  newTakip: string
+  newTanitim: string
+  newOperasyon: string
+
+  // Alerts
+  expiringSoon: string
+  pendingAlarms: string
 }
 
 export interface Translations {
@@ -1049,7 +1375,9 @@ export interface Translations {
   search: SearchTranslations
   loglar: LoglarTranslations
   ayarlar: AyarlarTranslations
+  tanimlamalar: TanimlamalarTranslations
   tabs: TabsTranslations
   api: ApiMessagesTranslations
   notFound: NotFoundTranslations
+  dashboard: DashboardTranslations
 }

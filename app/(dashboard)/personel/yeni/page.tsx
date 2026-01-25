@@ -18,10 +18,12 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { useCreatePersonel } from "@/hooks/use-personel"
+import { useLocale } from "@/components/providers/locale-provider"
 import { personelRolLabels, personelRolValues, type PersonelRol } from "@/lib/validations"
 
 export default function YeniPersonelPage() {
   const router = useRouter()
+  const { t } = useLocale()
   const createPersonel = useCreatePersonel()
 
   const [formData, setFormData] = React.useState({
@@ -102,8 +104,8 @@ export default function YeniPersonelPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Yeni Personel</h1>
-          <p className="text-muted-foreground">Yeni bir sistem kullanıcısı oluşturun</p>
+          <h1 className="text-2xl font-bold">{t.personel.newPersonelPageTitle}</h1>
+          <p className="text-muted-foreground">{t.personel.newPersonelPageDescription}</p>
         </div>
       </div>
 

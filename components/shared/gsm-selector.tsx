@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Check, ChevronsUpDown, User } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -42,9 +43,10 @@ export function GsmSelector({
   onChange,
   gsmler,
   isLoading,
-  placeholder = "GSM seçin...",
+  placeholder,
   disabled,
 }: GsmSelectorProps) {
+  const { t } = useLocale()
   const [open, setOpen] = React.useState(false)
 
   const selectedGsm = gsmler.find((gsm) => gsm.id === value)
@@ -67,20 +69,20 @@ export function GsmSelector({
           disabled={disabled || isLoading}
         >
           {isLoading ? (
-            <span className="text-muted-foreground">Yükleniyor...</span>
+            <span className="text-muted-foreground">{t.common.loading}</span>
           ) : selectedGsm ? (
             <span className="truncate">{getDisplayText(selectedGsm)}</span>
           ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
+            <span className="text-muted-foreground">{placeholder || t.common.selectGsm}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="GSM numarası veya müşteri ara..." />
+          <CommandInput placeholder={t.common.searchGsmOrCustomer} />
           <CommandList>
-            <CommandEmpty>GSM bulunamadı.</CommandEmpty>
+            <CommandEmpty>{t.common.gsmNotFound}</CommandEmpty>
             <CommandGroup>
               {gsmler.map((gsm) => (
                 <CommandItem

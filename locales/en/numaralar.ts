@@ -5,7 +5,36 @@ export const numaralar: NumaralarTranslations = {
   pageTitle: "Phone Numbers",
   pageDescription: "View all GSM phone numbers",
 
-  // Table
+  // Table columns
+  numara: "Number",
+  kisi: "Person",
+  tip: "Type",
+  takip: "Follow-up",
+  baslama: "Start",
+  bitis: "End",
+  kalanGun: "Days Left",
+
+  // Table values
+  musteri: "Customer",
+  aday: "Prospect",
+  takipVar: "Yes",
+  takipYok: "No",
+  gunGecti: "days overdue",
+  bugun: "Today",
+  gun: "days",
+
+  // Sort options
+  numaraAZ: "Number (A → Z)",
+  numaraZA: "Number (Z → A)",
+  kisiAdAZ: "Person Name (A → Z)",
+  kisiAdZA: "Person Name (Z → A)",
+  enYeni: "Newest",
+  enEski: "Oldest",
+
+  // Actions
+  goToPerson: "Go to Person",
+
+  // Legacy (keeping for backward compatibility)
   gsm: "Phone",
   owner: "Owner",
   isPrimary: "Primary",

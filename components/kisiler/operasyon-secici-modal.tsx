@@ -6,6 +6,7 @@ import { tr } from "date-fns/locale"
 import { Search, MapPin, Users, Check, Calendar } from "lucide-react"
 
 import { useOperasyonlar, useAddOperasyonKatilimci, type Operasyon } from "@/hooks/use-operasyonlar"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -32,11 +33,13 @@ function OperasyonSeciciItem({
   isSelected,
   isDisabled,
   onToggle,
+  addedText,
 }: {
   operasyon: Operasyon
   isSelected: boolean
   isDisabled: boolean
   onToggle: () => void
+  addedText: string
 }) {
   const tarih = new Date(operasyon.tarih)
   const lokasyon = operasyon.mahalle
@@ -104,7 +107,7 @@ function OperasyonSeciciItem({
           </Badge>
           {isDisabled && (
             <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
-              Eklendi
+              {addedText}
             </Badge>
           )}
         </div>
@@ -120,6 +123,7 @@ export function OperasyonSeciciModal({
   kisiAd,
   mevcutOperasyonIds = [],
 }: OperasyonSeciciModalProps) {
+  const { t } = useLocale()
   const [search, setSearch] = React.useState("")
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set())
   const [error, setError] = React.useState("")
@@ -172,7 +176,7 @@ export function OperasyonSeciciModal({
       }
       onOpenChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Katılımcı eklenirken hata oluştu")
+      setError(err instanceof Error ? err.message : t.kisiler.addParticipantError)
     } finally {
       setIsSubmitting(false)
     }
@@ -184,9 +188,9 @@ export function OperasyonSeciciModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Mevcut Operasyona Ekle</DialogTitle>
+          <DialogTitle>{t.kisiler.addToExistingOperation}</DialogTitle>
           <DialogDescription>
-            <span className="font-medium">{kisiAd}</span> kişisini eklemek istediğiniz operasyonları seçin
+            {t.kisiler.selectOperationToAdd.replace("{name}", kisiAd)}
           </DialogDescription>
         </DialogHeader>
 
@@ -201,7 +205,7 @@ export function OperasyonSeciciModal({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Operasyon ara (adres, tarih...)"
+              placeholder={t.kisiler.searchOperasyon}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -212,7 +216,7 @@ export function OperasyonSeciciModal({
           {selectedCount > 0 && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                <span className="font-medium text-foreground">{selectedCount}</span> operasyon seçildi
+                {t.common.selectedCount.replace("{count}", selectedCount.toString())} {t.operasyonlar.selectedCountText}
               </span>
               <Button
                 variant="ghost"
@@ -220,7 +224,7 @@ export function OperasyonSeciciModal({
                 className="h-auto py-1 px-2 text-xs"
                 onClick={() => setSelectedIds(new Set())}
               >
-                Seçimi Temizle
+                {t.common.clearSelection}
               </Button>
             </div>
           )}
@@ -234,7 +238,7 @@ export function OperasyonSeciciModal({
             ) : operasyonlar.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">Operasyon bulunamadı</p>
+                <p className="text-sm">{t.operasyonlar.notFound}</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -247,6 +251,7 @@ export function OperasyonSeciciModal({
                       isSelected={selectedIds.has(operasyon.id)}
                       isDisabled={isDisabled}
                       onToggle={() => handleToggle(operasyon.id)}
+                      addedText={t.common.added}
                     />
                   )
                 })}
@@ -262,7 +267,7 @@ export function OperasyonSeciciModal({
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            İptal
+            {t.common.cancel}
           </Button>
           <Button
             onClick={handleSubmit}

@@ -18,9 +18,11 @@ import { faaliyet } from "./faaliyet"
 import { search } from "./search"
 import { loglar } from "./loglar"
 import { ayarlar } from "./ayarlar"
+import { tanimlamalar } from "./tanimlamalar"
 import { tabs } from "./tabs"
 import { api } from "./api"
 import { notFound } from "./notFound"
+import { dashboard } from "./dashboard"
 
 export const tr = {
   common,
@@ -43,7 +45,9 @@ export const tr = {
   search,
   loglar,
   ayarlar,
+  tanimlamalar,
   tabs,
   api,
   notFound,
+  dashboard,
 }

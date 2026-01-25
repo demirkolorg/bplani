@@ -11,4 +11,8 @@ export const faaliyet: FaaliyetTranslations = {
   addFirstArea: "İlk Faaliyet Alanını Ekle",
   selectedArea: "Seçili Alan",
   hasLinkedKisiler: "Bu alana bağlı {count} kişi var. Silme işlemi yapılamaz.",
+  selectFaaliyetAlani: "Faaliyet alanı seçin...",
+  searchFaaliyetAlani: "Faaliyet alanı ara...",
+  faaliyetAlaniAdiPlaceholder: "Faaliyet alanı adı",
+  searchUstKategori: "Üst kategori ara...",
 }

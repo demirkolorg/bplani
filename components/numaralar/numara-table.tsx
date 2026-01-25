@@ -12,14 +12,17 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
-import { getNumaraColumns, numaraSortOptions } from "./numara-columns"
+import { getNumaraColumns, getNumaraSortOptions } from "./numara-columns"
+import { useLocale } from "@/components/providers/locale-provider"
 
 export function NumaraTable() {
   const router = useRouter()
+  const { t } = useLocale()
 
   const { data, isLoading } = useNumaralar()
 
-  const columns = React.useMemo(() => getNumaraColumns(), [])
+  const columns = React.useMemo(() => getNumaraColumns(t.numaralar), [t.numaralar])
+  const sortOptions = React.useMemo(() => getNumaraSortOptions(t.numaralar), [t.numaralar])
 
   const handleRowClick = (numara: NumaraWithKisi) => {
     router.push(`/kisiler/${numara.kisi.id}`)
@@ -44,7 +47,7 @@ export function NumaraTable() {
           }}
         >
           <Eye className="mr-2 h-4 w-4" />
-          Kişiye Git
+          {t.numaralar.goToPerson}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -54,20 +57,20 @@ export function NumaraTable() {
     <DataTable
       columns={columns}
       data={data?.data || []}
-      searchPlaceholder="Numara veya kişi adı ile ara..."
+      searchPlaceholder={t.numaralar.searchPlaceholder}
       isLoading={isLoading}
-      sortOptions={numaraSortOptions}
+      sortOptions={sortOptions}
       defaultSort={{ column: "createdAt", direction: "desc" }}
       onRowClick={handleRowClick}
       rowWrapper={rowWrapper}
       columnVisibilityLabels={{
-        numara: "Numara",
-        kisiAdSoyad: "Kişi",
-        kisiTip: "Tip",
-        takipVar: "Takip",
-        baslamaTarihi: "Başlama",
-        bitisTarihi: "Bitiş",
-        kalanGun: "Kalan Gün",
+        numara: t.numaralar.numara,
+        kisiAdSoyad: t.numaralar.kisi,
+        kisiTip: t.numaralar.tip,
+        takipVar: t.numaralar.takip,
+        baslamaTarihi: t.numaralar.baslama,
+        bitisTarihi: t.numaralar.bitis,
+        kalanGun: t.numaralar.kalanGun,
       }}
     />
   )

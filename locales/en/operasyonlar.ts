@@ -5,6 +5,8 @@ export const operasyonlar: OperasyonlarTranslations = {
   pageTitle: "Operations",
   pageDescription: "View and manage all operations",
   newOperasyonButton: "New Operation",
+  newOperasyonPageTitle: "New Operation",
+  newOperasyonPageDescription: "Select participants and enter operation information",
 
   newOperasyon: "New Operation",
   editOperasyon: "Edit Operation",
@@ -23,12 +25,20 @@ export const operasyonlar: OperasyonlarTranslations = {
   notesPlaceholder: "Notes about the operation...",
   editOperasyonDescription: "Update operation information. You can manage participants from the detail page.",
 
+  // Modal
+  createModalTitle: "Create New Operation",
+  createModalDescription: "Create a new operation. {name} will be automatically added as a participant.",
+  optional: "(Optional)",
+  creating: "Creating...",
+
   // Table columns
   date: "Date",
   address: "Address",
   count: "Count",
   notes: "Notes",
   unknownPerson: "Unknown",
+  selectAtLeastOne: "You must select at least one participant",
+  participantStats: "({mCount} Customers, {aCount} Leads)",
 
   // Sort options
   dateNewOld: "Date (New → Old)",
@@ -55,4 +65,20 @@ export const operasyonlar: OperasyonlarTranslations = {
   useAddButton: "Use the Add button above",
   removeParticipant: "Remove Participant",
   removeParticipantConfirm: "Are you sure you want to remove this person from the operation?",
+
+  // New Operasyon Page
+  availablePeople: "Available People",
+  itemsCount: "{count} items",
+  searchByNameOrTc: "Search by name or ID...",
+  searchInSelected: "Search in selected...",
+  removeAll: "Remove All",
+  noResultsFound: "No results found",
+  allPeopleSelected: "All people selected",
+  selectPeopleInstructions: "Select people from the left list to add to the operation",
+  operasyonInfo: "Operation Information",
+  createOperasyonButton: "Create Operation",
+
+  // Additional
+  selectedCountText: "operations selected",
+  notFound: "Operation not found",
 }

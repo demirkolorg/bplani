@@ -21,6 +21,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { LokasyonSelector } from "@/components/lokasyon/lokasyon-selector"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 
 interface YeniTanitimModalProps {
   open: boolean
@@ -35,6 +37,7 @@ export function YeniTanitimModal({
   kisiId,
   kisiAd,
 }: YeniTanitimModalProps) {
+  const { t } = useLocale()
   const createTanitim = useCreateTanitim()
 
   // Form state
@@ -87,9 +90,9 @@ export function YeniTanitimModal({
       <DialogContent className="max-w-2xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Yeni Tanıtım Oluştur</DialogTitle>
+            <DialogTitle>{t.tanitimlar.createModalTitle}</DialogTitle>
             <DialogDescription>
-              Yeni bir tanıtım oluşturun. <span className="font-medium">{kisiAd}</span> otomatik olarak katılımcı olarak eklenecek.
+              {interpolate(t.tanitimlar.createModalDescription, { name: kisiAd })}
             </DialogDescription>
           </DialogHeader>
 
@@ -104,12 +107,12 @@ export function YeniTanitimModal({
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4" />
-                Tanıtım Tarihi ve Saati
+                {t.tanitimlar.dateTime}
               </Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="GG.AA.YYYY"
+                  placeholder={t.common.dateFormatPlaceholder}
                   value={format(tarih, "dd.MM.yyyy")}
                   onChange={(e) => {
                     const parsed = parse(e.target.value, "dd.MM.yyyy", new Date())
@@ -139,12 +142,12 @@ export function YeniTanitimModal({
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <Input
                   type="time"
-                  placeholder="SS:DD"
+                  placeholder={t.common.timeFormatPlaceholder}
                   value={saat}
                   onChange={(e) => setSaat(e.target.value)}
                   className="w-32"
                 />
-                <span className="text-xs text-muted-foreground">(Opsiyonel)</span>
+                <span className="text-xs text-muted-foreground">{t.tanitimlar.optional}</span>
               </div>
             </div>
 
@@ -152,7 +155,7 @@ export function YeniTanitimModal({
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-green-600" />
-                Tanıtım Adresi
+                {t.tanitimlar.tanitimAddress}
               </Label>
               <LokasyonSelector
                 value={lokasyon}
@@ -163,12 +166,12 @@ export function YeniTanitimModal({
 
             {/* Adres Detay */}
             <div className="space-y-2">
-              <Label htmlFor="adresDetay">Adres Detayı</Label>
+              <Label htmlFor="adresDetay">{t.tanitimlar.addressDetail}</Label>
               <Textarea
                 id="adresDetay"
                 value={adresDetay}
                 onChange={(e) => setAdresDetay(e.target.value)}
-                placeholder="Sokak, bina no, daire..."
+                placeholder={t.tanitimlar.addressDetailPlaceholder}
                 rows={2}
               />
             </div>
@@ -177,13 +180,13 @@ export function YeniTanitimModal({
             <div className="space-y-2">
               <Label htmlFor="notlar" className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-orange-600" />
-                Notlar
+                {t.common.notes}
               </Label>
               <Textarea
                 id="notlar"
                 value={notlar}
                 onChange={(e) => setNotlar(e.target.value)}
-                placeholder="Tanıtım hakkında notlar..."
+                placeholder={t.tanitimlar.notesPlaceholder}
                 rows={3}
               />
             </div>
@@ -196,13 +199,13 @@ export function YeniTanitimModal({
               onClick={() => onOpenChange(false)}
               disabled={createTanitim.isPending}
             >
-              İptal
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={createTanitim.isPending}>
               {createTanitim.isPending && (
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               )}
-              Oluştur
+              {createTanitim.isPending ? t.tanitimlar.creating : t.common.create}
             </Button>
           </DialogFooter>
         </form>

@@ -5,6 +5,8 @@ export const tanitimlar: TanitimlarTranslations = {
   pageTitle: "Introductions",
   pageDescription: "View and manage all introductions",
   newTanitimButton: "New Introduction",
+  newTanitimPageTitle: "New Introduction",
+  newTanitimPageDescription: "Select participants and enter introduction information",
 
   newTanitim: "New Introduction",
   editTanitim: "Edit Introduction",
@@ -22,6 +24,12 @@ export const tanitimlar: TanitimlarTranslations = {
   addressDetailPlaceholder: "Street, building no, apartment...",
   notesPlaceholder: "Notes about the introduction...",
   editTanitimDescription: "Update introduction information. You can manage participants from the detail page.",
+
+  // Modal
+  createModalTitle: "Create New Introduction",
+  createModalDescription: "Create a new introduction. {name} will be automatically added as a participant.",
+  optional: "(Optional)",
+  creating: "Creating...",
 
   // Table columns
   date: "Date",
@@ -56,4 +64,19 @@ export const tanitimlar: TanitimlarTranslations = {
   useAddButton: "Use the Add button above",
   removeParticipant: "Remove Participant",
   removeParticipantConfirm: "Are you sure you want to remove this person from the introduction?",
+
+  // New Tanitim Page
+  availablePeople: "Available People",
+  itemsCount: "{count} items",
+  searchByNameOrTc: "Search by name or ID...",
+  removeAll: "Remove All",
+  noResultsFound: "No results found",
+  allPeopleSelected: "All people selected",
+  selectPeopleInstructions: "Select people from the left list to add to the introduction",
+  tanitimInfo: "Introduction Information",
+  createTanitimButton: "Create Introduction",
+
+  // Additional
+  selectedCountText: "introductions selected",
+  notFound: "Introduction not found",
 }

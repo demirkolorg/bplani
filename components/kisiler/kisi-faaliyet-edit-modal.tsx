@@ -33,25 +33,6 @@ interface KisiFaaliyetEditModalProps {
   faaliyetAlanlari: KisiFaaliyetAlani[]
 }
 
-async function updateKisiFaaliyetAlanlari({
-  kisiId,
-  faaliyetAlaniIds,
-}: {
-  kisiId: string
-  faaliyetAlaniIds: string[]
-}): Promise<KisiFaaliyetAlani[]> {
-  const response = await fetch(`/api/kisiler/${kisiId}/faaliyet-alanlari`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ faaliyetAlaniIds }),
-  })
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || "Faaliyet alanları güncellenirken hata oluştu")
-  }
-  return response.json()
-}
-
 export function KisiFaaliyetEditModal({
   open,
   onOpenChange,
@@ -73,7 +54,24 @@ export function KisiFaaliyetEditModal({
   }, [open, faaliyetAlanlari])
 
   const updateMutation = useMutation({
-    mutationFn: updateKisiFaaliyetAlanlari,
+    mutationFn: async ({
+      kisiId,
+      faaliyetAlaniIds,
+    }: {
+      kisiId: string
+      faaliyetAlaniIds: string[]
+    }): Promise<KisiFaaliyetAlani[]> => {
+      const response = await fetch(`/api/kisiler/${kisiId}/faaliyet-alanlari`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ faaliyetAlaniIds }),
+      })
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || t.kisiler.updateFaaliyetError)
+      }
+      return response.json()
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.lists() })

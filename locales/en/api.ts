@@ -23,4 +23,5 @@ export const api: ApiMessagesTranslations = {
   uploadError: "An error occurred while uploading the file",
   invalidQueryParams: "Invalid query parameters",
   invalidData: "Invalid data",
+  searchError: "An error occurred while searching",
 }
