@@ -203,6 +203,13 @@ export function HeaderNavBar() {
             </TabLink>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
+            <TabLink href="/advanced-search" className="flex items-center gap-2 w-full cursor-pointer">
+              <Search className="h-4 w-4" />
+              <span>{t.navigation.advancedSearch}</span>
+            </TabLink>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
             <TabLink href="/operasyonlar" className="flex items-center gap-2 w-full cursor-pointer">
               <Workflow className="h-4 w-4" />
               <span>{t.navigation.operasyonlar}</span>
