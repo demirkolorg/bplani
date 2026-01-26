@@ -14,7 +14,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Check, ChevronsUpDown, Filter, X, Columns3 } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Check, ChevronsUpDown, Filter, X, Columns3, Download } from "lucide-react"
+import * as XLSX from "xlsx"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -747,6 +748,194 @@ export function DataTable<TData, TValue>({
   const startRow = pagination.pageIndex * pagination.pageSize + 1
   const endRow = Math.min(currentPage * pagination.pageSize, totalRows)
 
+  // Excel Export fonksiyonu
+  const [isExporting, setIsExporting] = React.useState(false)
+
+  const exportToExcel = React.useCallback(() => {
+    setIsExporting(true)
+
+    try {
+      // Görünen sütunları al
+      const visibleColumns = table.getAllColumns().filter(col => col.getIsVisible() && col.id !== "actions")
+
+      // Header satırını oluştur
+      const headers = visibleColumns.map(col => {
+        const label = columnVisibilityLabels[col.id]
+        if (label) return label
+
+        // Column header'ını render et
+        const headerValue = col.columnDef.header
+        if (typeof headerValue === "string") return headerValue
+        return col.id
+      })
+
+      // Filtrelenmiş tüm satırları al
+      const rows = table.getFilteredRowModel().rows
+
+      // Veri satırlarını oluştur
+      const excelData = rows.map(row => {
+        const rowData: Record<string, unknown> = {}
+        const original = row.original as Record<string, unknown>
+
+        visibleColumns.forEach((col, idx) => {
+          const columnId = col.id
+          const headerName = headers[idx]
+          let value: unknown = row.getValue(columnId)
+
+          // Özel formatlama işlemleri
+          // Tarih alanları
+          if (["baslamaTarihi", "bitisTarihi", "tarih", "tetikTarihi", "createdAt", "updatedAt", "lastLoginAt"].includes(columnId)) {
+            if (value) {
+              const date = new Date(value as string)
+              if (!isNaN(date.getTime())) {
+                value = date.toLocaleDateString("tr-TR")
+              }
+            }
+          }
+          // Kalan gün
+          else if (columnId === "kalanGun") {
+            const bitisTarihi = original.bitisTarihi || (original.takipler as Array<Record<string, unknown>>)?.[0]?.bitisTarihi
+            if (bitisTarihi) {
+              const date = new Date(bitisTarihi as string)
+              const now = new Date()
+              const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+              value = daysLeft <= 0 ? `Süresi doldu (${Math.abs(daysLeft)} gün önce)` : `${daysLeft} gün`
+            } else {
+              value = "-"
+            }
+          }
+          // Boolean alanlar
+          else if (typeof value === "boolean") {
+            value = value ? "Evet" : "Hayır"
+          }
+          // Kişi bilgisi (nested)
+          else if (columnId === "kisi" || columnId === "kisiAdSoyad" || columnId === "musteri") {
+            const gsm = original.gsm as Record<string, unknown> | undefined
+            const kisi = (gsm?.kisi || original.kisi) as Record<string, unknown> | undefined
+            if (kisi) {
+              value = `${kisi.ad || ""} ${kisi.soyad || ""}`.trim()
+            } else {
+              value = "-"
+            }
+          }
+          // Ad Soyad
+          else if (columnId === "adSoyad") {
+            value = `${original.ad || ""} ${original.soyad || ""}`.trim()
+          }
+          // GSM numarası
+          else if (columnId === "gsm" || columnId === "numara") {
+            if (original.numara) {
+              value = original.numara
+            } else if (original.gsm) {
+              const gsmObj = original.gsm as Record<string, unknown>
+              value = gsmObj.numara || gsmObj
+            }
+          }
+          // Durum enum'ları
+          else if (columnId === "durum") {
+            const durumVal = original.durum as string | undefined
+            if (durumVal && labelMaps.durum[durumVal]) {
+              value = labelMaps.durum[durumVal]
+            }
+          }
+          // Tip enum'ları
+          else if (columnId === "tip") {
+            const tipVal = original.tip as string | undefined
+            if (tipVal && labelMaps.tip[tipVal]) {
+              value = labelMaps.tip[tipVal]
+            }
+          }
+          // Rol enum'ları
+          else if (columnId === "rol") {
+            const rolVal = original.rol as string | undefined
+            if (rolVal && labelMaps.rol[rolVal]) {
+              value = labelMaps.rol[rolVal]
+            }
+          }
+          // TT (müşteri/aday)
+          else if (columnId === "tt" || columnId === "kisiTip") {
+            let ttVal: boolean | undefined
+            if (columnId === "kisiTip") {
+              const kisi = original.kisi as Record<string, unknown> | undefined
+              ttVal = kisi?.tt as boolean | undefined
+            } else {
+              ttVal = original.tt as boolean | undefined
+            }
+            value = ttVal ? "Müşteri" : "Aday"
+          }
+          // Count alanları
+          else if (["alarmlar", "tanitim", "not", "aktivite", "katilimciSayisi"].includes(columnId)) {
+            const countObj = original._count as Record<string, number> | undefined
+            if (columnId === "katilimciSayisi") {
+              value = (original.katilimcilar as unknown[])?.length || 0
+            } else if (columnId === "aktivite" && countObj) {
+              value = Object.values(countObj).reduce((a, b) => a + b, 0)
+            } else if (countObj) {
+              const countField = columnId === "tanitim" ? "tanitimlar" : columnId === "not" ? "notlar" : columnId
+              value = countObj[countField] || 0
+            }
+          }
+          // Katılımcılar (tanitim)
+          else if (columnId === "katilimcilar") {
+            const katilimcilar = original.katilimcilar as Array<Record<string, unknown>> | undefined
+            if (katilimcilar && katilimcilar.length > 0) {
+              const names = katilimcilar.map(k => {
+                const kisiData = k.kisi as Record<string, unknown> | undefined
+                return kisiData ? `${kisiData.ad || ""} ${kisiData.soyad || ""}`.trim() : ""
+              }).filter(Boolean)
+              value = names.join(", ")
+            } else {
+              value = "-"
+            }
+          }
+          // Oluşturan (personel)
+          else if (columnId === "olusturan") {
+            const createdUser = original.createdUser as Record<string, unknown> | undefined
+            value = createdUser ? `${createdUser.ad || ""} ${createdUser.soyad || ""}`.trim() : "Sistem"
+          }
+          // Adres bilgileri
+          else if (columnId === "adres") {
+            const mahalle = original.mahalle as Record<string, unknown> | undefined
+            if (mahalle) {
+              const ilce = mahalle.ilce as Record<string, unknown> | undefined
+              const parts = [mahalle.ad]
+              if (original.adresDetay) parts.push(original.adresDetay)
+              if (ilce) parts.push(ilce.ad)
+              value = parts.filter(Boolean).join(", ")
+            } else {
+              value = "-"
+            }
+          }
+          // HTML temizleme (notlar, faaliyet)
+          else if (["notlar", "faaliyet"].includes(columnId) && typeof value === "string") {
+            value = value.replace(/<[^>]*>/g, "").trim()
+          }
+
+          // Null/undefined kontrolü
+          rowData[headerName] = value ?? "-"
+        })
+
+        return rowData
+      })
+
+      // Excel workbook oluştur
+      const worksheet = XLSX.utils.json_to_sheet(excelData)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Data")
+
+      // Dosya adı oluştur (tarih ile)
+      const timestamp = new Date().toISOString().slice(0, 10)
+      const filename = `export_${timestamp}.xlsx`
+
+      // Dosyayı indir
+      XLSX.writeFile(workbook, filename)
+    } catch (error) {
+      console.error("Excel export error:", error)
+    } finally {
+      setIsExporting(false)
+    }
+  }, [table, columnVisibilityLabels])
+
   return (
     <div className="w-full">
       {/* Search and Controls */}
@@ -759,6 +948,20 @@ export function DataTable<TData, TValue>({
         />
         <div className="flex items-center gap-2">
           {headerActions}
+          {/* Excel Export Button */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={exportToExcel}
+            disabled={isExporting || totalRows === 0}
+            title={t.table.exportToExcel}
+          >
+            {isExporting ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+          </Button>
           {/* Column Filter Toggle */}
           <Button
             variant={showColumnFilters ? "default" : "outline"}

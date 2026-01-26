@@ -189,6 +189,8 @@ export interface TableTranslations {
   nameAZ: string
   nameZA: string
   newest: string
+  exportToExcel: string
+  exportingToExcel: string
 }
 
 export interface AuthTranslations {

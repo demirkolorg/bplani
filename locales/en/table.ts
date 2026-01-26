@@ -32,4 +32,6 @@ export const table: TableTranslations = {
   nameAZ: "Name (A → Z)",
   nameZA: "Name (Z → A)",
   newest: "Newest",
+  exportToExcel: "Export to Excel",
+  exportingToExcel: "Exporting to Excel...",
 }
