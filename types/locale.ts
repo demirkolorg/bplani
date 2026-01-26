@@ -367,6 +367,8 @@ export interface KisilerTranslations {
   addGsmTitle: string
   addGsmDescription: string
   gsmRequired: string
+  gsmAddedSuccess: string
+  gsmAlreadyExists: string
   editKisiDescription: string
   newKisiDescription: string
 

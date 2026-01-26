@@ -100,6 +100,8 @@ export const kisiler: KisilerTranslations = {
   addGsmTitle: "Yeni GSM Ekle",
   addGsmDescription: "Kişiye yeni bir GSM numarası ekleyin",
   gsmRequired: "GSM numarası gerekli",
+  gsmAddedSuccess: "GSM başarıyla eklendi",
+  gsmAlreadyExists: "Bu GSM numarası {kisi} adlı kişiye kayıtlı. İlgili kişinin sayfası açılıyor...",
   editKisiDescription: "Kişi bilgilerini güncelleyin.",
   newKisiDescription: "Yeni bir kişi eklemek için aşağıdaki formu doldurun.",
 

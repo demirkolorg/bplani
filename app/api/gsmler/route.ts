@@ -4,6 +4,12 @@ import { createGsmSchema, updateGsmSchema, bulkCreateGsmSchema } from "@/lib/val
 import { getSession } from "@/lib/auth"
 import { logList, logCreate, logUpdate, logDelete, logBulkCreate } from "@/lib/logger"
 
+// Normalize GSM number (add leading 0 if missing, remove spaces)
+function normalizeGsmNumber(numara: string): string {
+  const cleaned = numara.replace(/\s/g, "")
+  return cleaned.startsWith("0") ? cleaned : `0${cleaned}`
+}
+
 // GET /api/gsmler - List GSMs for a kisi or all (for takip creation)
 export async function GET(request: NextRequest) {
   try {
@@ -128,6 +134,25 @@ export async function POST(request: NextRequest) {
 
       const { kisiId, gsmler } = validatedData.data
 
+      // Check for duplicate GSMs (normalized numbers are already in validatedData)
+      const numaralar = gsmler.map(g => g.numara)
+      const existingGsms = await prisma.gsm.findMany({
+        where: {
+          numara: { in: numaralar }
+        },
+        select: {
+          numara: true,
+        }
+      })
+
+      if (existingGsms.length > 0) {
+        const duplicates = existingGsms.map(g => g.numara).join(", ")
+        return NextResponse.json(
+          { error: `Bu GSM numaraları sistemde zaten kayıtlı: ${duplicates}` },
+          { status: 409 }
+        )
+      }
+
       // If any GSM is marked as primary, unset existing primaries first
       const hasPrimary = gsmler.some((g) => g.isPrimary)
       if (hasPrimary) {
@@ -156,6 +181,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Geçersiz veri", details: validatedData.error.flatten() },
         { status: 400 }
+      )
+    }
+
+    // Normalize the number for duplicate check (validation already normalizes it)
+    const normalizedNumara = validatedData.data.numara
+
+    // Check if GSM already exists (check normalized version)
+    const existingGsm = await prisma.gsm.findFirst({
+      where: { numara: normalizedNumara },
+      include: {
+        kisi: {
+          select: {
+            id: true,
+            ad: true,
+            soyad: true,
+          },
+        },
+      },
+    })
+
+    if (existingGsm) {
+      return NextResponse.json(
+        {
+          error: "Bu GSM numarası sistemde zaten kayıtlı",
+          existingKisi: {
+            id: existingGsm.kisi.id,
+            ad: existingGsm.kisi.ad,
+            soyad: existingGsm.kisi.soyad,
+          },
+        },
+        { status: 409 }
       )
     }
 

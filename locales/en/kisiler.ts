@@ -100,6 +100,8 @@ export const kisiler: KisilerTranslations = {
   addGsmTitle: "Add New Phone",
   addGsmDescription: "Add a new phone number for this person",
   gsmRequired: "Phone number is required",
+  gsmAddedSuccess: "Phone number added successfully",
+  gsmAlreadyExists: "This phone number is already registered to {kisi}. Opening their page...",
   editKisiDescription: "Update person information.",
   newKisiDescription: "Fill out the form below to add a new person.",
 

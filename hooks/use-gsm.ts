@@ -75,6 +75,17 @@ async function fetchGsmlerByKisi(kisiId: string): Promise<GsmWithTakipler[]> {
   return response.json()
 }
 
+// Custom error for duplicate GSM with kisi info
+export class DuplicateGsmError extends Error {
+  existingKisi: { id: string; ad: string; soyad: string }
+
+  constructor(message: string, existingKisi: { id: string; ad: string; soyad: string }) {
+    super(message)
+    this.name = "DuplicateGsmError"
+    this.existingKisi = existingKisi
+  }
+}
+
 async function createGsm(data: CreateGsmInput): Promise<Gsm> {
   const response = await fetch("/api/gsmler", {
     method: "POST",
@@ -83,6 +94,15 @@ async function createGsm(data: CreateGsmInput): Promise<Gsm> {
   })
   if (!response.ok) {
     const error = await response.json()
+
+    // Check if it's a duplicate GSM error (409 Conflict)
+    if (response.status === 409 && error.existingKisi) {
+      throw new DuplicateGsmError(
+        error.error || "Bu GSM numarası sistemde zaten kayıtlı",
+        error.existingKisi
+      )
+    }
+
     throw new Error(error.error || "GSM oluşturulurken hata oluştu")
   }
   return response.json()

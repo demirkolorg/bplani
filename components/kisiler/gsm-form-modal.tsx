@@ -2,8 +2,10 @@
 
 import * as React from "react"
 import { Phone } from "lucide-react"
-import { useCreateGsm } from "@/hooks/use-gsm"
+import { useCreateGsm, DuplicateGsmError } from "@/hooks/use-gsm"
 import { useLocale } from "@/components/providers/locale-provider"
+import { useTabs } from "@/components/providers/tab-provider"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,6 +28,7 @@ interface GsmFormModalProps {
 
 export function GsmFormModal({ open, onOpenChange, kisiId, isFirstGsm }: GsmFormModalProps) {
   const { t } = useLocale()
+  const { openTab } = useTabs()
   const createGsm = useCreateGsm()
   const [numara, setNumara] = React.useState("")
   const [error, setError] = React.useState("")
@@ -47,8 +50,28 @@ export function GsmFormModal({ open, onOpenChange, kisiId, isFirstGsm }: GsmForm
       })
       setNumara("")
       onOpenChange(false)
+      toast.success(t.kisiler.gsmAddedSuccess || "GSM başarıyla eklendi")
     } catch (err) {
-      if (err instanceof Error) {
+      // Check if it's a duplicate GSM error
+      if (err instanceof DuplicateGsmError) {
+        const { ad, soyad, id } = err.existingKisi
+        const kisiAdi = `${ad} ${soyad}`
+
+        // Close modal
+        setNumara("")
+        setError("")
+        onOpenChange(false)
+
+        // Show toast message
+        toast.error(
+          t.kisiler.gsmAlreadyExists
+            ? t.kisiler.gsmAlreadyExists.replace("{kisi}", kisiAdi)
+            : `Bu GSM numarası ${kisiAdi} adlı kişiye kayıtlı. İlgili kişinin sayfası açılıyor...`
+        )
+
+        // Open the existing kisi's page in a new tab
+        openTab(`/kisiler/${id}`)
+      } else if (err instanceof Error) {
         setError(err.message)
       }
     }
