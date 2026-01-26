@@ -1,21 +1,25 @@
 "use client"
 
 import * as React from "react"
-import { useTakipler, useDeleteTakip, type Takip } from "@/hooks/use-takip"
+import { useRouter } from "next/navigation"
+import { useGsmWithActiveTakipler, type GsmWithActiveTakip } from "@/hooks/use-takip"
 import { useDataTablePreferences } from "@/hooks/use-table-preferences"
 import { useLocale } from "@/components/providers/locale-provider"
 import { DataTable } from "@/components/shared/data-table"
-import { ConfirmDialog } from "@/components/shared/confirm-dialog"
-import { TakipFormModal } from "./takip-form-modal"
 import { getTakipColumns, getTakipSortOptions } from "./takip-columns"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+import { Eye } from "lucide-react"
 
 export function TakipTable() {
+  const router = useRouter()
   const { t } = useLocale()
-  const [deleteId, setDeleteId] = React.useState<string | null>(null)
-  const [editingTakip, setEditingTakip] = React.useState<Takip | null>(null)
 
-  const { data, isLoading } = useTakipler()
-  const deleteTakip = useDeleteTakip()
+  const { data, isLoading } = useGsmWithActiveTakipler()
 
   // Table preferences
   const prefs = useDataTablePreferences("takipler", {
@@ -24,75 +28,59 @@ export function TakipTable() {
   })
 
   const columns = React.useMemo(
-    () =>
-      getTakipColumns(t, {
-        onEdit: setEditingTakip,
-        onDelete: setDeleteId,
-      }),
+    () => getTakipColumns(t),
     [t]
   )
 
   const sortOptions = React.useMemo(() => getTakipSortOptions(t), [t])
 
-  const handleDelete = async () => {
-    if (!deleteId) return
-    await deleteTakip.mutateAsync(deleteId)
-    setDeleteId(null)
+  const handleRowClick = (gsm: GsmWithActiveTakip) => {
+    router.push(`/takipler/${gsm.gsmId}`)
   }
 
+  const rowWrapper = (gsm: GsmWithActiveTakip, cells: React.ReactNode[]) => (
+    <ContextMenu key={gsm.gsmId}>
+      <ContextMenuTrigger asChild>
+        <tr
+          className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
+          onClick={() => handleRowClick(gsm)}
+        >
+          {cells}
+        </tr>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onClick={() => router.push(`/takipler/${gsm.gsmId}`)}>
+          <Eye className="mr-2 h-4 w-4" />
+          {t.common.view}
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  )
+
   return (
-    <>
-      <DataTable
-        columns={columns}
-        data={data?.data || []}
-        searchPlaceholder={t.takipler.searchPlaceholder}
-        isLoading={isLoading}
-        sortOptions={sortOptions}
-        defaultSort={prefs.defaultSort}
-        pageSize={prefs.pageSize}
-        defaultColumnVisibility={prefs.columnVisibility}
-        onColumnVisibilityChange={prefs.setColumnVisibility}
-        onSortChange={prefs.setSorting}
-        onPageSizeChange={prefs.setPageSize}
-        columnVisibilityLabels={{
-          kisi: t.takipler.person,
-          gsm: "GSM",
-          baslamaTarihiDisplay: t.takipler.startDate,
-          bitisTarihiDisplay: t.takipler.endDate,
-          kalanGun: t.takipler.remainingDays,
-          durum: t.takipler.durum,
-          alarmlar: t.takipler.alarm,
-          actions: t.common.actions,
-        }}
-      />
-
-      {/* Edit Modal */}
-      <TakipFormModal
-        open={!!editingTakip}
-        onOpenChange={(open) => !open && setEditingTakip(null)}
-        initialData={
-          editingTakip
-            ? {
-                id: editingTakip.id,
-                gsmId: editingTakip.gsmId,
-                baslamaTarihi: editingTakip.baslamaTarihi,
-                bitisTarihi: editingTakip.bitisTarihi,
-                durum: editingTakip.durum,
-              }
-            : undefined
-        }
-      />
-
-      {/* Delete Confirmation */}
-      <ConfirmDialog
-        open={!!deleteId}
-        onOpenChange={(open) => !open && setDeleteId(null)}
-        title={t.takipler.deleteTakip}
-        description={t.takipler.deleteTakipConfirm}
-        confirmText={t.common.delete}
-        onConfirm={handleDelete}
-        isLoading={deleteTakip.isPending}
-      />
-    </>
+    <DataTable
+      columns={columns}
+      data={data || []}
+      searchPlaceholder={t.takipler.searchPlaceholder}
+      isLoading={isLoading}
+      sortOptions={sortOptions}
+      defaultSort={prefs.defaultSort}
+      pageSize={prefs.pageSize}
+      defaultColumnVisibility={prefs.columnVisibility}
+      onColumnVisibilityChange={prefs.setColumnVisibility}
+      onSortChange={prefs.setSorting}
+      onPageSizeChange={prefs.setPageSize}
+      rowWrapper={rowWrapper}
+      columnVisibilityLabels={{
+        gsm: "GSM",
+        kisi: t.takipler.person,
+        baslamaTarihiDisplay: t.takipler.startDate,
+        bitisTarihiDisplay: t.takipler.endDate,
+        kalanGun: t.takipler.remainingDays,
+        durum: t.takipler.durum,
+        alarmlar: t.takipler.alarm,
+        actions: t.common.actions,
+      }}
+    />
   )
 }

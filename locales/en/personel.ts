@@ -77,7 +77,7 @@ export const personel: PersonelTranslations = {
   createdPersons: "Created Persons",
   createdFollowups: "Created Follow-ups",
   createdNotes: "Created Notes",
-  createdIntroductions: "Created Introductions",
+  createdIntroductions: "Created Events",
 
   // Sort options
   nameAZ: "Name (A → Z)",

@@ -73,6 +73,8 @@ export interface CommonTranslations {
   dateTime: string
   from: string
   to: string
+  day: string
+  days: string
 
   // General
   status: string
@@ -571,6 +573,19 @@ export interface TakiplerTranslations {
 
   // Validation
   selectAtLeastOne: string
+
+  // Detail Page
+  gsmNotFound: string
+  backToTakipler: string
+  goToPersonDetail: string
+  addNewTakip: string
+  noActiveTakipDescription: string
+  takipHistory: string
+  duration: string
+  createdAt: string
+  alarmList: string
+  triggered: string
+  daysCount: string
 }
 
 export interface TanitimlarTranslations {

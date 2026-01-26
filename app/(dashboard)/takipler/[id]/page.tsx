@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useTabParams } from "@/components/providers/params-provider"
 import { useTabTitle } from "@/hooks/use-tab-title"
+import { useLocale } from "@/components/providers/locale-provider"
 import Link from "next/link"
 import {
   Pencil,
@@ -12,18 +13,17 @@ import {
   Calendar,
   Bell,
   Clock,
-  Trash2,
+  Plus,
 } from "lucide-react"
 
-import { useTakip, useDeleteTakip } from "@/hooks/use-takip"
+import { useTakiplerByGsm } from "@/hooks/use-takip"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Separator } from "@/components/ui/separator"
-import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 import { TakipFormModal } from "@/components/takipler/takip-form-modal"
 import { takipDurumLabels, type TakipDurum } from "@/lib/validations"
+import { interpolate } from "@/locales"
 
 // Durum badge variant mapping
 const durumVariants: Record<TakipDurum, "default" | "secondary" | "destructive" | "outline"> = {
@@ -36,58 +36,30 @@ const durumVariants: Record<TakipDurum, "default" | "secondary" | "destructive" 
 export default function TakipDetayPage() {
   const params = useTabParams<{ id: string }>()
   const router = useRouter()
-  const id = params.id
+  const { t } = useLocale()
+  const gsmId = params.id
 
   const [showEditModal, setShowEditModal] = React.useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false)
+  const [showAddModal, setShowAddModal] = React.useState(false)
 
-  const { data: takip, isLoading, error } = useTakip(id)
+  const { data: response, isLoading, error } = useTakiplerByGsm(gsmId)
+
+  // Aktif ve geçmiş takipleri ayır
+  const takipler = response?.data || []
+  const activeTakip = takipler.find((t) => t.isActive)
+  const pastTakipler = takipler
+    .filter((t) => !t.isActive)
+    .sort((a, b) => new Date(b.baslamaTarihi).getTime() - new Date(a.baslamaTarihi).getTime())
+
+  // GSM ve kişi bilgilerini al (ilk takipten)
+  const gsm = takipler[0]?.gsm
+  const kisi = gsm?.kisi
 
   // Tab title'ı dinamik güncelle
-  const takipTitle = takip
-    ? `Takip - ${takip.gsm?.kisi ? `${takip.gsm.kisi.ad} ${takip.gsm.kisi.soyad}` : takip.gsm?.numara}`
+  const tabTitle = gsm
+    ? `Takip - ${kisi ? `${kisi.ad} ${kisi.soyad}` : gsm.numara}`
     : undefined
-  useTabTitle(takipTitle)
-  const deleteTakip = useDeleteTakip()
-
-  const handleDelete = async () => {
-    await deleteTakip.mutateAsync(id)
-    router.push("/takipler")
-  }
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-6">
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !takip) {
-    return (
-      <div className="container mx-auto py-6">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">
-              {error instanceof Error ? error.message : "Takip bulunamadı"}
-            </p>
-            <Button asChild className="mt-4">
-              <Link href="/takipler">Takiplere Dön</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+  useTabTitle(tabTitle)
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("tr-TR", {
@@ -107,240 +79,325 @@ export default function TakipDetayPage() {
     })
   }
 
-  const bitisTarihi = new Date(takip.bitisTarihi)
-  const now = new Date()
-  const daysLeft = Math.ceil((bitisTarihi.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-  const isExpired = daysLeft <= 0
-  const isExpiringSoon = daysLeft <= 7 && daysLeft > 0
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !gsm) {
+    return (
+      <div className="container mx-auto py-6">
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">
+              {error instanceof Error ? error.message : t.takipler.gsmNotFound || "GSM bulunamadı"}
+            </p>
+            <Button asChild className="mt-4">
+              <Link href="/takipler">{t.takipler.backToTakipler || "Takiplere Dön"}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Aktif takip için kalan gün hesapla
+  let kalanGun: number | null = null
+  let isExpired = false
+  let isExpiringSoon = false
+  if (activeTakip) {
+    const bitisTarihi = new Date(activeTakip.bitisTarihi)
+    const now = new Date()
+    kalanGun = Math.ceil((bitisTarihi.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    isExpired = kalanGun <= 0
+    isExpiringSoon = kalanGun <= 7 && kalanGun > 0
+  }
 
   return (
     <div className="container mx-auto py-6">
-      {/* Header */}
+      {/* Header: GSM ve Kişi Bilgileri */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">
+          {kisi && (
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted overflow-hidden">
+              {kisi.fotograf ? (
+                <img
+                  src={kisi.fotograf}
+                  alt={`${kisi.ad} ${kisi.soyad}`}
+                  className="h-16 w-16 object-cover"
+                />
+              ) : (
+                <User className="h-8 w-8 text-muted-foreground" />
+              )}
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">
-                Takip #{takip.id.slice(-6).toUpperCase()}
+                {kisi ? `${kisi.ad} ${kisi.soyad}` : gsm.numara}
               </h1>
-              <Badge variant={durumVariants[takip.durum as TakipDurum]}>
-                {takipDurumLabels[takip.durum as TakipDurum]}
-              </Badge>
+              {activeTakip && (
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                  {t.takipler.activeTakip || "Aktif"}
+                </Badge>
+              )}
             </div>
-            <p className="text-muted-foreground mt-1">
-              {takip.gsm.kisi
-                ? `${takip.gsm.kisi.ad} ${takip.gsm.kisi.soyad} - ${takip.gsm.numara}`
-                : takip.gsm.numara}
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground font-mono">{gsm.numara}</span>
+            </div>
+            {kisi && (
+              <Button asChild variant="link" className="p-0 h-auto mt-1">
+                <Link href={`/kisiler/${kisi.id}`}>
+                  {t.takipler.goToPersonDetail || "Kişi Detayına Git"} →
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowEditModal(true)}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Düzenle
+        {!activeTakip && (
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t.takipler.addNewTakip || "Yeni Takip Ekle"}
           </Button>
-          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Sil
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Başlama</span>
-            </div>
-            <p className="text-xl font-bold mt-2">
-              {formatDate(takip.baslamaTarihi)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Bitiş</span>
-            </div>
-            <p className={`text-xl font-bold mt-2 ${isExpired ? "text-destructive" : isExpiringSoon ? "text-orange-500" : ""}`}>
-              {formatDate(takip.bitisTarihi)}
-            </p>
-            {isExpired && (
-              <Badge variant="destructive" className="mt-1">Süresi Doldu</Badge>
-            )}
-            {isExpiringSoon && !isExpired && (
-              <Badge variant="outline" className="mt-1 text-orange-500 border-orange-500">
-                {daysLeft} gün kaldı
-              </Badge>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Alarm</span>
-            </div>
-            <p className="text-xl font-bold mt-2">
-              {takip.alarmlar?.length || 0}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">GSM</span>
-            </div>
-            <p className="text-xl font-bold mt-2 font-mono">
-              {takip.gsm.numara}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Kişi Bilgileri */}
-        {takip.gsm.kisi && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Kişi Bilgileri
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted overflow-hidden">
-                  {takip.gsm.kisi.fotograf ? (
-                    <img
-                      src={takip.gsm.kisi.fotograf}
-                      alt={`${takip.gsm.kisi.ad} ${takip.gsm.kisi.soyad}`}
-                      className="h-16 w-16 object-cover"
-                    />
-                  ) : (
-                    <User className="h-8 w-8 text-muted-foreground" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-lg font-semibold">
-                    {takip.gsm.kisi.ad} {takip.gsm.kisi.soyad}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-mono">
-                    {takip.gsm.numara}
-                  </p>
-                  <Button asChild variant="link" className="p-0 h-auto mt-1">
-                    <Link href={`/kisiler/${takip.gsm.kisi.id}`}>
-                      Kişi Detayına Git →
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         )}
-
-        {/* Log Bilgileri */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Kayıt Bilgileri</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Oluşturulma
-                </p>
-                <p className="mt-1">{formatDateTime(takip.createdAt)}</p>
-                {takip.createdUser && (
-                  <p className="text-sm text-muted-foreground">
-                    {takip.createdUser.ad} {takip.createdUser.soyad}
-                  </p>
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Son Güncelleme
-                </p>
-                <p className="mt-1">{formatDateTime(takip.updatedAt)}</p>
-                {takip.updatedUser && (
-                  <p className="text-sm text-muted-foreground">
-                    {takip.updatedUser.ad} {takip.updatedUser.soyad}
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Alarmlar */}
-      {takip.alarmlar && takip.alarmlar.length > 0 && (
-        <Card className="mt-6">
+      {/* Aktif Takip Kartı */}
+      {activeTakip ? (
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Alarmlar
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                {t.takipler.activeTakip || "Aktif Takip"}
+              </CardTitle>
+              <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                {t.common.edit}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-5">
+              {/* Kalan Gün - Belirgin Gösterim */}
+              <div className="col-span-full md:col-span-1">
+                <div className="flex flex-col items-center justify-center p-6 rounded-lg border-2 h-full"
+                  style={{
+                    borderColor: isExpired ? "rgb(239, 68, 68)" : isExpiringSoon ? "rgb(249, 115, 22)" : "rgb(34, 197, 94)",
+                    backgroundColor: isExpired ? "rgb(254, 242, 242)" : isExpiringSoon ? "rgb(255, 247, 237)" : "rgb(240, 253, 244)"
+                  }}
+                >
+                  <Clock className={`h-8 w-8 mb-2 ${isExpired ? "text-red-500" : isExpiringSoon ? "text-orange-500" : "text-green-600"}`} />
+                  <span className="text-sm font-medium text-muted-foreground mb-1">
+                    {t.takipler.remainingDays}
+                  </span>
+                  <p className={`text-4xl font-bold ${isExpired ? "text-red-600" : isExpiringSoon ? "text-orange-600" : "text-green-700"}`}>
+                    {isExpired ? Math.abs(kalanGun || 0) : kalanGun}
+                  </p>
+                  <span className={`text-xs font-medium mt-1 ${isExpired ? "text-red-600" : isExpiringSoon ? "text-orange-600" : "text-green-700"}`}>
+                    {isExpired ? t.takipler.expired : t.common.day}
+                  </span>
+                </div>
+              </div>
+
+              {/* Diğer Bilgiler */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {t.takipler.startDate}
+                  </span>
+                </div>
+                <p className="text-lg font-semibold">
+                  {formatDate(activeTakip.baslamaTarihi)}
+                </p>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {t.takipler.endDate}
+                  </span>
+                </div>
+                <p className={`text-lg font-semibold ${isExpired ? "text-destructive" : isExpiringSoon ? "text-orange-500" : ""}`}>
+                  {formatDate(activeTakip.bitisTarihi)}
+                </p>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {t.takipler.durum}
+                  </span>
+                </div>
+                <Badge variant={durumVariants[activeTakip.durum as TakipDurum]}>
+                  {takipDurumLabels[activeTakip.durum as TakipDurum]}
+                </Badge>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Bell className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {t.takipler.alarm}
+                  </span>
+                </div>
+                <p className="text-lg font-semibold">
+                  {activeTakip._count?.alarmlar || 0}
+                </p>
+              </div>
+            </div>
+
+            {/* Alarmlar */}
+            {activeTakip.alarmlar && activeTakip.alarmlar.length > 0 && (
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-sm font-medium mb-3">{t.takipler.alarmList || "Alarmlar"}</h3>
+                <ul className="space-y-2">
+                  {activeTakip.alarmlar.map((alarm) => (
+                    <li
+                      key={alarm.id}
+                      className="flex items-start justify-between rounded-md border p-3 text-sm"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={alarm.durum === "TETIKLENDI" ? "secondary" : "default"} className="text-xs">
+                            {alarm.tip}
+                          </Badge>
+                          <span className="text-sm">
+                            {formatDate(alarm.tetikTarihi)}
+                          </span>
+                          {alarm.durum === "TETIKLENDI" && (
+                            <Badge variant="outline" className="text-xs">
+                              {t.takipler.triggered || "Tetiklendi"}
+                            </Badge>
+                          )}
+                        </div>
+                        {alarm.mesaj && (
+                          <p className="mt-1 text-muted-foreground">
+                            {alarm.mesaj}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="mb-6 border-dashed">
+          <CardContent className="py-12 text-center">
+            <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              {t.takipler.noActiveTakip || "Aktif takip bulunmuyor"}
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              {t.takipler.noActiveTakipDescription || "Bu GSM için aktif bir takip kaydı bulunmamaktadır."}
+            </p>
+            <Button onClick={() => setShowAddModal(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t.takipler.addNewTakip || "Yeni Takip Ekle"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Geçmiş Takipler */}
+      {pastTakipler.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {t.takipler.takipHistory || "Takip Geçmişi"} ({pastTakipler.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3">
-              {takip.alarmlar.map((alarm) => (
-                <li
-                  key={alarm.id}
-                  className="flex items-start justify-between rounded-md border p-3"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={alarm.durum === "TETIKLENDI" ? "secondary" : "default"}>
-                        {alarm.tip}
-                      </Badge>
-                      <span className="text-sm font-medium">
-                        {formatDate(alarm.tetikTarihi)}
-                      </span>
-                      {alarm.durum === "TETIKLENDI" && (
-                        <Badge variant="outline">Tetiklendi</Badge>
-                      )}
-                    </div>
-                    {alarm.mesaj && (
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {alarm.mesaj}
-                      </p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                      {t.takipler.startDate}
+                    </th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                      {t.takipler.endDate}
+                    </th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                      {t.takipler.duration || "Süre"}
+                    </th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                      {t.takipler.durum}
+                    </th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                      {t.takipler.createdAt || "Oluşturulma"}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pastTakipler.map((takip) => {
+                    const start = new Date(takip.baslamaTarihi)
+                    const end = new Date(takip.bitisTarihi)
+                    const durationDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+
+                    return (
+                      <tr key={takip.id} className="border-b hover:bg-muted/50">
+                        <td className="p-3 text-sm">{formatDate(takip.baslamaTarihi)}</td>
+                        <td className="p-3 text-sm">{formatDate(takip.bitisTarihi)}</td>
+                        <td className="p-3 text-sm">
+                          {interpolate(t.takipler.daysCount || "{days} gün", { days: durationDays })}
+                        </td>
+                        <td className="p-3 text-sm">
+                          <Badge variant={durumVariants[takip.durum as TakipDurum]}>
+                            {takipDurumLabels[takip.durum as TakipDurum]}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-sm text-muted-foreground">
+                          {formatDateTime(takip.createdAt)}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       )}
 
       {/* Edit Modal */}
-      <TakipFormModal
-        open={showEditModal}
-        onOpenChange={setShowEditModal}
-        initialData={{
-          id: takip.id,
-          gsmId: takip.gsmId,
-          baslamaTarihi: takip.baslamaTarihi,
-          bitisTarihi: takip.bitisTarihi,
-          durum: takip.durum as TakipDurum,
-        }}
-      />
+      {activeTakip && (
+        <TakipFormModal
+          open={showEditModal}
+          onOpenChange={setShowEditModal}
+          initialData={{
+            id: activeTakip.id,
+            gsmId: activeTakip.gsmId,
+            baslamaTarihi: activeTakip.baslamaTarihi,
+            bitisTarihi: activeTakip.bitisTarihi,
+            durum: activeTakip.durum as TakipDurum,
+          }}
+        />
+      )}
 
-      {/* Delete Confirmation */}
-      <ConfirmDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        title="Takibi Sil"
-        description="Bu takibi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve bağlı alarmlar da silinecektir."
-        confirmText="Sil"
-        onConfirm={handleDelete}
-        isLoading={deleteTakip.isPending}
+      {/* Add Modal */}
+      <TakipFormModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        initialData={{
+          gsmId: gsmId,
+        }}
       />
     </div>
   )

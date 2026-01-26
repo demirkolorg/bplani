@@ -73,6 +73,8 @@ export const common: CommonTranslations = {
   dateTime: "Date/Time",
   from: "From",
   to: "To",
+  day: "Day",
+  days: "Days",
 
   // General
   status: "Status",
@@ -116,7 +118,7 @@ export const common: CommonTranslations = {
 
   // Navigation
   backToOperations: "Back to Operations",
-  backToIntroductions: "Back to Introductions",
+  backToIntroductions: "Back to Events",
 
   // Selection
   selectedCount: "{count} selected",

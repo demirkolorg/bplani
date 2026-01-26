@@ -203,6 +203,7 @@ export async function GET(request: NextRequest) {
 
         const results = await prisma.$queryRaw<Array<{
           id: string
+          baslik: string | null
           tarih: Date
           notlar: string | null
           adresDetay: string | null
@@ -211,6 +212,7 @@ export async function GET(request: NextRequest) {
         }>>`
           SELECT
             t.id,
+            t.baslik,
             t.tarih,
             t.notlar,
             t."adresDetay",
@@ -243,7 +245,9 @@ export async function GET(request: NextRequest) {
           LEFT JOIN mahalleler m ON t."mahalleId" = m.id
           LEFT JOIN ilceler ilce ON m."ilceId" = ilce.id
           WHERE
-            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(t.notlar, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(t.baslik, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(t.notlar, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
             OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(t."adresDetay", ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
@@ -268,6 +272,7 @@ export async function GET(request: NextRequest) {
 
         const results = await prisma.$queryRaw<Array<{
           id: string
+          baslik: string | null
           tarih: Date
           notlar: string | null
           adresDetay: string | null
@@ -276,6 +281,7 @@ export async function GET(request: NextRequest) {
         }>>`
           SELECT
             o.id,
+            o.baslik,
             o.tarih,
             o.notlar,
             o."adresDetay",
@@ -308,7 +314,9 @@ export async function GET(request: NextRequest) {
           LEFT JOIN mahalleler m ON o."mahalleId" = m.id
           LEFT JOIN ilceler ilce ON m."ilceId" = ilce.id
           WHERE
-            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(o.notlar, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(o.baslik, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(o.notlar, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
             OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(o."adresDetay", ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
@@ -358,11 +366,13 @@ export async function GET(request: NextRequest) {
 
         const results = await prisma.$queryRaw<Array<{
           id: string
+          gsmId: string
           durum: string
           gsm: string
         }>>`
           SELECT
             t.id,
+            t."gsmId",
             t.durum,
             jsonb_build_object(
               'numara', g.numara,
@@ -581,8 +591,8 @@ export async function GET(request: NextRequest) {
 
         return {
           id: t.id,
-          title: address || "Tanıtım",
-          subtitle: t.notlar?.slice(0, 60) || new Date(t.tarih).toLocaleDateString("tr-TR"),
+          title: t.baslik || address || "Tanıtım",
+          subtitle: t.notlar?.slice(0, 60) || address || new Date(t.tarih).toLocaleDateString("tr-TR"),
           url: `/tanitimlar/${t.id}`,
           category: "tanitimlar",
           metadata: {
@@ -610,8 +620,8 @@ export async function GET(request: NextRequest) {
 
         return {
           id: o.id,
-          title: address || "Operasyon",
-          subtitle: o.notlar?.slice(0, 60) || new Date(o.tarih).toLocaleDateString("tr-TR"),
+          title: o.baslik || address || "Operasyon",
+          subtitle: o.notlar?.slice(0, 60) || address || new Date(o.tarih).toLocaleDateString("tr-TR"),
           url: `/operasyonlar/${o.id}`,
           category: "operasyonlar",
           metadata: {
@@ -639,7 +649,7 @@ export async function GET(request: NextRequest) {
         id: t.id,
         title: t.gsm.numara,
         subtitle: `${t.durum}`,
-        url: `/takipler/${t.id}`,
+        url: `/takipler/${t.gsmId}`,
         category: "takipler",
         metadata: {
           relatedKisiler: [{

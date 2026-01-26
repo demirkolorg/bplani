@@ -90,4 +90,17 @@ export const takipler: TakiplerTranslations = {
 
   // Validation
   selectAtLeastOne: "You must select at least one phone number",
+
+  // Detail Page
+  gsmNotFound: "Phone not found",
+  backToTakipler: "Back to Follow-ups",
+  goToPersonDetail: "Go to Person Details",
+  addNewTakip: "Add New Follow-up",
+  noActiveTakipDescription: "There is no active follow-up record for this phone.",
+  takipHistory: "Follow-up History",
+  duration: "Duration",
+  createdAt: "Created",
+  alarmList: "Alarms",
+  triggered: "Triggered",
+  daysCount: "{days} days",
 }

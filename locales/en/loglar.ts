@@ -43,7 +43,7 @@ export const loglar: LoglarTranslations = {
   kisi: "Person",
   gsm: "Phone",
   takip: "Follow-up",
-  tanitim: "Introduction",
+  tanitim: "Event",
   alarm: "Alarm",
   personel: "Staff",
   il: "Province",

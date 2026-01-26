@@ -73,6 +73,8 @@ export const common: CommonTranslations = {
   dateTime: "Tarih/Saat",
   from: "Başlangıç",
   to: "Bitiş",
+  day: "Gün",
+  days: "Gün",
 
   // General
   status: "Durum",
@@ -116,7 +118,7 @@ export const common: CommonTranslations = {
 
   // Navigation
   backToOperations: "Operasyonlara Dön",
-  backToIntroductions: "Tanıtımlara Dön",
+  backToIntroductions: "Etkinliklere Dön",
 
   // Selection
   selectedCount: "{count} seçildi",

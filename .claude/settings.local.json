@@ -51,7 +51,9 @@
       "Bash(cd:*)",
       "Bash(echo:*)",
       "Bash(node test-db.js:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(node check-takip.js:*)",
+      "Bash(node check-takip-detailed.js:*)"
     ]
   }
 }

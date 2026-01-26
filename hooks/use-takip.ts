@@ -57,6 +57,28 @@ export interface TakipListResponse {
   }
 }
 
+export interface GsmWithActiveTakip {
+  gsmId: string
+  gsm: string
+  kisi: string | null
+  kisiId: string | null
+  fotograf: string | null
+  tt: boolean
+  activeTakip: Takip | null
+  baslamaTarihi: string | null
+  bitisTarihi: string | null
+  kalanGun: number | null
+  durum: string | null
+  alarmlar: Array<{
+    id: string
+    tip: string
+    tetikTarihi: string
+    mesaj: string | null
+    durum: string
+  }>
+  alarmCount: number
+}
+
 // Query keys
 export const takipKeys = {
   all: ["takipler"] as const,
@@ -176,6 +198,62 @@ export function useTakiplerByKisi(kisiId: string) {
     queryKey: takipKeys.byKisi(kisiId),
     queryFn: () => fetchTakipler({ kisiId, limit: 100 }),
     enabled: !!kisiId,
+  })
+}
+
+export function useGsmWithActiveTakipler() {
+  return useQuery({
+    queryKey: [...takipKeys.all, "gsmActive"],
+    queryFn: async () => {
+      const response = await fetchTakipler({ limit: 1000 })
+      const takipler = response.data
+
+      // GSM'e göre grupla
+      const gsmMap = new Map<string, GsmWithActiveTakip>()
+
+      takipler.forEach((takip) => {
+        const gsmId = takip.gsmId
+
+        if (!gsmMap.has(gsmId)) {
+          // İlk kez görüyoruz, GSM bilgilerini oluştur
+          const bitisTarihi = takip.isActive && takip.bitisTarihi ? new Date(takip.bitisTarihi) : null
+          const now = new Date()
+          const kalanGun = bitisTarihi ? Math.ceil((bitisTarihi.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null
+
+          gsmMap.set(gsmId, {
+            gsmId: gsmId,
+            gsm: takip.gsm.numara,
+            kisi: takip.gsm.kisi ? `${takip.gsm.kisi.ad} ${takip.gsm.kisi.soyad}` : null,
+            kisiId: takip.gsm.kisi?.id || null,
+            fotograf: takip.gsm.kisi?.fotograf || null,
+            tt: takip.gsm.kisi?.tt || false,
+            activeTakip: takip.isActive ? takip : null,
+            baslamaTarihi: takip.isActive ? takip.baslamaTarihi : null,
+            bitisTarihi: takip.isActive ? takip.bitisTarihi : null,
+            kalanGun: kalanGun,
+            durum: takip.isActive ? takip.durum : null,
+            alarmlar: takip.isActive && takip.alarmlar ? takip.alarmlar : [],
+            alarmCount: takip.isActive && takip._count?.alarmlar ? takip._count.alarmlar : 0,
+          })
+        } else if (takip.isActive) {
+          // Bu GSM için aktif bir takip varsa güncelle
+          const existing = gsmMap.get(gsmId)!
+          const bitisTarihi = new Date(takip.bitisTarihi)
+          const now = new Date()
+          const kalanGun = Math.ceil((bitisTarihi.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+          existing.activeTakip = takip
+          existing.baslamaTarihi = takip.baslamaTarihi
+          existing.bitisTarihi = takip.bitisTarihi
+          existing.kalanGun = kalanGun
+          existing.durum = takip.durum
+          existing.alarmlar = takip.alarmlar || []
+          existing.alarmCount = takip._count?.alarmlar || 0
+        }
+      })
+
+      return Array.from(gsmMap.values())
+    },
   })
 }
 

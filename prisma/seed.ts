@@ -52,8 +52,9 @@ const personelData = [
 ];
 
 // Kişi seed data (tt: true = Müşteri, tt: false = Aday)
+// TC numaraları gerçekçi ve benzersiz
 const kisiData = [
-  { tc: '12345678901', ad: 'Mustafa', soyad: 'Arslan', tt: true },
+  { tc: '12345678910', ad: 'Mustafa', soyad: 'Arslan', tt: true },
   { tc: '23456789012', ad: 'Zeynep', soyad: 'Yıldız', tt: true },
   { tc: '34567890123', ad: 'Hasan', soyad: 'Şahin', tt: false },
   { tc: '45678901234', ad: 'Elif', soyad: 'Koç', tt: false },
@@ -62,21 +63,33 @@ const kisiData = [
   { tc: '78901234567', ad: 'Burak', soyad: 'Kara', tt: false },
   { tc: '89012345678', ad: 'Deniz', soyad: 'Özkan', tt: true },
   { tc: '90123456789', ad: 'Ceren', soyad: 'Aksoy', tt: false },
-  { tc: '01234567890', ad: 'Kaan', soyad: 'Erdoğan', tt: true },
+  { tc: '11234567890', ad: 'Kaan', soyad: 'Erdoğan', tt: true },
+  { tc: '22345678901', ad: 'Aylin', soyad: 'Şen', tt: false },
+  { tc: '33456789012', ad: 'Barış', soyad: 'Güneş', tt: true },
+  { tc: '44567890123', ad: 'Cansu', soyad: 'Yurt', tt: false },
+  { tc: '55678901234', ad: 'Cem', soyad: 'Kılıç', tt: true },
+  { tc: '66789012345', ad: 'Derya', soyad: 'Taş', tt: false },
 ];
 
-// GSM numaraları
+// GSM numaraları - Her kişi için benzersiz ve gerçekçi numaralar
+// Operatörler: 532 (Vodafone), 533 (Turkcell), 534 (Vodafone), 535 (Turkcell), 536 (Vodafone)
+// Her kişiye 1-3 adet numara
 const gsmData = [
-  ['5321234567', '5329876543'],
-  ['5331234567'],
-  ['5341234567', '5349876543', '5341112233'],
-  ['5351234567'],
-  ['5361234567', '5369876543'],
-  ['5371234567', '5379876543'],
-  ['5381234567'],
-  ['5391234567', '5399876543'],
-  ['5421234567'],
-  ['5431234567', '5439876543', '5431112233'],
+  ['5321234567', '5349876543'],              // Mustafa (2 numara)
+  ['5331234568'],                             // Zeynep (1 numara)
+  ['5341234569', '5529876544', '5341112233'], // Hasan (3 numara)
+  ['5351234570'],                             // Elif (1 numara)
+  ['5361234571', '5339876545'],               // Emre (2 numara)
+  ['5371234572', '5349876546'],               // Selin (2 numara)
+  ['5381234573'],                             // Burak (1 numara)
+  ['5391234574', '5329876547'],               // Deniz (2 numara)
+  ['5421234575'],                             // Ceren (1 numara)
+  ['5431234576', '5359876548', '5321112234'], // Kaan (3 numara)
+  ['5441234577', '5369876549'],               // Aylin (2 numara)
+  ['5451234578'],                             // Barış (1 numara)
+  ['5461234579', '5379876550'],               // Cansu (2 numara)
+  ['5321234580'],                             // Cem (1 numara)
+  ['5331234581', '5389876551'],               // Derya (2 numara)
 ];
 
 // Araç plakaları (rastgele modeller atanacak)
@@ -91,6 +104,11 @@ const aracData = [
   { plaka: '34 TUV 234' },
   { plaka: '06 WYZ 567' },
   { plaka: '35 AAA 890' },
+  { plaka: '34 BBB 111' },
+  { plaka: '16 CCC 222' },
+  { plaka: '06 DDD 333' },
+  { plaka: '41 EEE 444' },
+  { plaka: '35 FFF 555' },
 ];
 
 // Faaliyet Alanları
@@ -216,12 +234,13 @@ async function seedKisilerVeIliskiler(adminId: string, mahalleler: { id: string 
         ad: k.ad,
         soyad: k.soyad,
         tt: k.tt,
+        fotograf: `https://api.dicebear.com/7.x/avataaars/svg?seed=${k.ad}${k.soyad}`,
         createdUserId: adminId,
       },
     });
     kisiler.push(kisi);
 
-    // GSM numaraları ekle
+    // GSM numaraları ekle - her numara benzersiz
     for (let j = 0; j < gsmData[i].length; j++) {
       const gsm = await prisma.gsm.create({
         data: {
@@ -263,7 +282,7 @@ async function seedKisilerVeIliskiler(adminId: string, mahalleler: { id: string 
     await prisma.not.create({
       data: {
         kisiId: kisi.id,
-        icerik: `${k.ad} ${k.soyad} ile ilgili önemli not.`,
+        icerik: `${k.ad} ${k.soyad} ile ilgili önemli not. ${k.tt ? 'Müşteri olarak kayıtlı.' : 'Aday durumunda.'}`,
         createdUserId: adminId,
       },
     });
@@ -279,41 +298,96 @@ async function seedTakiplerVeAlarmlar(adminId: string, gsmler: { id: string }[])
   const now = new Date();
   const takipler = [];
 
-  for (let i = 0; i < 10; i++) {
-    const baslama = new Date(now);
-    baslama.setDate(baslama.getDate() - Math.floor(Math.random() * 60)); // Son 60 gün içinde başlamış
+  // Her GSM için takip oluştur - bazıları aktif, bazıları pasif (geçmiş)
+  for (let i = 0; i < gsmler.length; i++) {
+    const gsmId = gsmler[i].id;
 
-    const bitis = new Date(baslama);
-    bitis.setDate(bitis.getDate() + 90); // 90 gün sonra bitiyor
+    // %60 ihtimalle bu GSM'e takip ekle
+    if (Math.random() > 0.4) {
+      // Bazı GSM'lere geçmiş takip ekle (isActive: false)
+      if (i % 3 === 0) {
+        // Eski bir takip oluştur (bitmiş)
+        const eskiBaslama = new Date(now);
+        eskiBaslama.setDate(eskiBaslama.getDate() - 150); // 150 gün önce başlamış
 
-    const takip = await prisma.takip.create({
-      data: {
-        gsmId: gsmler[i % gsmler.length].id,
-        baslamaTarihi: baslama,
-        bitisTarihi: bitis,
-        durum: i < 3 ? TakipDurum.UZATILACAK : TakipDurum.DEVAM_EDECEK,
-        isActive: true,
-        createdUserId: adminId,
-      },
-    });
-    takipler.push(takip);
+        const eskiBitis = new Date(eskiBaslama);
+        eskiBitis.setDate(eskiBitis.getDate() + 90); // 90 gün sürmüş
 
-    // Alarm ekle
-    const tetikTarihi = new Date(bitis);
-    tetikTarihi.setDate(tetikTarihi.getDate() - 20);
+        const eskiTakip = await prisma.takip.create({
+          data: {
+            gsmId: gsmId,
+            baslamaTarihi: eskiBaslama,
+            bitisTarihi: eskiBitis,
+            durum: TakipDurum.UZATILDI,
+            isActive: false,
+            createdUserId: adminId,
+          },
+        });
+        takipler.push(eskiTakip);
+      }
 
-    await prisma.alarm.create({
-      data: {
-        takipId: takip.id,
-        tip: AlarmTip.TAKIP_BITIS,
-        baslik: 'Takip Bitiş Uyarısı',
-        mesaj: 'Takip süresi 20 gün içinde sona erecek.',
-        tetikTarihi: tetikTarihi,
-        gunOnce: 20,
-        durum: tetikTarihi <= now ? AlarmDurum.TETIKLENDI : AlarmDurum.BEKLIYOR,
-        createdUserId: adminId,
-      },
-    });
+      // Aktif takip oluştur
+      const baslama = new Date(now);
+      baslama.setDate(baslama.getDate() - Math.floor(Math.random() * 60)); // Son 60 gün içinde başlamış
+
+      const bitis = new Date(baslama);
+      bitis.setDate(bitis.getDate() + 90); // 90 gün sonra bitiyor
+
+      // Durum belirle (kalan güne göre)
+      const kalanGun = Math.ceil((bitis.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      let durum = TakipDurum.DEVAM_EDECEK;
+
+      if (kalanGun < 0) {
+        durum = TakipDurum.SONLANDIRILACAK;
+      } else if (kalanGun < 30) {
+        durum = TakipDurum.UZATILACAK;
+      }
+
+      const takip = await prisma.takip.create({
+        data: {
+          gsmId: gsmId,
+          baslamaTarihi: baslama,
+          bitisTarihi: bitis,
+          durum: durum,
+          isActive: true,
+          createdUserId: adminId,
+        },
+      });
+      takipler.push(takip);
+
+      // Alarm ekle (20 ve 10 gün önce)
+      const tetikTarihi1 = new Date(bitis);
+      tetikTarihi1.setDate(tetikTarihi1.getDate() - 20);
+
+      const tetikTarihi2 = new Date(bitis);
+      tetikTarihi2.setDate(tetikTarihi2.getDate() - 10);
+
+      await prisma.alarm.create({
+        data: {
+          takipId: takip.id,
+          tip: AlarmTip.TAKIP_BITIS,
+          baslik: 'Takip Bitiş Uyarısı (20 gün)',
+          mesaj: 'Takip süresi 20 gün içinde sona erecek.',
+          tetikTarihi: tetikTarihi1,
+          gunOnce: 20,
+          durum: tetikTarihi1 <= now ? AlarmDurum.TETIKLENDI : AlarmDurum.BEKLIYOR,
+          createdUserId: adminId,
+        },
+      });
+
+      await prisma.alarm.create({
+        data: {
+          takipId: takip.id,
+          tip: AlarmTip.TAKIP_BITIS,
+          baslik: 'Takip Bitiş Uyarısı (10 gün)',
+          mesaj: 'Takip süresi 10 gün içinde sona erecek.',
+          tetikTarihi: tetikTarihi2,
+          gunOnce: 10,
+          durum: tetikTarihi2 <= now ? AlarmDurum.TETIKLENDI : AlarmDurum.BEKLIYOR,
+          createdUserId: adminId,
+        },
+      });
+    }
   }
 
   console.log(`${takipler.length} takip ve alarm oluşturuldu.`);
@@ -325,7 +399,7 @@ async function seedTanitimlar(adminId: string, kisiler: { id: string }[], mahall
 
   const now = new Date();
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 12; i++) {
     const tarih = new Date(now);
     tarih.setDate(tarih.getDate() - Math.floor(Math.random() * 30)); // Son 30 gün
 
@@ -334,19 +408,20 @@ async function seedTanitimlar(adminId: string, kisiler: { id: string }[], mahall
     const tanitim = await prisma.tanitim.create({
       data: {
         tarih: tarih,
-        saat: `${10 + i}:00`,
+        saat: `${10 + (i % 6)}:00`,
+        baslik: `Tanıtım Toplantısı ${i + 1}`,
         mahalleId: randomMahalle.id,
         adresDetay: `Sokak No: ${Math.floor(Math.random() * 50) + 1}`,
-        notlar: `Tanıtım ${i + 1} - Başarılı geçti.`,
+        notlar: `Tanıtım ${i + 1} - ${i % 2 === 0 ? 'Başarılı geçti.' : 'Katılım ortalamaydı.'}`,
         createdUserId: adminId,
       },
     });
 
-    // Katılımcı ekle (2-3 kişi)
-    const katilimciSayisi = 2 + Math.floor(Math.random() * 2);
+    // Katılımcı ekle (2-4 kişi)
+    const katilimciSayisi = 2 + Math.floor(Math.random() * 3);
     const shuffled = [...kisiler].sort(() => 0.5 - Math.random());
 
-    for (let j = 0; j < katilimciSayisi; j++) {
+    for (let j = 0; j < katilimciSayisi && j < shuffled.length; j++) {
       await prisma.tanitimKatilimci.create({
         data: {
           tanitimId: tanitim.id,
@@ -356,7 +431,7 @@ async function seedTanitimlar(adminId: string, kisiler: { id: string }[], mahall
     }
   }
 
-  console.log('10 tanıtım oluşturuldu.');
+  console.log('12 tanıtım oluşturuldu.');
 }
 
 async function seedOperasyonlar(adminId: string, kisiler: { id: string }[], mahalleler: { id: string }[]) {
@@ -364,7 +439,7 @@ async function seedOperasyonlar(adminId: string, kisiler: { id: string }[], maha
 
   const now = new Date();
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 12; i++) {
     const tarih = new Date(now);
     tarih.setDate(tarih.getDate() - Math.floor(Math.random() * 30)); // Son 30 gün
 
@@ -373,19 +448,20 @@ async function seedOperasyonlar(adminId: string, kisiler: { id: string }[], maha
     const operasyon = await prisma.operasyon.create({
       data: {
         tarih: tarih,
-        saat: `${14 + i}:00`,
+        saat: `${14 + (i % 6)}:00`,
+        baslik: `Saha Operasyonu ${i + 1}`,
         mahalleId: randomMahalle.id,
         adresDetay: `Cadde No: ${Math.floor(Math.random() * 100) + 1}`,
-        notlar: `Operasyon ${i + 1} - Tamamlandı.`,
+        notlar: `Operasyon ${i + 1} - ${i % 3 === 0 ? 'Tamamlandı.' : i % 3 === 1 ? 'Devam ediyor.' : 'Ertelendi.'}`,
         createdUserId: adminId,
       },
     });
 
-    // Katılımcı ekle (1-2 kişi)
-    const katilimciSayisi = 1 + Math.floor(Math.random() * 2);
+    // Katılımcı ekle (1-3 kişi)
+    const katilimciSayisi = 1 + Math.floor(Math.random() * 3);
     const shuffled = [...kisiler].sort(() => 0.5 - Math.random());
 
-    for (let j = 0; j < katilimciSayisi; j++) {
+    for (let j = 0; j < katilimciSayisi && j < shuffled.length; j++) {
       await prisma.operasyonKatilimci.create({
         data: {
           operasyonId: operasyon.id,
@@ -395,7 +471,7 @@ async function seedOperasyonlar(adminId: string, kisiler: { id: string }[], maha
     }
   }
 
-  console.log('10 operasyon oluşturuldu.');
+  console.log('12 operasyon oluşturuldu.');
 }
 
 async function seedAraclar(adminId: string, kisiler: { id: string }[]) {
@@ -437,7 +513,7 @@ async function seedAraclar(adminId: string, kisiler: { id: string }[]) {
     });
   }
 
-  console.log('10 araç oluşturuldu.');
+  console.log(`${aracData.length} araç oluşturuldu.`);
 }
 
 async function seedExampleData() {

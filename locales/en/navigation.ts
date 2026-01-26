@@ -7,7 +7,7 @@ export const navigation: NavigationTranslations = {
   numaralar: "Numbers",
   araclar: "Vehicles",
   takipler: "Follow-ups",
-  tanitimlar: "Introductions",
+  tanitimlar: "Events",
   operasyonlar: "Operations",
   personel: "Staff",
   alarmlar: "Alarms",

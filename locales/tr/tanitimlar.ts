@@ -2,34 +2,34 @@ import type { TanitimlarTranslations } from "@/types/locale"
 
 export const tanitimlar: TanitimlarTranslations = {
   // Page
-  pageTitle: "Tanıtımlar",
-  pageDescription: "Tüm tanıtımları görüntüleyin ve yönetin",
-  newTanitimButton: "Yeni Tanıtım",
-  newTanitimPageTitle: "Yeni Tanıtım",
-  newTanitimPageDescription: "Tanıtıma katılacak kişileri seçin ve tanıtım bilgilerini girin",
+  pageTitle: "Etkinlikler",
+  pageDescription: "Tüm etkinlikleri görüntüleyin ve yönetin",
+  newTanitimButton: "Yeni Etkinlik",
+  newTanitimPageTitle: "Yeni Etkinlik",
+  newTanitimPageDescription: "Etkinliğe katılacak kişileri seçin ve etkinlik bilgilerini girin",
 
-  newTanitim: "Yeni Tanıtım",
-  editTanitim: "Tanıtım Düzenle",
-  tanitimDetails: "Tanıtım Detayları",
-  addToTanitim: "Tanıtıma Ekle",
-  addToExistingTanitim: "Mevcut Tanıtıma Ekle",
-  createNewTanitim: "Yeni Tanıtım Oluştur",
+  newTanitim: "Yeni Etkinlik",
+  editTanitim: "Etkinlik Düzenle",
+  tanitimDetails: "Etkinlik Detayları",
+  addToTanitim: "Etkinliğe Ekle",
+  addToExistingTanitim: "Mevcut Etkinliğe Ekle",
+  createNewTanitim: "Yeni Etkinlik Oluştur",
 
   // Fields
   title: "Başlık",
-  titlePlaceholder: "Tanıtım başlığı...",
-  tanitimDate: "Tanıtım Tarihi",
-  tanitimTime: "Tanıtım Saati",
-  tanitimAddress: "Tanıtım Adresi",
-  dateTime: "Tanıtım Tarihi ve Saati",
+  titlePlaceholder: "Etkinlik başlığı...",
+  tanitimDate: "Etkinlik Tarihi",
+  tanitimTime: "Etkinlik Saati",
+  tanitimAddress: "Etkinlik Adresi",
+  dateTime: "Etkinlik Tarihi ve Saati",
   addressDetail: "Adres Detayı",
   addressDetailPlaceholder: "Sokak, bina no, daire...",
-  notesPlaceholder: "Tanıtım hakkında notlar...",
-  editTanitimDescription: "Tanıtım bilgilerini güncelleyin. Katılımcıları detay sayfasından yönetebilirsiniz.",
+  notesPlaceholder: "Etkinlik hakkında notlar...",
+  editTanitimDescription: "Etkinlik bilgilerini güncelleyin. Katılımcıları detay sayfasından yönetebilirsiniz.",
 
   // Modal
-  createModalTitle: "Yeni Tanıtım Oluştur",
-  createModalDescription: "Yeni bir tanıtım oluşturun. {name} otomatik olarak katılımcı olarak eklenecek.",
+  createModalTitle: "Yeni Etkinlik Oluştur",
+  createModalDescription: "Yeni bir etkinlik oluşturun. {name} otomatik olarak katılımcı olarak eklenecek.",
   optional: "(Opsiyonel)",
   creating: "Oluşturuluyor...",
 
@@ -47,8 +47,8 @@ export const tanitimlar: TanitimlarTranslations = {
   createdOldNew: "Oluşturulma (Eski → Yeni)",
 
   // Delete
-  deleteTanitim: "Tanıtımı Sil",
-  deleteTanitimConfirm: "Bu tanıtımı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm katılımcı kayıtları da silinecektir.",
+  deleteTanitim: "Etkinliği Sil",
+  deleteTanitimConfirm: "Bu etkinliği silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve tüm katılımcı kayıtları da silinecektir.",
 
   // Search
   searchPlaceholder: "Adres veya notlarda ara...",
@@ -58,14 +58,14 @@ export const tanitimlar: TanitimlarTranslations = {
   selectedParticipants: "Seçilen Katılımcılar",
   searchInSelected: "Seçilenler içinde ara...",
   participantCount: "Seçilen Katılımcı:",
-  allSelectedWillBeAdded: "Seçilen tüm kişiler bu tanıtıma katılımcı olarak eklenecektir.",
+  allSelectedWillBeAdded: "Seçilen tüm kişiler bu etkinliğe katılımcı olarak eklenecektir.",
   searchPerson: "Kişi ara...",
   allPersonsParticipants: "Tüm kişiler zaten katılımcı",
   personNotFound: "Kişi bulunamadı",
   noParticipantsYet: "Henüz katılımcı eklenmedi",
   useAddButton: "Yukarıdaki Ekle butonunu kullanın",
   removeParticipant: "Katılımcıyı Kaldır",
-  removeParticipantConfirm: "Bu kişiyi tanıtımdan kaldırmak istediğinizden emin misiniz?",
+  removeParticipantConfirm: "Bu kişiyi etkinlikten kaldırmak istediğinizden emin misiniz?",
 
   // New Tanitim Page
   availablePeople: "Mevcut Kişiler",
@@ -74,11 +74,11 @@ export const tanitimlar: TanitimlarTranslations = {
   removeAll: "Tümünü Kaldır",
   noResultsFound: "Sonuç bulunamadı",
   allPeopleSelected: "Tüm kişiler seçildi",
-  selectPeopleInstructions: "Tanıtıma katılacak kişileri sol listeden seçin",
-  tanitimInfo: "Tanıtım Bilgileri",
-  createTanitimButton: "Tanıtım Oluştur",
+  selectPeopleInstructions: "Etkinliğe katılacak kişileri sol listeden seçin",
+  tanitimInfo: "Etkinlik Bilgileri",
+  createTanitimButton: "Etkinlik Oluştur",
 
   // Additional
-  selectedCountText: "tanıtım seçildi",
-  notFound: "Tanıtım bulunamadı",
+  selectedCountText: "etkinlik seçildi",
+  notFound: "Etkinlik bulunamadı",
 }

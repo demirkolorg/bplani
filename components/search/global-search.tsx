@@ -136,7 +136,7 @@ export function GlobalSearch({ open, onOpenChange, initialQuery }: GlobalSearchP
     >
       <Command shouldFilter={false} className="rounded-xl">
         <CommandInput
-          placeholder={t.search.searchPlaceholder}
+          placeholder={t.dashboard.searchPlaceholder}
           value={query}
           onValueChange={setQuery}
         />

@@ -90,4 +90,17 @@ export const takipler: TakiplerTranslations = {
 
   // Validation
   selectAtLeastOne: "En az bir GSM seçmelisiniz",
+
+  // Detail Page
+  gsmNotFound: "GSM bulunamadı",
+  backToTakipler: "Takiplere Dön",
+  goToPersonDetail: "Kişi Detayına Git",
+  addNewTakip: "Yeni Takip Ekle",
+  noActiveTakipDescription: "Bu GSM için aktif bir takip kaydı bulunmamaktadır.",
+  takipHistory: "Takip Geçmişi",
+  duration: "Süre",
+  createdAt: "Oluşturulma",
+  alarmList: "Alarmlar",
+  triggered: "Tetiklendi",
+  daysCount: "{days} gün",
 }
