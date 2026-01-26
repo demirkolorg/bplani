@@ -6,10 +6,295 @@
 import type { QueryOutput, Filter, FilterValue } from "./types"
 
 /**
+ * Special field mappings for related tables
+ * Maps virtual field names to Prisma relation queries
+ */
+const RELATED_FIELD_MAPPINGS: Record<string, (operator: string, value: any) => Record<string, any>> = {
+  // GSM numarası arama (gsmler ilişkisi)
+  "gsm.numara": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "numara")
+    return {
+      gsmler: {
+        some: condition
+      }
+    }
+  },
+
+  // Araç plakası arama (araclar ilişkisi üzerinden)
+  "arac.plaka": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "plaka")
+    return {
+      araclar: {
+        some: {
+          arac: condition
+        }
+      }
+    }
+  },
+
+  // Adres - İl
+  "adres.il": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "ad")
+    return {
+      adresler: {
+        some: {
+          mahalle: {
+            ilce: {
+              il: condition
+            }
+          }
+        }
+      }
+    }
+  },
+
+  // Adres - İlçe
+  "adres.ilce": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "ad")
+    return {
+      adresler: {
+        some: {
+          mahalle: {
+            ilce: condition
+          }
+        }
+      }
+    }
+  },
+
+  // Adres - Mahalle
+  "adres.mahalle": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "ad")
+    return {
+      adresler: {
+        some: {
+          mahalle: condition
+        }
+      }
+    }
+  },
+
+  // Adres - Detay
+  "adres.detay": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "detay")
+    return {
+      adresler: {
+        some: condition
+      }
+    }
+  },
+
+  // Not - İçerik
+  "not.icerik": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "icerik")
+    return {
+      notlar: {
+        some: condition
+      }
+    }
+  },
+
+  // Faaliyet Alanı
+  "faaliyet_alani.ad": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "ad")
+    return {
+      faaliyetAlanlari: {
+        some: {
+          faaliyetAlani: condition
+        }
+      }
+    }
+  },
+
+  // Takip - Durum
+  "takip.durum": (operator, value) => {
+    return {
+      gsmler: {
+        some: {
+          takipler: {
+            some: {
+              durum: { equals: value }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  // Takip - Başlama Tarihi
+  "takip.baslama_tarihi": (operator, value) => {
+    const condition = operator === "before" ? { lt: new Date(value) } :
+                      operator === "after" ? { gt: new Date(value) } :
+                      operator === "equals" ? { equals: new Date(value) } :
+                      { equals: new Date(value) }
+    return {
+      gsmler: {
+        some: {
+          takipler: {
+            some: {
+              baslamaTarihi: condition
+            }
+          }
+        }
+      }
+    }
+  },
+
+  // Takip - Bitiş Tarihi
+  "takip.bitis_tarihi": (operator, value) => {
+    const condition = operator === "before" ? { lt: new Date(value) } :
+                      operator === "after" ? { gt: new Date(value) } :
+                      operator === "equals" ? { equals: new Date(value) } :
+                      { equals: new Date(value) }
+    return {
+      gsmler: {
+        some: {
+          takipler: {
+            some: {
+              bitisTarihi: condition
+            }
+          }
+        }
+      }
+    }
+  },
+
+  // Tanıtım - Notlar
+  "tanitim.notlar": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "notlar")
+    return {
+      tanitimlar: {
+        some: {
+          tanitim: condition
+        }
+      }
+    }
+  },
+
+  // Tanıtım - Mahalle
+  "tanitim.mahalle": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "ad")
+    return {
+      tanitimlar: {
+        some: {
+          tanitim: {
+            mahalle: condition
+          }
+        }
+      }
+    }
+  },
+
+  // Operasyon - Notlar
+  "operasyon.notlar": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "notlar")
+    return {
+      operasyonlar: {
+        some: {
+          operasyon: condition
+        }
+      }
+    }
+  },
+
+  // Operasyon - Mahalle
+  "operasyon.mahalle": (operator, value) => {
+    const condition = mapOperatorToCondition(operator, value, "ad")
+    return {
+      operasyonlar: {
+        some: {
+          operasyon: {
+            mahalle: condition
+          }
+        }
+      }
+    }
+  },
+}
+
+/**
+ * Helper function to map operator to Prisma condition
+ */
+function mapOperatorToCondition(operator: string, value: any, field: string): Record<string, any> {
+  switch (operator) {
+    case "contains":
+      return { [field]: { contains: value as string, mode: "insensitive" } }
+
+    case "doesNotContain":
+      return { [field]: { not: { contains: value as string, mode: "insensitive" } } }
+
+    case "equals":
+      return { [field]: { equals: value } }
+
+    case "notEquals":
+      return { [field]: { not: value } }
+
+    case "startsWith":
+      return { [field]: { startsWith: value as string, mode: "insensitive" } }
+
+    case "endsWith":
+      return { [field]: { endsWith: value as string, mode: "insensitive" } }
+
+    case "isEmpty":
+      return {
+        OR: [
+          { [field]: { equals: null } },
+          { [field]: { equals: "" } },
+        ],
+      }
+
+    case "isNotEmpty":
+      return {
+        AND: [
+          { [field]: { not: null } },
+          { [field]: { not: "" } },
+        ],
+      }
+
+    case "inList":
+    case "in":
+      return { [field]: { in: value as string[] } }
+
+    case "notInList":
+    case "notIn":
+      return { [field]: { notIn: value as string[] } }
+
+    case "greaterThan":
+      return { [field]: { gt: value } }
+
+    case "lessThan":
+      return { [field]: { lt: value } }
+
+    case "before":
+      return { [field]: { lt: new Date(value as string) } }
+
+    case "after":
+      return { [field]: { gt: new Date(value as string) } }
+
+    case "between":
+      const betweenValue = value as { min: number | string; max: number | string }
+      return {
+        AND: [
+          { [field]: { gte: betweenValue.min } },
+          { [field]: { lte: betweenValue.max } },
+        ],
+      }
+
+    default:
+      return { [field]: value }
+  }
+}
+
+/**
  * Maps a single filter to Prisma where condition
  */
 function mapFilterToPrisma(filter: Filter): Record<string, any> {
   const { field, operator, value } = filter
+
+  // Check if this is a related field
+  if (RELATED_FIELD_MAPPINGS[field]) {
+    return RELATED_FIELD_MAPPINGS[field](operator, value)
+  }
 
   switch (operator) {
     // Text operators
@@ -193,7 +478,7 @@ export function getPaginationParams(
 export async function executeQueryWithPagination<T>(
   model: any,
   query: QueryOutput,
-  options: { page?: number; pageSize?: number; orderBy?: any } = {}
+  options: { page?: number; pageSize?: number; orderBy?: any; include?: any } = {}
 ): Promise<{
   data: T[]
   pagination: {
@@ -203,7 +488,7 @@ export async function executeQueryWithPagination<T>(
     totalPages: number
   }
 }> {
-  const { page = 1, pageSize = 20, orderBy } = options
+  const { page = 1, pageSize = 20, orderBy, include } = options
 
   const where = queryToPrismaWhere(query)
   const pagination = getPaginationParams(page, pageSize)
@@ -214,6 +499,7 @@ export async function executeQueryWithPagination<T>(
       skip: pagination.skip,
       take: pagination.take,
       orderBy: orderBy || { createdAt: "desc" },
+      ...(include && { include }),
     }),
     model.count({ where }),
   ])

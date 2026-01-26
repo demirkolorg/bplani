@@ -1,13 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Home } from "lucide-react"
+import { Home } from "lucide-react"
 import { useTabs } from "@/components/providers/tab-provider"
 import { TabItem } from "./tab-item"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/components/providers/locale-provider"
 
 export function TabBar() {
+  const { t } = useLocale()
   const {
     tabs,
     activeTabId,
@@ -15,6 +17,7 @@ export function TabBar() {
     closeTab,
     closeOtherTabs,
     closeTabsToRight,
+    closeAllExceptHome,
     openTab,
   } = useTabs()
 
@@ -65,7 +68,7 @@ export function TabBar() {
 
   if (tabs.length === 0) {
     return (
-      <div className="flex items-center h-10 border-b bg-muted/30 px-2">
+      <div className="sticky top-14 z-10 flex items-center h-10 border-b bg-background px-2">
         <Button
           variant="ghost"
           size="sm"
@@ -73,14 +76,14 @@ export function TabBar() {
           onClick={() => openTab("/")}
         >
           <Home className="h-4 w-4" />
-          <span>Ana Sayfa</span>
+          <span>{t.tabs.home}</span>
         </Button>
       </div>
     )
   }
 
   return (
-    <div className="flex items-center h-10 border-b bg-muted/30 px-2 gap-1 overflow-x-auto scrollbar-thin scrollbar-thumb-muted">
+    <div className="sticky top-14 z-10 flex items-center h-10 border-b bg-background px-2 gap-1 overflow-x-auto scrollbar-thin scrollbar-thumb-muted">
       {tabs.map((tab) => (
         <TabItem
           key={tab.id}
@@ -91,19 +94,9 @@ export function TabBar() {
           onClose={() => closeTab(tab.id)}
           onCloseOthers={() => closeOtherTabs(tab.id)}
           onCloseToRight={() => closeTabsToRight(tab.id)}
+          onCloseAll={closeAllExceptHome}
         />
       ))}
-
-      {/* Yeni sekme butonu */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 ml-1 shrink-0"
-        onClick={() => openTab("/")}
-        title="Yeni Sekme (Ana Sayfa)"
-      >
-        <Plus className="h-4 w-4" />
-      </Button>
     </div>
   )
 }

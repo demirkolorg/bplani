@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Car, Plus, X, ExternalLink } from "lucide-react"
+import { Car, Plus, X, ExternalLink, Palette, FileText, Users, Trash2, MoreHorizontal } from "lucide-react"
 import Link from "next/link"
 
 import { useAraclarByKisi, useAddKisiToArac, useRemoveKisiFromArac, useAraclar, type Arac } from "@/hooks/use-araclar-vehicles"
@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import {
   AlertDialog,
@@ -41,6 +42,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { AracForm } from "@/components/araclar/vehicles"
 import { Textarea } from "@/components/ui/textarea"
@@ -102,107 +109,154 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
     }
   }
 
-  if (isLoading) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Car className="h-5 w-5" />
-            {t.kisiler.vehicles}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
-    <>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-indigo-600 flex items-center justify-center">
+              <Car className="h-5 w-5 text-white" />
+            </div>
+            {t.kisiler.vehicles}
+            {araclar.length > 0 && (
+              <Badge variant="secondary" className="text-lg px-3 py-1">{araclar.length}</Badge>
+            )}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t.kisiler.vehicleInfoAndSharing}
+          </p>
+        </div>
+        <Button size="lg" onClick={() => setIsAddDialogOpen(true)} className="gap-2">
+          <Plus className="h-5 w-5" />
+          Araç Ekle
+        </Button>
+      </div>
+
       <Card className="w-full">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Car className="h-5 w-5 text-indigo-600" />
-              {t.kisiler.vehicles}
-              <Badge variant="secondary" className="ml-1">
-                {araclar.length}
-              </Badge>
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsAddDialogOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              {t.kisiler.addVehicle}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {araclar.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              {t.kisiler.noVehiclesAdded}
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {araclar.map((arac) => (
-                <div
-                  key={arac.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 group"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-semibold">{arac.plaka}</span>
-                      <Link href="/araclar">
-                        <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                      </Link>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {arac.model.marka.ad} {arac.model.ad}
-                      {arac.renk && ` - ${aracRenkLabels[arac.renk as AracRenk] || arac.renk}`}
-                    </div>
-                    {/* Açıklama - bu kişi için */}
-                    {(() => {
-                      const currentKisiRelation = arac.kisiler.find(ak => ak.kisi.id === kisiId)
-                      return currentKisiRelation?.aciklama ? (
-                        <p className="text-xs text-muted-foreground mt-1 italic">
-                          {currentKisiRelation.aciklama}
-                        </p>
-                      ) : null
-                    })()}
-                    {arac.kisiler.length > 1 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {arac.kisiler
-                          .filter(ak => ak.kisi.id !== kisiId)
-                          .slice(0, 2)
-                          .map(ak => (
-                            <Badge key={ak.kisi.id} variant="outline" className="text-xs">
-                              {ak.kisi.ad} {ak.kisi.soyad}
-                            </Badge>
-                          ))}
-                        {arac.kisiler.length > 3 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{arac.kisiler.length - 3}
-                          </Badge>
-                        )}
+        <CardContent className="p-6">
+          {/* Vehicle List */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : araclar.length > 0 ? (
+            <div className="grid gap-6 lg:grid-cols-2">
+              {araclar.map((arac, index) => {
+                const currentKisiRelation = arac.kisiler.find(ak => ak.kisi.id === kisiId)
+                const otherUsers = arac.kisiler.filter(ak => ak.kisi.id !== kisiId)
+
+                return (
+                  <Card key={arac.id} className="p-0 overflow-hidden transition-all duration-200">
+                    {/* Araç Header */}
+                    <div className="p-6 bg-muted/30 border-b">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="h-14 w-14 rounded-2xl bg-indigo-100 dark:bg-indigo-950/50 flex items-center justify-center">
+                            <Car className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-2xl">
+                                {arac.plaka}
+                              </span>
+                              <Link href="/araclar">
+                                <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                              </Link>
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {arac.model.marka.ad} {arac.model.ad}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-9 w-9">
+                              <MoreHorizontal className="h-5 w-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => setRemovingArac(arac)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {t.kisiler.remove}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => setRemovingArac(arac)}
-                  >
-                    <X className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              ))}
+
+                      {/* İstatistikler */}
+                      {otherUsers.length > 0 && (
+                        <div className="mt-4 flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
+                            {otherUsers.length} {t.kisiler.sharedWithPersons}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Araç Detayları */}
+                    <CardContent className="p-6 space-y-4">
+                      {/* Renk */}
+                      {arac.renk && (
+                        <div className="flex items-start gap-3">
+                          <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+                            <Palette className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-xs text-muted-foreground mb-1">{t.kisiler.color}</div>
+                            <div className="font-semibold">{aracRenkLabels[arac.renk as AracRenk] || arac.renk}</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Açıklama */}
+                      {currentKisiRelation?.aciklama && (
+                        <div className="flex items-start gap-3">
+                          <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                            <FileText className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-xs text-muted-foreground mb-1">{t.kisiler.description}</div>
+                            <div className="text-sm">{currentKisiRelation.aciklama}</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Diğer Kullanıcılar */}
+                      {otherUsers.length > 0 && (
+                        <div className="pt-3 border-t">
+                          <div className="text-xs text-muted-foreground mb-2">{t.kisiler.sharedPersons}</div>
+                          <div className="flex flex-wrap gap-2">
+                            {otherUsers.map(ak => (
+                              <Badge key={ak.kisi.id} variant="outline" className="text-xs">
+                                {ak.kisi.ad} {ak.kisi.soyad}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="h-16 w-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                <Car className="h-8 w-8 text-muted-foreground/40" />
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">Henüz araç eklenmemiş</p>
+              <Button onClick={() => setIsAddDialogOpen(true)} variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                İlk Aracı Ekle
+              </Button>
             </div>
           )}
         </CardContent>
@@ -219,6 +273,9 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{t.kisiler.addVehicleTitle}</DialogTitle>
+            <DialogDescription>
+              Mevcut araçlardan seçin veya yeni araç oluşturun
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -362,6 +419,6 @@ export function KisiAracList({ kisiId }: KisiAracListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

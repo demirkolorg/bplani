@@ -31,6 +31,7 @@ export default function YeniTanitimPage() {
   const [selectedKisiIds, setSelectedKisiIds] = React.useState<Set<string>>(new Set())
   const [searchLeft, setSearchLeft] = React.useState("")
   const [searchRight, setSearchRight] = React.useState("")
+  const [baslik, setBaslik] = React.useState<string>("")
   const [tarih, setTarih] = React.useState<Date>(new Date())
   const [saat, setSaat] = React.useState<string>("")
   const [lokasyon, setLokasyon] = React.useState<{
@@ -104,6 +105,7 @@ export default function YeniTanitimPage() {
 
     try {
       await createTanitim.mutateAsync({
+        baslik: baslik || null,
         tarih,
         saat: saat || null,
         mahalleId: lokasyon.mahalleId || null,
@@ -318,6 +320,18 @@ export default function YeniTanitimPage() {
             <CardTitle className="text-base">{t.tanitimlar.tanitimInfo}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Başlık */}
+            <div className="space-y-2">
+              <Label htmlFor="baslik">{t.tanitimlar.title}</Label>
+              <Input
+                id="baslik"
+                value={baslik}
+                onChange={(e) => setBaslik(e.target.value)}
+                placeholder={t.tanitimlar.titlePlaceholder}
+                maxLength={200}
+              />
+            </div>
+
             {/* Tarih ve Saat */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">

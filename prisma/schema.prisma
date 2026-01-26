@@ -326,6 +326,7 @@ model Not {
 // ==================== TANITIM ====================
 model Tanitim {
   id         String   @id @default(cuid())
+  baslik     String?  // Tanıtım başlığı
   tarih      DateTime @default(now())
   saat       String?  // Opsiyonel saat bilgisi "HH:mm" formatında
   mahalleId  String?
@@ -364,6 +365,7 @@ model TanitimKatilimci {
 // ==================== OPERASYON ====================
 model Operasyon {
   id         String   @id @default(cuid())
+  baslik     String?  // Operasyon başlığı
   tarih      DateTime @default(now())
   saat       String?  // Opsiyonel saat bilgisi "HH:mm" formatında
   mahalleId  String?

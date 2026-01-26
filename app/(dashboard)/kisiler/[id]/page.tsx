@@ -17,9 +17,15 @@ import {
   ChevronDown,
   ChevronRight,
   Plus,
-  ArrowLeft,
   Clock,
   ArrowUpRight,
+  CalendarClock,
+  AlertCircle,
+  CheckCircle2,
+  TrendingUp,
+  Activity,
+  Copy,
+  Search,
 } from "lucide-react"
 
 import { useKisi } from "@/hooks/use-kisiler"
@@ -28,6 +34,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 import { cn } from "@/lib/utils"
 import { KisiDetayEditModal } from "@/components/kisiler/kisi-detay-edit-modal"
 import { KisiFaaliyetEditModal } from "@/components/kisiler/kisi-faaliyet-edit-modal"
@@ -104,16 +116,59 @@ interface DetailRowProps {
   label: string
   value: React.ReactNode
   isLink?: boolean
+  contextValue?: string // For copy/search functionality
 }
 
-function DetailRow({ label, value, isLink }: DetailRowProps) {
-  return (
+function DetailRow({ label, value, isLink, contextValue }: DetailRowProps) {
+  const { t } = useLocale()
+
+  const handleCopy = async () => {
+    if (contextValue) {
+      try {
+        await navigator.clipboard.writeText(contextValue)
+      } catch (err) {
+        console.error("Failed to copy:", err)
+      }
+    }
+  }
+
+  const handleSearch = () => {
+    if (contextValue) {
+      window.dispatchEvent(
+        new CustomEvent("triggerGlobalSearch", {
+          detail: { query: contextValue },
+        })
+      )
+    }
+  }
+
+  const content = (
     <div className="flex items-start py-1.5">
       <span className="text-sm text-muted-foreground w-24 shrink-0">{label}</span>
       <span className={cn("text-sm", isLink && "text-blue-600 hover:underline cursor-pointer")}>
         {value || "-"}
       </span>
     </div>
+  )
+
+  if (!contextValue) {
+    return content
+  }
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>{content}</ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onClick={handleCopy}>
+          <Copy className="h-4 w-4 mr-2" />
+          {t.common.copy}
+        </ContextMenuItem>
+        <ContextMenuItem onClick={handleSearch}>
+          <Search className="h-4 w-4 mr-2" />
+          {t.common.search}
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }
 
@@ -131,6 +186,16 @@ export default function KisiDetayPage() {
 
   // Tab title'ı dinamik güncelle
   useTabTitle(kisi ? `${kisi.ad} ${kisi.soyad}` : undefined)
+
+  // Handle URL fragment to open specific tab
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.slice(1) // Remove #
+      if (hash && ["genel", "gsm", "adres", "arac", "tanitim", "operasyon", "notlar"].includes(hash)) {
+        setActiveTab(hash)
+      }
+    }
+  }, [])
   const { data: tanitimlar } = useTanitimlarByKisi(id)
   const { data: operasyonlar } = useOperasyonlarByKisi(id)
   const { data: araclarData } = useAraclarByKisi(id)
@@ -190,29 +255,31 @@ export default function KisiDetayPage() {
   // Get primary GSM
   const primaryGsm = kisi.gsmler?.find((g) => g.isPrimary) || kisi.gsmler?.[0]
 
-  // Get primary address
+  // Get primary address - full address with detail
   const primaryAdres = kisi.adresler?.find((a) => a.isPrimary) || kisi.adresler?.[0]
   const adresText = primaryAdres
-    ? `${primaryAdres.mahalle?.ad || ""}, ${primaryAdres.mahalle?.ilce?.ad || ""}, ${primaryAdres.mahalle?.ilce?.il?.ad || ""}`
+    ? [
+        primaryAdres.mahalle?.ad ? `${primaryAdres.mahalle.ad} Mahallesi` : null,
+        primaryAdres.detay,
+        primaryAdres.mahalle?.ilce?.ad,
+        primaryAdres.mahalle?.ilce?.il?.ad
+      ].filter(Boolean).join(", ")
     : null
 
   // Recent notes (last 2)
+  // Recent notes (last 2)
   const recentNotes = kisi.notlar?.slice(0, 2) || []
+
+  // Active takip count
+  const activeTakipCount = kisi.gsmler?.reduce((count, gsm) => {
+    return count + (gsm.takipler?.filter((t: any) => t.isActive).length || 0)
+  }, 0) || 0
 
   return (
     <div className="flex h-full bg-background">
       {/* Left Sidebar */}
       <div className="w-[360px] border-r flex flex-col overflow-y-auto">
         <div className="p-6">
-          {/* Back Button */}
-          <Link
-            href="/kisiler"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t.kisiler.backToKisiler}
-          </Link>
-
           {/* Profile Photo */}
           <div className="mb-4 group relative">
             <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 overflow-hidden flex items-center justify-center">
@@ -253,25 +320,6 @@ export default function KisiDetayPage() {
             onEdit={() => setShowDetayModal(true)}
           >
             <div className="space-y-0.5">
-              {kisi.tc && <DetailRow label={t.kisiler.tt} value={kisi.tc} />}
-              {primaryGsm && (
-                <DetailRow
-                  label={t.kisiler.phone}
-                  value={primaryGsm.numara}
-                  isLink
-                />
-              )}
-              {adresText && (
-                <DetailRow label={t.kisiler.address} value={adresText} />
-              )}
-              <DetailRow
-                label={t.kisiler.tt}
-                value={
-                  <Badge variant={kisi.tt ? "default" : "secondary"}>
-                    {kisi.tt ? t.kisiler.yes : t.kisiler.no}
-                  </Badge>
-                }
-              />
               <DetailRow
                 label={t.kisiler.tip}
                 value={
@@ -287,13 +335,43 @@ export default function KisiDetayPage() {
                   </Badge>
                 }
               />
+              {kisi.tc && (
+                <DetailRow
+                  label={t.kisiler.tcLabel}
+                  value={kisi.tc}
+                  contextValue={kisi.tc}
+                />
+              )}
+              {primaryGsm && (
+                <DetailRow
+                  label={t.kisiler.phone}
+                  value={primaryGsm.numara}
+                  isLink
+                  contextValue={primaryGsm.numara}
+                />
+              )}
+              {adresText && (
+                <DetailRow
+                  label={t.kisiler.address}
+                  value={adresText}
+                  contextValue={adresText}
+                />
+              )}
               <DetailRow
-                label={t.kisiler.pio}
-                value={kisi.pio ? t.kisiler.yes : t.kisiler.no}
+                label={t.kisiler.tt}
+                value={
+                  <Badge variant={kisi.tt ? "default" : "secondary"}>
+                    {kisi.tt ? t.kisiler.yes : t.kisiler.no}
+                  </Badge>
+                }
               />
               <DetailRow
                 label={t.kisiler.asli}
                 value={kisi.asli ? t.kisiler.yes : t.kisiler.no}
+              />
+              <DetailRow
+                label={t.kisiler.pio}
+                value={kisi.pio ? t.kisiler.yes : t.kisiler.no}
               />
             </div>
           </CollapsibleSection>
@@ -305,15 +383,48 @@ export default function KisiDetayPage() {
           >
             <div className="flex flex-wrap gap-2">
               {kisi.faaliyetAlanlari && kisi.faaliyetAlanlari.length > 0 ? (
-                kisi.faaliyetAlanlari.map((f) => (
-                  <Badge
-                    key={f.id}
-                    variant="outline"
-                    className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300"
-                  >
-                    {f.faaliyetAlani.ad}
-                  </Badge>
-                ))
+                kisi.faaliyetAlanlari.map((f) => {
+                  const faaliyetAd = f.faaliyetAlani.ad
+
+                  const handleCopy = async () => {
+                    try {
+                      await navigator.clipboard.writeText(faaliyetAd)
+                    } catch (err) {
+                      console.error("Failed to copy:", err)
+                    }
+                  }
+
+                  const handleSearch = () => {
+                    window.dispatchEvent(
+                      new CustomEvent("triggerGlobalSearch", {
+                        detail: { query: faaliyetAd },
+                      })
+                    )
+                  }
+
+                  return (
+                    <ContextMenu key={f.id}>
+                      <ContextMenuTrigger asChild>
+                        <Badge
+                          variant="outline"
+                          className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300 cursor-context-menu"
+                        >
+                          {faaliyetAd}
+                        </Badge>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        <ContextMenuItem onClick={handleCopy}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          {t.common.copy}
+                        </ContextMenuItem>
+                        <ContextMenuItem onClick={handleSearch}>
+                          <Search className="h-4 w-4 mr-2" />
+                          {t.common.search}
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
+                  )
+                })
               ) : (
                 <span className="text-sm text-muted-foreground">
                   {t.kisiler.noFaaliyetAlanlari}
@@ -380,8 +491,8 @@ export default function KisiDetayPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Navigation Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <div className="border-b px-6 pt-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <div className="sticky top-0 z-10 bg-background border-b px-6 pt-2">
             <TabsList variant="line">
               <TabsTrigger value="genel">
                 {t.kisiler.overview}
@@ -432,9 +543,119 @@ export default function KisiDetayPage() {
           </div>
 
           {/* Tab Contents */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6">
             {/* Genel Bakış */}
-            <TabsContent value="genel" className="mt-0 h-full">
+            <TabsContent value="genel" className="mt-0">
+              {/* Faaliyet Açıklaması */}
+              {kisi.faaliyet && (
+                <Card className="mb-6">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      {t.kisiler.faaliyet}
+                    </h3>
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: kisi.faaliyet }}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* İstatistikler */}
+              <div className="grid gap-2 grid-cols-2 lg:grid-cols-6 mb-6">
+                {/* GSM Sayısı */}
+                <Card>
+                  <CardContent className="p-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">{t.kisiler.gsm}</p>
+                        <p className="text-base font-bold mt-0.5">{kisi.gsmler?.length || 0}</p>
+                      </div>
+                      <div className="h-7 w-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                        <Phone className="h-3.5 w-3.5 text-blue-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Adres Sayısı */}
+                <Card>
+                  <CardContent className="p-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">{t.kisiler.addresses}</p>
+                        <p className="text-base font-bold mt-0.5">{kisi.adresler?.length || 0}</p>
+                      </div>
+                      <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                        <MapPin className="h-3.5 w-3.5 text-green-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Araç Sayısı */}
+                <Card>
+                  <CardContent className="p-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">{t.kisiler.vehicles}</p>
+                        <p className="text-base font-bold mt-0.5">{araclarData?.data?.length || 0}</p>
+                      </div>
+                      <div className="h-7 w-7 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                        <Car className="h-3.5 w-3.5 text-indigo-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Tanıtım Sayısı */}
+                <Card>
+                  <CardContent className="p-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">{t.kisiler.introductions}</p>
+                        <p className="text-base font-bold mt-0.5">{tanitimlar?.length || 0}</p>
+                      </div>
+                      <div className="h-7 w-7 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                        <Megaphone className="h-3.5 w-3.5 text-purple-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Operasyon Sayısı */}
+                <Card>
+                  <CardContent className="p-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">{t.kisiler.operations}</p>
+                        <p className="text-base font-bold mt-0.5">{operasyonlar?.length || 0}</p>
+                      </div>
+                      <div className="h-7 w-7 rounded-full bg-violet-100 dark:bg-violet-900 flex items-center justify-center">
+                        <Workflow className="h-3.5 w-3.5 text-violet-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Not Sayısı */}
+                <Card>
+                  <CardContent className="p-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">{t.kisiler.notes}</p>
+                        <p className="text-base font-bold mt-0.5">{kisi.notlar?.length || 0}</p>
+                      </div>
+                      <div className="h-7 w-7 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                        <FileText className="h-3.5 w-3.5 text-orange-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
               <div className="grid gap-6 lg:grid-cols-2">
                 {/* Son Tanıtımlar */}
                 <div>
@@ -457,20 +678,32 @@ export default function KisiDetayPage() {
                           href={`/tanitimlar/${tanitim.id}`}
                           className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center shrink-0">
                               <Megaphone className="h-4 w-4 text-purple-600" />
                             </div>
-                            <div>
-                              <p className="text-sm font-medium">
-                                {tanitim.mahalle?.ad}, {tanitim.mahalle?.ilce?.ad}
+                            <div className="min-w-0 flex-1">
+                              {tanitim.baslik && (
+                                <p className="text-sm font-semibold truncate">
+                                  {tanitim.baslik}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground truncate">
+                                {[
+                                  tanitim.mahalle?.ad && `${tanitim.mahalle.ad} Mah.`,
+                                  tanitim.adresDetay,
+                                  tanitim.mahalle?.ilce?.ad,
+                                  tanitim.mahalle?.ilce?.il?.ad
+                                ].filter(Boolean).join(", ")}
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                {tanitim.saat}
-                              </p>
+                              {tanitim.saat && (
+                                <p className="text-xs text-muted-foreground">
+                                  {tanitim.saat}
+                                </p>
+                              )}
                             </div>
                           </div>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs shrink-0 ml-2">
                             {formatDate(tanitim.tarih)}
                           </Badge>
                         </Link>
@@ -505,20 +738,32 @@ export default function KisiDetayPage() {
                           href={`/operasyonlar/${op.id}`}
                           className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-900 flex items-center justify-center">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-900 flex items-center justify-center shrink-0">
                               <Workflow className="h-4 w-4 text-violet-600" />
                             </div>
-                            <div>
-                              <p className="text-sm font-medium">
-                                {op.mahalle?.ad}, {op.mahalle?.ilce?.ad}
+                            <div className="min-w-0 flex-1">
+                              {op.baslik && (
+                                <p className="text-sm font-semibold truncate">
+                                  {op.baslik}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground truncate">
+                                {[
+                                  op.mahalle?.ad && `${op.mahalle.ad} Mah.`,
+                                  op.adresDetay,
+                                  op.mahalle?.ilce?.ad,
+                                  op.mahalle?.ilce?.il?.ad
+                                ].filter(Boolean).join(", ")}
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                {op.saat}
-                              </p>
+                              {op.saat && (
+                                <p className="text-xs text-muted-foreground">
+                                  {op.saat}
+                                </p>
+                              )}
                             </div>
                           </div>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs shrink-0 ml-2">
                             {formatDate(op.tarih)}
                           </Badge>
                         </Link>
@@ -546,11 +791,11 @@ export default function KisiDetayPage() {
                     )}
                   </div>
                   {araclarData?.data && araclarData.data.length > 0 ? (
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-2 sm:grid-cols-2">
                       {araclarData.data.slice(0, 4).map((arac) => (
                         <div
                           key={arac.id}
-                          className="p-3 rounded-lg border bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-950/50 dark:to-blue-950/50"
+                          className="p-3 rounded-lg border"
                         >
                           <div className="flex items-center gap-2 mb-1">
                             <Car className="h-4 w-4 text-indigo-600" />
@@ -577,11 +822,94 @@ export default function KisiDetayPage() {
                   )}
                 </div>
 
+                {/* Takip Durumu */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h3 className="font-semibold">{t.kisiler.trackingStatus}</h3>
+                    <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  {(() => {
+                    const takipler = kisi.gsmler?.flatMap(gsm =>
+                      (gsm.takipler || []).filter((t: any) => t.isActive)
+                    ) || []
+
+                    if (takipler.length > 0) {
+                      return (
+                        <div className="space-y-2">
+                          {takipler.slice(0, 3).map((takip: any, index: number) => {
+                            const gsm = kisi.gsmler?.find(g => g.takipler?.some((t: any) => t.id === takip.id))
+                            const daysLeft = Math.ceil((new Date(takip.bitisTarihi).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                            const isExpiringSoon = daysLeft <= 7 && daysLeft > 0
+                            const isExpired = daysLeft < 0
+
+                            return (
+                              <div
+                                key={takip.id || index}
+                                className={cn(
+                                  "p-3 rounded-lg border",
+                                  isExpired ? "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800" :
+                                  isExpiringSoon ? "bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800" :
+                                  "border"
+                                )}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      {isExpired ? (
+                                        <AlertCircle className="h-4 w-4 text-red-600" />
+                                      ) : isExpiringSoon ? (
+                                        <Clock className="h-4 w-4 text-amber-600" />
+                                      ) : (
+                                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                      )}
+                                      <span className="font-medium text-sm">
+                                        {gsm?.numara || t.kisiler.unknown}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                      {t.kisiler.endsAt} {formatDate(takip.bitisTarihi)}
+                                    </p>
+                                  </div>
+                                  <Badge
+                                    variant={
+                                      takip.durum === 'UZATILACAK' ? 'destructive' :
+                                      takip.durum === 'DEVAM_EDECEK' ? 'default' :
+                                      'secondary'
+                                    }
+                                    className="text-xs"
+                                  >
+                                    {takip.durum}
+                                  </Badge>
+                                </div>
+                                {(isExpiringSoon || isExpired) && (
+                                  <p className="text-xs mt-2 font-medium text-amber-700 dark:text-amber-400">
+                                    {isExpired
+                                      ? t.kisiler.daysAgoExpired.replace('{days}', Math.abs(daysLeft).toString())
+                                      : t.kisiler.daysLeft.replace('{days}', daysLeft.toString())
+                                    }
+                                  </p>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )
+                    } else {
+                      return (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <CalendarClock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">{t.kisiler.noActiveTracking}</p>
+                        </div>
+                      )
+                    }
+                  })()}
+                </div>
+
                 {/* Son Aktivite */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
                     <h3 className="font-semibold">{t.kisiler.recentActivity}</h3>
-                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                    <Activity className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="space-y-3">
                     {kisi.createdUser && (
@@ -622,6 +950,59 @@ export default function KisiDetayPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Son Notlar */}
+                <div className="lg:col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      {t.kisiler.notes}
+                    </h3>
+                    {(kisi.notlar?.length || 0) > 0 && (
+                      <button
+                        onClick={() => setActiveTab("notlar")}
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        {t.kisiler.viewAll} ({kisi.notlar?.length})
+                      </button>
+                    )}
+                  </div>
+                  {kisi.notlar && kisi.notlar.length > 0 ? (
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      {kisi.notlar.slice(0, 4).map((not) => (
+                        <Card key={not.id}>
+                          <CardContent className="p-4">
+                            <p className="text-sm line-clamp-3 mb-3">{not.icerik}</p>
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                {not.createdUser && (
+                                  <span className="text-blue-600 font-medium">
+                                    {not.createdUser.ad} {not.createdUser.soyad}
+                                  </span>
+                                )}
+                              </div>
+                              <span>{formatDate(not.createdAt)}</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground border rounded-lg bg-muted/20">
+                      <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">{t.kisiler.noNotesYet}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => setActiveTab("notlar")}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t.kisiler.newNote}
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
 
@@ -654,6 +1035,7 @@ export default function KisiDetayPage() {
             <TabsContent value="notlar" className="mt-0">
               <KisiNotList kisiId={id} />
             </TabsContent>
+            </div>
           </div>
         </Tabs>
       </div>

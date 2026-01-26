@@ -107,6 +107,7 @@ export function TanitimTable() {
         onSortChange={prefs.setSorting}
         onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
+          baslik: t.tanitimlar.title,
           tarih: t.tanitimlar.date,
           adres: t.tanitimlar.address,
           katilimcilar: t.tanitimlar.participants,

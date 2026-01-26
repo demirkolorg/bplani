@@ -160,7 +160,7 @@ export function HeaderNavBar() {
     { titleKey: "kisiler", url: "/kisiler", icon: Users },
     { titleKey: "takipler", url: "/takipler", icon: CalendarClock },
     { titleKey: "tanitimlar", url: "/tanitimlar", icon: Megaphone },
-    { titleKey: "alarmlar", url: "/alarmlar", icon: Bell },
+    { titleKey: "operasyonlar", url: "/operasyonlar", icon: Workflow },
   ]
 
   return (
@@ -173,11 +173,6 @@ export function HeaderNavBar() {
         >
           <item.icon className="h-4 w-4" />
           <span>{t.navigation[item.titleKey]}</span>
-          {item.url === "/alarmlar" && bildirimler?.unreadCount ? (
-            <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
-              {bildirimler.unreadCount > 9 ? "9+" : bildirimler.unreadCount}
-            </Badge>
-          ) : null}
         </TabLink>
       ))}
 
@@ -210,9 +205,14 @@ export function HeaderNavBar() {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <TabLink href="/operasyonlar" className="flex items-center gap-2 w-full cursor-pointer">
-              <Workflow className="h-4 w-4" />
-              <span>{t.navigation.operasyonlar}</span>
+            <TabLink href="/alarmlar" className="flex items-center gap-2 w-full cursor-pointer">
+              <Bell className="h-4 w-4" />
+              <span>{t.navigation.alarmlar}</span>
+              {bildirimler?.unreadCount ? (
+                <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-xs">
+                  {bildirimler.unreadCount}
+                </Badge>
+              ) : null}
             </TabLink>
           </DropdownMenuItem>
           <DropdownMenuSeparator />

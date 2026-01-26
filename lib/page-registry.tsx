@@ -81,6 +81,10 @@ export const PAGE_COMPONENTS: Record<string, ComponentType> = {
   // Loglar
   "/loglar": createDynamicPage(() => import("@/app/(dashboard)/loglar/page")),
   "/loglar/[id]": createDynamicPage(() => import("@/app/(dashboard)/loglar/[id]/page")),
+
+  // Advanced Search / Gelişmiş Arama
+  "/advanced-search": createDynamicPage(() => import("@/app/(dashboard)/advanced-search/page")),
+  "/gelismi-arama": createDynamicPage(() => import("@/app/(dashboard)/advanced-search/page")),
 }
 
 // Path'i pattern'e çevir ve component'i bul

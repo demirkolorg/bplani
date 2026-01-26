@@ -4,6 +4,8 @@ export const tabs: TabsTranslations = {
   closeTab: "Close Tab",
   closeOtherTabs: "Close Other Tabs",
   closeTabsToRight: "Close Tabs to the Right",
+  closeAllTabs: "Close All",
+  newTab: "New Tab",
 
   // Route titles
   home: "Home",

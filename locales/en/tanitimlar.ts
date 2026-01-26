@@ -16,6 +16,8 @@ export const tanitimlar: TanitimlarTranslations = {
   createNewTanitim: "Create New Introduction",
 
   // Fields
+  title: "Title",
+  titlePlaceholder: "Introduction title...",
   tanitimDate: "Introduction Date",
   tanitimTime: "Introduction Time",
   tanitimAddress: "Introduction Address",

@@ -35,6 +35,7 @@ export interface TabContextType {
   closeTab: (tabId: string) => void
   closeOtherTabs: (tabId: string) => void
   closeAllTabs: () => void
+  closeAllExceptHome: () => void
   closeTabsToRight: (tabId: string) => void
   setActiveTab: (tabId: string) => void
   updateTabTitle: (tabId: string, title: string, isDynamic?: boolean) => void
@@ -51,6 +52,7 @@ export type TabAction =
   | { type: "CLOSE_OTHER_TABS"; payload: { tabId: string } }
   | { type: "CLOSE_TABS_TO_RIGHT"; payload: { tabId: string } }
   | { type: "CLOSE_ALL_TABS" }
+  | { type: "CLOSE_ALL_EXCEPT_HOME" }
   | { type: "SET_ACTIVE"; payload: { tabId: string } }
   | { type: "UPDATE_TITLE"; payload: { tabId: string; title: string; isDynamic?: boolean } }
   | { type: "UPDATE_ICON"; payload: { tabId: string; icon: string } }

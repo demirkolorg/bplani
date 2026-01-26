@@ -49,7 +49,9 @@
       "Bash(timeout /t 2 /nobreak)",
       "Bash(del /f \"D:\\\\projects\\\\bplani\\\\app\\\\\\(dashboard\\)\\\\kisiler\\\\[id]\\\\page.backup.tsx\")",
       "Bash(cd:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(node test-db.js:*)",
+      "Bash(psql:*)"
     ]
   }
 }

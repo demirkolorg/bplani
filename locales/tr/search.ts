@@ -13,7 +13,6 @@ export const search: SearchTranslations = {
   kisiler: "Kişiler",
   gsmNumaralari: "GSM Numaraları",
   adresler: "Adresler",
-  lokasyonlar: "Lokasyonlar",
   notlar: "Notlar",
   personel: "Personel",
   tanitimlar: "Tanıtımlar",
@@ -22,13 +21,7 @@ export const search: SearchTranslations = {
   takipler: "Takipler",
   alarmlar: "Alarmlar",
   loglar: "Loglar",
-  markalar: "Markalar",
-  modeller: "Modeller",
 
-  // Subtitles
-  markaLabel: "Marka",
-  ilLabel: "İl",
-  ilceLabel: "İlçe",
-  mahalleLabel: "Mahalle",
-  ilWithPlaka: "İl - Plaka: {plaka}",
+  // Related
+  relatedPersons: "İlişkili Kişiler",
 }

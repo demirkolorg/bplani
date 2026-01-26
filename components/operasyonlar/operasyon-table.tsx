@@ -107,6 +107,7 @@ export function OperasyonTable() {
         onSortChange={prefs.setSorting}
         onPageSizeChange={prefs.setPageSize}
         columnVisibilityLabels={{
+          baslik: t.operasyonlar.title,
           tarih: t.operasyonlar.date,
           adres: t.operasyonlar.address,
           katilimcilar: t.operasyonlar.participants,

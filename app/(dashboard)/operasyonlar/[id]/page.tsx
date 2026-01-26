@@ -35,7 +35,7 @@ export default function OperasyonDetayPage() {
 
   // Tab title'ı dinamik güncelle
   const operasyonTitle = operasyon
-    ? `Operasyon - ${new Date(operasyon.tarih).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}`
+    ? operasyon.baslik || `Operasyon - ${new Date(operasyon.tarih).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}`
     : undefined
   useTabTitle(operasyonTitle)
 
@@ -106,17 +106,28 @@ export default function OperasyonDetayPage() {
 
           <div>
             <h1 className="text-2xl font-bold">
-              Operasyon - {operasyonTarihi.toLocaleDateString("tr-TR", {
+              {operasyon.baslik || `Operasyon - ${operasyonTarihi.toLocaleDateString("tr-TR", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
-              })}
+              })}`}
             </h1>
             <div className="flex items-center gap-2 mt-1 text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="text-sm">
+                {operasyonTarihi.toLocaleDateString("tr-TR", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
               {operasyon.saat && (
-                <span className="text-sm font-medium">
-                  {operasyon.saat}
-                </span>
+                <>
+                  <span>•</span>
+                  <span className="text-sm font-medium">
+                    {operasyon.saat}
+                  </span>
+                </>
               )}
               {fullAddress && (
                 <>
@@ -242,6 +253,7 @@ export default function OperasyonDetayPage() {
         onOpenChange={setShowEditModal}
         initialData={{
           id: operasyon.id,
+          baslik: operasyon.baslik,
           tarih: operasyon.tarih,
           saat: operasyon.saat,
           mahalleId: operasyon.mahalleId,

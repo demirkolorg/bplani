@@ -41,8 +41,10 @@ export function FilterValueInput({
   options = [],
   placeholder = "Değer girin...",
 }: FilterValueInputProps) {
+  // All hooks at the top - Rules of Hooks
   const [bulkText, setBulkText] = React.useState("")
   const [bulkOpen, setBulkOpen] = React.useState(false)
+  const [selectOpen, setSelectOpen] = React.useState(false)
 
   // No input needed for isEmpty/isNotEmpty
   if (!operatorNeedsValue(operator)) {
@@ -180,11 +182,10 @@ export function FilterValueInput({
   // Multi-select (for select type with in/notIn operators)
   if (operatorNeedsMultiSelect(operator) && columnType === "select") {
     const selectedValues = Array.isArray(value) ? value : []
-    const [open, setOpen] = React.useState(false)
 
     return (
       <div className="flex-1">
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={selectOpen} onOpenChange={setSelectOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -253,11 +254,10 @@ export function FilterValueInput({
   // Single select (for select type with equals/notEquals)
   if (columnType === "select" && ["equals", "notEquals"].includes(operator)) {
     const selectedValue = typeof value === "string" ? value : ""
-    const [open, setOpen] = React.useState(false)
 
     return (
       <div className="flex-1">
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={selectOpen} onOpenChange={setSelectOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -282,7 +282,7 @@ export function FilterValueInput({
                     key={option.value}
                     onSelect={() => {
                       onChange(option.value)
-                      setOpen(false)
+                      setSelectOpen(false)
                     }}
                   >
                     <Check

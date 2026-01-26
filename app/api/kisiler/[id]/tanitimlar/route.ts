@@ -34,6 +34,7 @@ export async function GET(
                     id: true,
                     ad: true,
                     soyad: true,
+                    tc: true,
                     tt: true,
                   },
                 },

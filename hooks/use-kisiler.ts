@@ -44,6 +44,15 @@ export interface Gsm {
   numara: string
   isPrimary: boolean
   kisiId: string
+  takipler?: Takip[]
+}
+
+export interface Takip {
+  id: string
+  durum: 'UZATILACAK' | 'DEVAM_EDECEK' | 'SONLANDIRILACAK' | 'UZATILDI'
+  baslamaTarihi: string
+  bitisTarihi: string
+  isActive: boolean
 }
 
 export interface AdresWithLokasyon {

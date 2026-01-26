@@ -19,14 +19,6 @@ export interface SearchResultItem {
     // For kisiler
     tt?: boolean
     tc?: string
-
-    // For lokasyonlar
-    locationType?: "il" | "ilce" | "mahalle"
-    plaka?: string
-    parentLocation?: string
-
-    // For markalar
-    isMarka?: boolean
   }
 }
 
@@ -44,9 +36,6 @@ export interface GlobalSearchResponse {
     alarmlar: SearchResultItem[]
     takipler: SearchResultItem[]
     araclar: SearchResultItem[]
-    markalar: SearchResultItem[]
-    modeller: SearchResultItem[]
-    lokasyonlar: SearchResultItem[]
     notlar: SearchResultItem[]
     loglar: SearchResultItem[]
   }

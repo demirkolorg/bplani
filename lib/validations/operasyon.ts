@@ -8,6 +8,7 @@ export const operasyonKatilimciSchema = z.object({
 
 // Create Operasyon schema
 export const createOperasyonSchema = z.object({
+  baslik: z.string().max(200, "Başlık en fazla 200 karakter olabilir").optional().nullable(),
   tarih: z.coerce.date().default(() => new Date()),
   saat: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Geçersiz saat formatı (HH:mm)").optional().nullable(),
   mahalleId: z.string().cuid("Geçersiz Mahalle ID").optional().nullable(),
@@ -18,6 +19,7 @@ export const createOperasyonSchema = z.object({
 
 // Update Operasyon schema (all fields optional)
 export const updateOperasyonSchema = z.object({
+  baslik: z.string().max(200, "Başlık en fazla 200 karakter olabilir").optional().nullable(),
   tarih: z.coerce.date().optional(),
   saat: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Geçersiz saat formatı (HH:mm)").optional().nullable(),
   mahalleId: z.string().cuid("Geçersiz Mahalle ID").optional().nullable(),

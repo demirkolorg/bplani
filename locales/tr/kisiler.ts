@@ -149,11 +149,36 @@ export const kisiler: KisilerTranslations = {
   addToIntroduction: "Tanıtıma Ekle",
   createNewIntroduction: "Yeni Tanıtım Oluştur",
   addToExistingIntroduction: "Mevcut Tanıtıma Ekle",
+  addFirstIntroduction: "İlk Tanıtımı Ekle",
   noIntroductionsYetDescription: "Yukarıdaki \"Tanıtıma Ekle\" butonunu kullanarak kişiyi tanıtıma ekleyebilirsiniz",
+  introductionsDescription: "Kişinin katıldığı tanıtım etkinlikleri",
   addToOperation: "Operasyona Ekle",
   createNewOperation: "Yeni Operasyon Oluştur",
   addToExistingOperation: "Mevcut Operasyona Ekle",
   noOperationsYetDescription: "Yukarıdaki \"Operasyona Ekle\" butonunu kullanarak kişiyi operasyona ekleyebilirsiniz",
+  operationsDescription: "Kişinin katıldığı operasyon etkinlikleri",
+
+  // Tracking
+  trackingStatus: "Takip Durumu",
+  unknown: "Bilinmeyen",
+  endsAt: "Bitiş:",
+  daysAgoExpired: "{days} gün önce sona erdi",
+  daysLeft: "{days} gün kaldı",
+  noActiveTracking: "Aktif takip bulunmuyor",
+  gsmTrackingDescription: "Kişiye ait telefon numaraları ve takip kayıtları",
+  addNewGsm: "Yeni GSM Ekle",
+  activeTracking: "Aktif Takip",
+  updateStatus: "Durum Güncelle",
+  expired: "Süresi Doldu",
+  daysRemaining: "Gün Kaldı",
+  daysShort: "Gün",
+  startDate: "Başlangıç",
+  endDate: "Bitiş",
+  progress: "İlerleme",
+  noActiveTrackingForGsm: "Bu GSM için henüz aktif takip bulunmuyor",
+  addFirstGsm: "İlk GSM'i Ekle",
+  daysAgo: "Gün Önce Bitti",
+  addFirstOperation: "İlk Operasyonu Ekle",
 
   // Vehicle tab
   addVehicle: "Ekle",
@@ -173,4 +198,22 @@ export const kisiler: KisilerTranslations = {
   removeVehicleConfirm: "plakalı aracı bu kişiden kaldırmak istediğinize emin misiniz? Bu işlem aracı silmez, sadece bu kişi ile ilişkisini kaldırır.",
   removing: "Kaldırılıyor...",
   remove: "Kaldır",
+
+  // Address details
+  addressInfoAndLocations: "Kişiye ait adres bilgileri ve lokasyonlar",
+  provinceDistrict: "İl / İlçe",
+  neighborhood: "Mahalle",
+  addressDetailLabel: "Detay",
+  fullAddress: "Tam Adres",
+
+  // Vehicle details
+  vehicleInfoAndSharing: "Kişiye kayıtlı araç bilgileri ve paylaşımlar",
+  sharedWithPersons: "kişi ile paylaşılıyor",
+  color: "Renk",
+  description: "Açıklama",
+  sharedPersons: "Paylaşılan Kişiler",
+
+  // Notes
+  notesAndDescriptions: "Kişi hakkında eklenen notlar ve açıklamalar",
+  addNote: "Not Ekle",
 }

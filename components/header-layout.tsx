@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import { Search } from "lucide-react"
-import { TabProvider } from "@/components/providers/tab-provider"
+import { TabProvider, useTabs } from "@/components/providers/tab-provider"
 import { TabBar, TabContentRenderer } from "@/components/tabs"
 import { HeaderNavMenu, HeaderNavBar } from "@/components/header-nav-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -14,9 +14,11 @@ import { Button } from "@/components/ui/button"
 import { GlobalSearch } from "@/components/search/global-search"
 import { useLocale } from "@/components/providers/locale-provider"
 
-export function HeaderLayout() {
+function HeaderContent() {
   const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined)
   const { t } = useLocale()
+  const { openTab } = useTabs()
 
   // Keyboard shortcut: Ctrl+K / Cmd+K
   useEffect(() => {
@@ -30,13 +32,28 @@ export function HeaderLayout() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [])
 
+  // Listen for global search events from other components
+  useEffect(() => {
+    const handleGlobalSearch = (e: Event) => {
+      const customEvent = e as CustomEvent<{ query: string }>
+      if (customEvent.detail?.query) {
+        setSearchQuery(customEvent.detail.query)
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener("triggerGlobalSearch", handleGlobalSearch)
+    return () => window.removeEventListener("triggerGlobalSearch", handleGlobalSearch)
+  }, [])
+
   return (
-    <TabProvider>
-      <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen">
         {/* Header */}
         <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
           {/* Logo */}
-          <div className="flex items-center gap-2 mr-4">
+          <div
+            className="flex items-center gap-2 mr-4 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => openTab("/")}
+          >
             <img
               src="/logo.png"
               alt="ALTAY"
@@ -94,13 +111,27 @@ export function HeaderLayout() {
         <TabBar />
 
         {/* Main Content */}
-        <main className="flex-1 min-h-0 overflow-hidden">
+        <main className="flex-1 overflow-hidden">
           <TabContentRenderer />
         </main>
 
         {/* Global Search Dialog */}
-        <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+        <GlobalSearch
+          open={searchOpen}
+          onOpenChange={(open) => {
+            setSearchOpen(open)
+            if (!open) setSearchQuery(undefined)
+          }}
+          initialQuery={searchQuery}
+        />
       </div>
+  )
+}
+
+export function HeaderLayout() {
+  return (
+    <TabProvider>
+      <HeaderContent />
     </TabProvider>
   )
 }

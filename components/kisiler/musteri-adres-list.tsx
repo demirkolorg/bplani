@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Trash2, Star, StarOff, MapPin, MoreHorizontal } from "lucide-react"
+import { Plus, Trash2, Star, StarOff, MapPin, MoreHorizontal, Home, Building, Navigation, Map, Copy, Check } from "lucide-react"
 import { useAdreslerByKisi, useCreateAdres, useUpdateAdres, useDeleteAdres } from "@/hooks/use-adres"
 import { useLocale } from "@/components/providers/locale-provider"
+import { Badge } from "@/components/ui/badge"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -48,6 +49,7 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
   const [detay, setDetay] = React.useState("")
   const [error, setError] = React.useState("")
   const [deleteId, setDeleteId] = React.useState<string | null>(null)
+  const [copiedId, setCopiedId] = React.useState<string | null>(null)
 
   const handleAdd = async () => {
     if (!lokasyon.mahalleId) {
@@ -88,6 +90,18 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
     setDeleteId(null)
   }
 
+  const handleCopyAddress = async (adres: typeof adresler extends (infer T)[] | undefined ? T : never) => {
+    const fullAddress = `${adres.mahalle.ad} Mahallesi, ${adres.detay ? `${adres.detay}, ` : ''}${adres.mahalle.ilce.ad}, ${adres.mahalle.ilce.il.ad}`
+
+    try {
+      await navigator.clipboard.writeText(fullAddress)
+      setCopiedId(adres.id)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error('Kopyalama başarısız:', err)
+    }
+  }
+
   const formatAdres = (adres: typeof adresler extends (infer T)[] | undefined ? T : never) => {
     const parts = [
       adres.mahalle.ad,
@@ -98,123 +112,196 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
   }
 
   return (
-    <>
-      <Card className="w-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-green-600" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-green-600 flex items-center justify-center">
+              <MapPin className="h-5 w-5 text-white" />
+            </div>
             {t.kisiler.addresses}
             {adresler && adresler.length > 0 && (
-              <span className="text-sm font-normal text-muted-foreground">({adresler.length})</span>
+              <Badge variant="secondary" className="text-lg px-3 py-1">{adresler.length}</Badge>
             )}
-          </CardTitle>
-          <Button
-            size="sm"
-            onClick={() => setShowAddModal(true)}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t.kisiler.addressInfoAndLocations}
+          </p>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        <Button size="lg" onClick={() => setShowAddModal(true)} className="gap-2">
+          <Plus className="h-5 w-5" />
+          Yeni Adres Ekle
+        </Button>
+      </div>
+
+      <Card className="w-full">
+      <CardContent className="p-6">
 
         {/* Address List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-4">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <div className="flex items-center justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           </div>
         ) : adresler && adresler.length > 0 ? (
-          <ul className="space-y-2">
+          <div className="grid gap-6 lg:grid-cols-2">
             {adresler.map((adres) => (
-              <li
-                key={adres.id}
-                className={`flex items-start gap-4 rounded-xl border p-4 transition-all duration-200 shadow-sm hover:shadow-md ${
-                  adres.isPrimary
-                    ? 'border-primary/30 bg-gradient-to-r from-primary/5 to-transparent dark:from-primary/10'
-                    : 'border-border/50 bg-card'
-                }`}
-              >
-                <div className="p-2 rounded-lg bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400 shrink-0 mt-0.5">
-                  <MapPin className="h-4 w-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="space-y-1">
-                    {/* Adres Adı ve Birincil Badge */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {adres.ad && (
-                        <span className="font-semibold text-foreground">{adres.ad}</span>
-                      )}
-                      {adres.isPrimary && (
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                          <span className="text-xs font-medium text-amber-600">{t.common.primary}</span>
+              <Card key={adres.id} className={`p-0 overflow-hidden transition-all duration-200 ${adres.isPrimary ? 'border-primary/50 shadow-lg' : ''}`}>
+                {/* Adres Header */}
+                <div className="p-6 bg-muted/30 border-b">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-14 w-14 rounded-2xl bg-green-100 dark:bg-green-950/50 flex items-center justify-center">
+                        {adres.ad?.toLowerCase().includes('ev') ? (
+                          <Home className="h-7 w-7 text-green-600 dark:text-green-400" />
+                        ) : adres.ad?.toLowerCase().includes('iş') ? (
+                          <Building className="h-7 w-7 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <MapPin className="h-7 w-7 text-green-600 dark:text-green-400" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xl">
+                            {adres.ad || 'Adres'}
+                          </span>
+                          {adres.isPrimary && (
+                            <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
+                          )}
                         </div>
-                      )}
+                        {adres.isPrimary && (
+                          <span className="text-xs font-medium text-muted-foreground">{t.common.primary}</span>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Mahalle ve Lokasyon */}
-                    <div className="text-sm">
-                      <span className="font-medium text-muted-foreground">{adres.mahalle.ad} Mah.</span>
-                      {adres.detay && (
-                        <span className="text-muted-foreground"> {adres.detay}</span>
-                      )}
-                    </div>
-
-                    {/* İlçe / İl */}
-                    <div className="text-sm text-muted-foreground">
-                      {adres.mahalle.ilce.ad} / {adres.mahalle.ilce.il.ad}
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9">
+                          <MoreHorizontal className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleSetPrimary(adres.id)}
+                          disabled={adres.isPrimary || updateAdres.isPending}
+                        >
+                          {adres.isPrimary ? (
+                            <Star className="mr-2 h-4 w-4 fill-amber-500 text-amber-500" />
+                          ) : (
+                            <StarOff className="mr-2 h-4 w-4" />
+                          )}
+                          {adres.isPrimary ? t.common.alreadyPrimary : t.common.makePrimary}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setDeleteId(adres.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t.common.delete}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => handleSetPrimary(adres.id)}
-                      disabled={adres.isPrimary || updateAdres.isPending}
-                    >
-                      {adres.isPrimary ? (
-                        <Star className="mr-2 h-4 w-4 fill-amber-500 text-amber-500" />
-                      ) : (
-                        <StarOff className="mr-2 h-4 w-4" />
-                      )}
-                      {adres.isPrimary ? t.common.alreadyPrimary : t.common.makePrimary}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => setDeleteId(adres.id)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      {t.common.delete}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </li>
+
+                {/* Adres Detayları */}
+                <CardContent className="p-6 space-y-4">
+                  {/* Lokasyon Bilgileri */}
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                        <Map className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-xs text-muted-foreground mb-1">{t.kisiler.provinceDistrict}</div>
+                        <div className="font-semibold">
+                          {adres.mahalle.ilce.il.ad} / {adres.mahalle.ilce.ad}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+                        <Navigation className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-xs text-muted-foreground mb-1">{t.kisiler.neighborhood}</div>
+                        <div className="font-semibold">{adres.mahalle.ad}</div>
+                      </div>
+                    </div>
+
+                    {adres.detay && (
+                      <div className="flex items-start gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                          <Home className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs text-muted-foreground mb-1">{t.kisiler.addressDetailLabel}</div>
+                          <div className="text-sm">{adres.detay}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tam Adres */}
+                  <div className="pt-3 border-t">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-xs text-muted-foreground">{t.kisiler.fullAddress}</div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1.5"
+                        onClick={() => handleCopyAddress(adres)}
+                      >
+                        {copiedId === adres.id ? (
+                          <>
+                            <Check className="h-3.5 w-3.5 text-green-600" />
+                            <span className="text-xs text-green-600">Kopyalandı</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5" />
+                            <span className="text-xs">Kopyala</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    <div className="text-sm leading-relaxed">
+                      {adres.mahalle.ad} Mahallesi, {adres.detay && `${adres.detay}, `}
+                      {adres.mahalle.ilce.ad}, {adres.mahalle.ilce.il.ad}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p className="text-center text-sm text-muted-foreground py-4">
-            {t.kisiler.noAddressYet}
-          </p>
+          <div className="text-center py-12">
+            <div className="h-16 w-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+              <MapPin className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">{t.kisiler.noAddressYet}</p>
+            <Button onClick={() => setShowAddModal(true)} variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              İlk Adresi Ekle
+            </Button>
+          </div>
         )}
 
-        <ConfirmDialog
-          open={!!deleteId}
-          onOpenChange={(open) => !open && setDeleteId(null)}
-          title={t.kisiler.deleteAddress}
-          description={t.kisiler.deleteAddressConfirm}
-          confirmText={t.common.delete}
-          onConfirm={handleDelete}
-          isLoading={deleteAdres.isPending}
-        />
       </CardContent>
     </Card>
+
+    <ConfirmDialog
+      open={!!deleteId}
+      onOpenChange={(open) => !open && setDeleteId(null)}
+      title={t.kisiler.deleteAddress}
+      description={t.kisiler.deleteAddressConfirm}
+      confirmText={t.common.delete}
+      onConfirm={handleDelete}
+      isLoading={deleteAdres.isPending}
+    />
 
     {/* Add Address Modal */}
     <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
@@ -277,6 +364,6 @@ export function KisiAdresList({ kisiId }: KisiAdresListProps) {
         </div>
       </DialogContent>
     </Dialog>
-    </>
+    </div>
   )
 }

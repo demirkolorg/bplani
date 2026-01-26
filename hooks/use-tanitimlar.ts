@@ -11,6 +11,7 @@ export interface TanitimKatilimci {
     id: string
     ad: string
     soyad: string
+    tc: string | null
     tt: boolean
     gsmler?: {
       id: string
@@ -36,6 +37,7 @@ export interface TanitimMahalle {
 
 export interface Tanitim {
   id: string
+  baslik: string | null
   tarih: string
   saat: string | null
   mahalleId: string | null

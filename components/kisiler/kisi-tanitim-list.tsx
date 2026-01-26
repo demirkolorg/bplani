@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Megaphone, Calendar, MapPin, Users, ExternalLink, Plus, ChevronDown, History } from "lucide-react"
+import { Megaphone, Calendar, MapPin, Users, ExternalLink, Plus, ChevronDown, History, Clock, FileText } from "lucide-react"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
 
@@ -31,83 +31,107 @@ function TanitimRow({ tanitim }: { tanitim: Tanitim }) {
 
   // Build address string
   const lokasyon = tanitim.mahalle
-    ? `${tanitim.mahalle.ad} / ${tanitim.mahalle.ilce.ad}`
+    ? `${tanitim.mahalle.ad}, ${tanitim.mahalle.ilce.ad}, ${tanitim.mahalle.ilce.il.ad}`
     : null
 
+  const katilimcilar = tanitim.katilimcilar?.filter((k) => k.kisi) || []
+  const visibleKatilimcilar = katilimcilar.slice(0, 3)
+  const remainingCount = katilimcilar.length - 3
+
+  // Combined address (location + detail)
+  const fullAddress = [lokasyon, tanitim.adresDetay].filter(Boolean).join(" - ")
+
   return (
-    <Link href={`/tanitimlar/${tanitim.id}`}>
-      <div className="border rounded-xl p-4 hover:bg-muted/50 hover:shadow-md transition-all duration-200 cursor-pointer">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0 flex-1">
-            <div className="p-2 rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400 shrink-0">
-              <Megaphone className="h-4 w-4" />
+    <Card className="p-0 overflow-hidden transition-all duration-200">
+      {/* Tanitim Header */}
+      <div className="p-6 bg-muted/30 border-b">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="h-14 w-14 rounded-2xl bg-purple-100 dark:bg-purple-950/50 flex items-center justify-center">
+              <Megaphone className="h-7 w-7 text-purple-600 dark:text-purple-400" />
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium">
-                  {format(tarih, "d MMMM yyyy", { locale: tr })}
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xl">
+                  {tanitim.baslik || format(tarih, "d MMMM yyyy", { locale: tr })}
                 </span>
-                {tanitim.saat && (
-                  <span className="text-xs text-muted-foreground">
-                    {tanitim.saat}
-                  </span>
-                )}
               </div>
-
-              {lokasyon && (
-                <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
-                  <MapPin className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{lokasyon}</span>
-                </div>
-              )}
-
-              {tanitim.adresDetay && (
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                  {tanitim.adresDetay}
-                </p>
-              )}
             </div>
           </div>
+          <Link href={`/tanitimlar/${tanitim.id}`}>
+            <Button size="sm" variant="secondary" className="gap-2">
+              <ExternalLink className="h-4 w-4" />
+              {t.common.detail}
+            </Button>
+          </Link>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <Badge variant="secondary" className="font-mono text-xs">
-              <Users className="h-3 w-3 mr-1" />
-              {tanitim.katilimcilar?.length || 0}
-            </Badge>
-            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+      {/* Tanitim Detayları */}
+      <CardContent className="p-6 space-y-4">
+        {/* Tarih ve Saat */}
+        <div className="flex items-start gap-3">
+          <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+            <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="flex-1">
+            <div className="text-xs text-muted-foreground mb-1">{t.common.date}</div>
+            <div className="font-semibold">
+              {format(tarih, "d MMMM yyyy", { locale: tr })}
+              {tanitim.saat && (
+                <span className="text-sm text-muted-foreground ml-2">• {tanitim.saat}</span>
+              )}
+            </div>
           </div>
         </div>
 
+        {/* Konum ve Adres */}
+        {fullAddress && (
+          <div className="flex items-start gap-3">
+            <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+              <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-muted-foreground mb-1">{t.common.location}</div>
+              <div className="text-sm">{fullAddress}</div>
+            </div>
+          </div>
+        )}
+
         {/* Katılımcılar */}
-        {tanitim.katilimcilar && tanitim.katilimcilar.length > 0 && (
-          <div className="mt-3 pt-3 border-t">
-            <p className="text-xs text-muted-foreground mb-1.5">{t.kisiler.participants}</p>
-            <div className="flex flex-wrap gap-1">
-              {tanitim.katilimcilar
-                .filter((k) => k.kisi)
-                .slice(0, 3)
-                .map((k) => (
+        {katilimcilar.length > 0 && (
+          <div className="pt-3 border-t">
+            <div className="text-xs text-muted-foreground mb-2">{t.common.participants}</div>
+            <div className="flex flex-wrap gap-2">
+              {visibleKatilimcilar.map((k) => (
+                <Link key={k.id} href={`/kisiler/${k.kisi?.id}`}>
                   <Badge
-                    key={k.id}
                     variant="outline"
-                    className={`text-[10px] ${k.kisi?.tt
+                    className={`text-xs cursor-pointer hover:opacity-80 transition-opacity ${
+                      k.kisi?.tt
                         ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
                         : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
-                      }`}
+                    }`}
                   >
-                    {k.kisi?.ad} {k.kisi?.soyad}
+                    {k.kisi?.ad} {k.kisi?.soyad} ({k.kisi?.tc})
                   </Badge>
-                ))}
-              {tanitim.katilimcilar.filter((k) => k.kisi).length > 3 && (
-                <Badge variant="secondary" className="text-[10px]">
-                  +{tanitim.katilimcilar.filter((k) => k.kisi).length - 3}
-                </Badge>
+                </Link>
+              ))}
+              {remainingCount > 0 && (
+                <Link href={`/tanitimlar/${tanitim.id}`}>
+                  <Badge
+                    variant="outline"
+                    className="text-xs cursor-pointer hover:bg-muted transition-colors"
+                  >
+                    +{remainingCount}
+                  </Badge>
+                </Link>
               )}
             </div>
           </div>
         )}
-      </div>
-    </Link>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -123,57 +147,70 @@ export function KisiTanitimList({ kisiId }: KisiTanitimListProps) {
   const mevcutTanitimIds = tanitimlar?.map((t) => t.id) || []
 
   return (
-    <>
-      <Card className="w-full">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-purple-600" />
-              {t.kisiler.introductions}
-              {tanitimlar && tanitimlar.length > 0 && (
-                <span className="text-sm font-normal text-muted-foreground">
-                  ({tanitimlar.length})
-                </span>
-              )}
-            </CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <Plus className="h-4 w-4 mr-1" />
-                  {t.kisiler.addToIntroduction}
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setShowYeniModal(true)}>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {t.kisiler.createNewIntroduction}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShowSeciciModal(true)}>
-                  <History className="h-4 w-4 mr-2" />
-                  {t.kisiler.addToExistingIntroduction}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </CardHeader>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-purple-600 flex items-center justify-center">
+              <Megaphone className="h-5 w-5 text-white" />
+            </div>
+            {t.kisiler.introductions}
+            {tanitimlar && tanitimlar.length > 0 && (
+              <Badge variant="secondary" className="text-lg px-3 py-1">{tanitimlar.length}</Badge>
+            )}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t.kisiler.introductionsDescription}
+          </p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="lg" className="gap-2">
+              <Plus className="h-5 w-5" />
+              {t.kisiler.addToIntroduction}
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setShowYeniModal(true)}>
+              <Calendar className="h-4 w-4 mr-2" />
+              {t.kisiler.createNewIntroduction}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowSeciciModal(true)}>
+              <History className="h-4 w-4 mr-2" />
+              {t.kisiler.addToExistingIntroduction}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
-        <CardContent className="space-y-3">
+      <Card className="w-full">
+        <CardContent className="p-6">
+          {/* Tanıtım List */}
           {isLoading ? (
-            <div className="flex items-center justify-center py-6">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="flex items-center justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             </div>
           ) : tanitimlar && tanitimlar.length > 0 ? (
-            tanitimlar.map((tanitim) => (
-              <TanitimRow key={tanitim.id} tanitim={tanitim} />
-            ))
+            <div className="grid gap-6 lg:grid-cols-2">
+              {tanitimlar.map((tanitim) => (
+                <TanitimRow key={tanitim.id} tanitim={tanitim} />
+              ))}
+            </div>
           ) : (
-            <div className="text-center py-6">
-              <Megaphone className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground">{t.kisiler.noIntroductionsYet}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+            <div className="text-center py-12">
+              <div className="h-16 w-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                <Megaphone className="h-8 w-8 text-muted-foreground/40" />
+              </div>
+              <p className="text-sm text-muted-foreground mb-1">{t.kisiler.noIntroductionsYet}</p>
+              <p className="text-xs text-muted-foreground mb-4">
                 {t.kisiler.noIntroductionsYetDescription}
               </p>
+              <Button onClick={() => setShowYeniModal(true)} variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                {t.kisiler.addFirstIntroduction}
+              </Button>
             </div>
           )}
         </CardContent>
@@ -195,6 +232,6 @@ export function KisiTanitimList({ kisiId }: KisiTanitimListProps) {
         kisiId={kisiId}
         kisiAd={kisiAd}
       />
-    </>
+    </div>
   )
 }

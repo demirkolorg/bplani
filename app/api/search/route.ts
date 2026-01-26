@@ -9,6 +9,19 @@ function getLocaleFromRequest(request: NextRequest): Locale {
   return locale === "en" ? "en" : "tr"
 }
 
+// Normalize Turkish characters for search
+function normalizeTurkish(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/İ/g, 'i')
+}
+
 // GET /api/search - Global search across all tables
 export async function GET(request: NextRequest) {
   try {
@@ -39,301 +52,455 @@ export async function GET(request: NextRequest) {
       alarmlar,
       takipler,
       araclar,
-      markalar,
-      modeller,
-      iller,
-      ilceler,
-      mahalleler,
       notlar,
       loglar,
     ] = await Promise.all([
-      // Kişiler
-      prisma.kisi.findMany({
-        where: {
-          OR: [
-            { ad: { contains: query, mode: "insensitive" } },
-            { soyad: { contains: query, mode: "insensitive" } },
-            { tc: { contains: query, mode: "insensitive" } },
-            { faaliyet: { contains: query, mode: "insensitive" } },
-          ],
-          isArchived: false,
-        },
-        take: limit,
-        select: { id: true, ad: true, soyad: true, tc: true, tt: true },
-      }),
+      // Kişiler - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
 
-      // GSM (with kisi info)
-      prisma.gsm.findMany({
-        where: {
-          OR: [
-            { numara: { contains: query, mode: "insensitive" } },
-            { kisi: { ad: { contains: query, mode: "insensitive" } } },
-            { kisi: { soyad: { contains: query, mode: "insensitive" } } },
-          ],
-        },
-        take: limit,
-        select: {
-          id: true,
-          numara: true,
-          kisiId: true,
-          kisi: { select: { ad: true, soyad: true } },
-        },
-      }),
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          ad: string
+          soyad: string
+          tc: string | null
+          tt: boolean
+        }>>`
+          SELECT id, ad, soyad, tc, tt
+          FROM kisiler
+          WHERE "isArchived" = false
+            AND (
+              LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                LIKE ${searchPattern}
+              OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                LIKE ${searchPattern}
+              OR LOWER(COALESCE(tc, '')) LIKE ${searchPattern}
+            )
+          LIMIT ${limit}
+        `
 
-      // Adresler (with mahalle chain)
-      prisma.adres.findMany({
-        where: {
-          OR: [
-            { ad: { contains: query, mode: "insensitive" } },
-            { detay: { contains: query, mode: "insensitive" } },
-            { mahalle: { ad: { contains: query, mode: "insensitive" } } },
-            { mahalle: { ilce: { ad: { contains: query, mode: "insensitive" } } } },
-            { mahalle: { ilce: { il: { ad: { contains: query, mode: "insensitive" } } } } },
-          ],
-        },
-        take: limit,
-        select: {
-          id: true,
-          ad: true,
-          detay: true,
-          kisiId: true,
-          mahalle: {
-            select: {
-              ad: true,
-              ilce: {
-                select: {
-                  ad: true,
-                  il: { select: { ad: true } },
-                },
-              },
-            },
-          },
-          kisi: { select: { ad: true, soyad: true } },
-        },
-      }),
+        return results
+      })(),
 
-      // Personel
-      prisma.personel.findMany({
-        where: {
-          OR: [
-            { ad: { contains: query, mode: "insensitive" } },
-            { soyad: { contains: query, mode: "insensitive" } },
-            { visibleId: { contains: query, mode: "insensitive" } },
-          ],
-          isActive: true,
-        },
-        take: limit,
-        select: { id: true, ad: true, soyad: true, visibleId: true, rol: true },
-      }),
+      // GSM (with kisi info) - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
 
-      // Tanıtımlar (with mahalle)
-      prisma.tanitim.findMany({
-        where: {
-          OR: [
-            { notlar: { contains: query, mode: "insensitive" } },
-            { adresDetay: { contains: query, mode: "insensitive" } },
-            { mahalle: { ad: { contains: query, mode: "insensitive" } } },
-            { mahalle: { ilce: { ad: { contains: query, mode: "insensitive" } } } },
-          ],
-        },
-        take: limit,
-        select: {
-          id: true,
-          tarih: true,
-          notlar: true,
-          adresDetay: true,
-          mahalle: {
-            select: {
-              ad: true,
-              ilce: { select: { ad: true } },
-            },
-          },
-        },
-      }),
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          numara: string
+          kisiId: string
+          kisi: string
+        }>>`
+          SELECT
+            g.id,
+            g.numara,
+            g."kisiId",
+            jsonb_build_object('ad', k.ad, 'soyad', k.soyad, 'tc', k.tc)::text as kisi
+          FROM gsmler g
+          JOIN kisiler k ON g."kisiId" = k.id
+          WHERE
+            LOWER(g.numara) LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          LIMIT ${limit}
+        `
 
-      // Operasyonlar (with mahalle)
-      prisma.operasyon.findMany({
-        where: {
-          OR: [
-            { notlar: { contains: query, mode: "insensitive" } },
-            { adresDetay: { contains: query, mode: "insensitive" } },
-            { mahalle: { ad: { contains: query, mode: "insensitive" } } },
-            { mahalle: { ilce: { ad: { contains: query, mode: "insensitive" } } } },
-          ],
-        },
-        take: limit,
-        select: {
-          id: true,
-          tarih: true,
-          notlar: true,
-          adresDetay: true,
-          mahalle: {
-            select: {
-              ad: true,
-              ilce: { select: { ad: true } },
-            },
-          },
-        },
-      }),
+        return results.map(r => ({
+          ...r,
+          kisi: JSON.parse(r.kisi),
+        }))
+      })(),
 
-      // Alarmlar
-      prisma.alarm.findMany({
-        where: {
-          OR: [
-            { baslik: { contains: query, mode: "insensitive" } },
-            { mesaj: { contains: query, mode: "insensitive" } },
-          ],
-        },
-        take: limit,
-        select: { id: true, baslik: true, mesaj: true, tip: true, durum: true },
-      }),
+      // Adresler (with mahalle chain) - Using raw SQL for Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
 
-      // Takipler (with gsm and kisi)
-      prisma.takip.findMany({
-        where: {
-          OR: [
-            { gsm: { numara: { contains: query, mode: "insensitive" } } },
-            { gsm: { kisi: { ad: { contains: query, mode: "insensitive" } } } },
-            { gsm: { kisi: { soyad: { contains: query, mode: "insensitive" } } } },
-          ],
-        },
-        take: limit,
-        select: {
-          id: true,
-          durum: true,
-          gsm: {
-            select: {
-              numara: true,
-              kisi: { select: { ad: true, soyad: true } },
-            },
-          },
-        },
-      }),
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          ad: string | null
+          detay: string | null
+          kisiId: string
+          mahalle: string
+          kisi: string
+        }>>`
+          SELECT
+            a.id,
+            a.ad,
+            a.detay,
+            a."kisiId",
+            jsonb_build_object(
+              'ad', m.ad,
+              'ilce', jsonb_build_object(
+                'ad', ilce.ad,
+                'il', jsonb_build_object('ad', il.ad)
+              )
+            )::text as mahalle,
+            jsonb_build_object('ad', k.ad, 'soyad', k.soyad, 'tc', k.tc)::text as kisi
+          FROM adresler a
+          JOIN mahalleler m ON a."mahalleId" = m.id
+          JOIN ilceler ilce ON m."ilceId" = ilce.id
+          JOIN iller il ON ilce."ilId" = il.id
+          JOIN kisiler k ON a."kisiId" = k.id
+          WHERE
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(a.ad, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(a.detay, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(m.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ilce.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(il.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          LIMIT ${limit}
+        `
 
-      // Araçlar (with model and marka)
-      prisma.arac.findMany({
-        where: {
-          OR: [
-            { plaka: { contains: query, mode: "insensitive" } },
-            { model: { ad: { contains: query, mode: "insensitive" } } },
-            { model: { marka: { ad: { contains: query, mode: "insensitive" } } } },
-          ],
-        },
-        take: limit,
-        select: {
-          id: true,
-          plaka: true,
-          renk: true,
-          model: {
-            select: {
-              ad: true,
-              marka: { select: { ad: true } },
-            },
-          },
-        },
-      }),
+        return results.map(r => ({
+          ...r,
+          mahalle: JSON.parse(r.mahalle),
+          kisi: JSON.parse(r.kisi),
+        }))
+      })(),
 
-      // Markalar
-      prisma.marka.findMany({
-        where: {
-          ad: { contains: query, mode: "insensitive" },
-        },
-        take: limit,
-        select: { id: true, ad: true },
-      }),
+      // Personel - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
 
-      // Modeller
-      prisma.model.findMany({
-        where: {
-          OR: [
-            { ad: { contains: query, mode: "insensitive" } },
-            { marka: { ad: { contains: query, mode: "insensitive" } } },
-          ],
-        },
-        take: limit,
-        select: {
-          id: true,
-          ad: true,
-          marka: { select: { ad: true } },
-        },
-      }),
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          ad: string
+          soyad: string
+          visibleId: string
+          rol: string
+        }>>`
+          SELECT id, ad, soyad, "visibleId", rol
+          FROM personeller
+          WHERE "isActive" = true
+            AND (
+              LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                LIKE ${searchPattern}
+              OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                LIKE ${searchPattern}
+              OR LOWER("visibleId") LIKE ${searchPattern}
+            )
+          LIMIT ${limit}
+        `
 
-      // İller
-      prisma.il.findMany({
-        where: {
-          ad: { contains: query, mode: "insensitive" },
-          isActive: true,
-        },
-        take: limit,
-        select: { id: true, ad: true, plaka: true },
-      }),
+        return results
+      })(),
 
-      // İlçeler
-      prisma.ilce.findMany({
-        where: {
-          OR: [
-            { ad: { contains: query, mode: "insensitive" } },
-            { il: { ad: { contains: query, mode: "insensitive" } } },
-          ],
-          isActive: true,
-        },
-        take: limit,
-        select: {
-          id: true,
-          ad: true,
-          il: { select: { ad: true } },
-        },
-      }),
+      // Tanıtımlar (with mahalle and katilimcilar) - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
 
-      // Mahalleler
-      prisma.mahalle.findMany({
-        where: {
-          OR: [
-            { ad: { contains: query, mode: "insensitive" } },
-            { ilce: { ad: { contains: query, mode: "insensitive" } } },
-          ],
-          isActive: true,
-        },
-        take: limit,
-        select: {
-          id: true,
-          ad: true,
-          ilce: {
-            select: {
-              ad: true,
-              il: { select: { ad: true } },
-            },
-          },
-        },
-      }),
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          tarih: Date
+          notlar: string | null
+          adresDetay: string | null
+          mahalle: string | null
+          katilimcilar: string
+        }>>`
+          SELECT
+            t.id,
+            t.tarih,
+            t.notlar,
+            t."adresDetay",
+            CASE
+              WHEN t."mahalleId" IS NOT NULL THEN
+                jsonb_build_object(
+                  'ad', m.ad,
+                  'ilce', jsonb_build_object('ad', ilce.ad)
+                )::text
+              ELSE NULL
+            END as mahalle,
+            COALESCE(
+              (
+                SELECT jsonb_agg(
+                  jsonb_build_object(
+                    'id', tk."kisiId",
+                    'ad', k.ad,
+                    'soyad', k.soyad,
+                    'tt', k.tt,
+                    'tc', k.tc
+                  )
+                )
+                FROM tanitim_katilimcilari tk
+                JOIN kisiler k ON tk."kisiId" = k.id
+                WHERE tk."tanitimId" = t.id
+              ),
+              '[]'::jsonb
+            )::text as katilimcilar
+          FROM tanitimlar t
+          LEFT JOIN mahalleler m ON t."mahalleId" = m.id
+          LEFT JOIN ilceler ilce ON m."ilceId" = ilce.id
+          WHERE
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(t.notlar, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(t."adresDetay", ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(m.ad, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(ilce.ad, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          LIMIT ${limit}
+        `
 
-      // Notlar
-      prisma.not.findMany({
-        where: {
-          icerik: { contains: query, mode: "insensitive" },
-        },
-        take: limit,
-        select: {
-          id: true,
-          icerik: true,
-          kisiId: true,
-          kisi: { select: { ad: true, soyad: true } },
-        },
-      }),
+        return results.map(r => ({
+          ...r,
+          mahalle: r.mahalle ? JSON.parse(r.mahalle) : null,
+          katilimcilar: JSON.parse(r.katilimcilar),
+        }))
+      })(),
 
-      // Loglar
-      prisma.log.findMany({
-        where: {
-          OR: [
-            { aciklama: { contains: query, mode: "insensitive" } },
-            { entityAd: { contains: query, mode: "insensitive" } },
-            { userAd: { contains: query, mode: "insensitive" } },
-          ],
-        },
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        select: { id: true, aciklama: true, entityAd: true, entityType: true, islem: true, userAd: true, userSoyad: true },
-      }),
+      // Operasyonlar (with mahalle and katilimcilar) - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
+
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          tarih: Date
+          notlar: string | null
+          adresDetay: string | null
+          mahalle: string | null
+          katilimcilar: string
+        }>>`
+          SELECT
+            o.id,
+            o.tarih,
+            o.notlar,
+            o."adresDetay",
+            CASE
+              WHEN o."mahalleId" IS NOT NULL THEN
+                jsonb_build_object(
+                  'ad', m.ad,
+                  'ilce', jsonb_build_object('ad', ilce.ad)
+                )::text
+              ELSE NULL
+            END as mahalle,
+            COALESCE(
+              (
+                SELECT jsonb_agg(
+                  jsonb_build_object(
+                    'id', ok."kisiId",
+                    'ad', k.ad,
+                    'soyad', k.soyad,
+                    'tt', k.tt,
+                    'tc', k.tc
+                  )
+                )
+                FROM operasyon_katilimcilari ok
+                JOIN kisiler k ON ok."kisiId" = k.id
+                WHERE ok."operasyonId" = o.id
+              ),
+              '[]'::jsonb
+            )::text as katilimcilar
+          FROM operasyonlar o
+          LEFT JOIN mahalleler m ON o."mahalleId" = m.id
+          LEFT JOIN ilceler ilce ON m."ilceId" = ilce.id
+          WHERE
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(o.notlar, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(o."adresDetay", ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(m.ad, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(ilce.ad, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          LIMIT ${limit}
+        `
+
+        return results.map(r => ({
+          ...r,
+          mahalle: r.mahalle ? JSON.parse(r.mahalle) : null,
+          katilimcilar: JSON.parse(r.katilimcilar),
+        }))
+      })(),
+
+      // Alarmlar - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
+
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          baslik: string | null
+          mesaj: string | null
+          tip: string
+          durum: string
+        }>>`
+          SELECT id, baslik, mesaj, tip, durum
+          FROM alarmlar
+          WHERE
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(baslik, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(mesaj, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          LIMIT ${limit}
+        `
+
+        return results
+      })(),
+
+      // Takipler (with gsm and kisi) - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
+
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          durum: string
+          gsm: string
+        }>>`
+          SELECT
+            t.id,
+            t.durum,
+            jsonb_build_object(
+              'numara', g.numara,
+              'kisi', jsonb_build_object('id', k.id, 'ad', k.ad, 'soyad', k.soyad, 'tc', k.tc)
+            )::text as gsm
+          FROM takipler t
+          JOIN gsmler g ON t."gsmId" = g.id
+          JOIN kisiler k ON g."kisiId" = k.id
+          WHERE
+            LOWER(g.numara) LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          LIMIT ${limit}
+        `
+
+        return results.map(r => ({
+          ...r,
+          gsm: JSON.parse(r.gsm),
+        }))
+      })(),
+
+      // Araçlar (with model, marka, and kisiler) - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
+
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          plaka: string
+          renk: string | null
+          model: string
+          kisiler: string
+        }>>`
+          SELECT
+            a.id,
+            a.plaka,
+            a.renk,
+            jsonb_build_object(
+              'ad', mo.ad,
+              'marka', jsonb_build_object('ad', ma.ad)
+            )::text as model,
+            COALESCE(
+              (
+                SELECT jsonb_agg(
+                  jsonb_build_object(
+                    'id', ak."kisiId",
+                    'ad', k.ad,
+                    'soyad', k.soyad,
+                    'tt', k.tt,
+                    'tc', k.tc
+                  )
+                )
+                FROM arac_kisileri ak
+                JOIN kisiler k ON ak."kisiId" = k.id
+                WHERE ak."aracId" = a.id
+              ),
+              '[]'::jsonb
+            )::text as kisiler
+          FROM araclar a
+          JOIN modeller mo ON a."modelId" = mo.id
+          JOIN markalar ma ON mo."markaId" = ma.id
+          WHERE
+            LOWER(a.plaka) LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(mo.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ma.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          LIMIT ${limit}
+        `
+
+        return results.map(r => ({
+          ...r,
+          model: JSON.parse(r.model),
+          kisiler: JSON.parse(r.kisiler),
+        }))
+      })(),
+
+      // Notlar - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
+
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          icerik: string
+          kisiId: string
+          kisi: string
+        }>>`
+          SELECT
+            n.id,
+            n.icerik,
+            n."kisiId",
+            jsonb_build_object('ad', k.ad, 'soyad', k.soyad, 'tc', k.tc)::text as kisi
+          FROM notlar n
+          JOIN kisiler k ON n."kisiId" = k.id
+          WHERE
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(n.icerik, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          LIMIT ${limit}
+        `
+
+        return results.map(r => ({
+          ...r,
+          kisi: JSON.parse(r.kisi),
+        }))
+      })(),
+
+      // Loglar - Turkish-aware search
+      (async () => {
+        const normalizedQuery = normalizeTurkish(query)
+        const searchPattern = `%${normalizedQuery}%`
+
+        const results = await prisma.$queryRaw<Array<{
+          id: string
+          aciklama: string | null
+          entityAd: string | null
+          entityType: string | null
+          islem: string
+          userAd: string | null
+          userSoyad: string | null
+        }>>`
+          SELECT id, aciklama, "entityAd", "entityType", islem, "userAd", "userSoyad"
+          FROM loglar
+          WHERE
+            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(aciklama, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE("entityAd", ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE("userAd", ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+          ORDER BY "createdAt" DESC
+          LIMIT ${limit}
+        `
+
+        return results
+      })(),
     ])
 
     // Transform results into SearchResultItem format
@@ -356,15 +523,43 @@ export async function GET(request: NextRequest) {
         subtitle: `${g.kisi.ad} ${g.kisi.soyad}`,
         url: `/kisiler/${g.kisiId}`,
         category: "gsmler",
+        metadata: {
+          relatedKisiler: [{
+            id: g.kisiId,
+            ad: g.kisi.ad,
+            soyad: g.kisi.soyad,
+            tc: g.kisi.tc,
+          }],
+        },
       })),
 
-      adresler: adresler.map((a) => ({
-        id: a.id,
-        title: a.ad || `${a.mahalle.ilce.il.ad}, ${a.mahalle.ilce.ad}, ${a.mahalle.ad}`,
-        subtitle: `${a.kisi.ad} ${a.kisi.soyad}${a.detay ? ` - ${a.detay}` : ""}`,
-        url: `/kisiler/${a.kisiId}`,
-        category: "adresler",
-      })),
+      adresler: adresler.map((a) => {
+        // Build full address with "Mahallesi" suffix
+        const fullAddress = [
+          `${a.mahalle.ad} Mahallesi`,
+          a.detay,
+          a.mahalle.ilce.ad,
+          a.mahalle.ilce.il.ad
+        ].filter(Boolean).join(", ")
+
+        return {
+          id: a.id,
+          title: a.ad || fullAddress,
+          subtitle: fullAddress,
+          url: `/kisiler/${a.kisiId}#adres`,
+          category: "adresler",
+          metadata: {
+            fullAddress,
+            hasDetail: !!a.detay,
+            relatedKisiler: [{
+              id: a.kisiId,
+              ad: a.kisi.ad,
+              soyad: a.kisi.soyad,
+              tc: a.kisi.tc,
+            }],
+          },
+        }
+      }),
 
       personel: personelList.map((p) => ({
         id: p.id,
@@ -374,21 +569,63 @@ export async function GET(request: NextRequest) {
         category: "personel",
       })),
 
-      tanitimlar: tanitimlar.map((t) => ({
-        id: t.id,
-        title: t.mahalle ? `${t.mahalle.ilce.ad}, ${t.mahalle.ad}` : "Tanıtım",
-        subtitle: t.notlar?.slice(0, 50) || new Date(t.tarih).toLocaleDateString("tr-TR"),
-        url: `/tanitimlar/${t.id}`,
-        category: "tanitimlar",
-      })),
+      tanitimlar: tanitimlar.map((t) => {
+        // Build full address for tanitim
+        const address = t.mahalle
+          ? [
+              `${t.mahalle.ad} Mahallesi`,
+              t.adresDetay,
+              t.mahalle.ilce.ad
+            ].filter(Boolean).join(", ")
+          : null
 
-      operasyonlar: operasyonlar.map((o) => ({
-        id: o.id,
-        title: o.mahalle ? `${o.mahalle.ilce.ad}, ${o.mahalle.ad}` : "Operasyon",
-        subtitle: o.notlar?.slice(0, 50) || new Date(o.tarih).toLocaleDateString("tr-TR"),
-        url: `/operasyonlar/${o.id}`,
-        category: "operasyonlar",
-      })),
+        return {
+          id: t.id,
+          title: address || "Tanıtım",
+          subtitle: t.notlar?.slice(0, 60) || new Date(t.tarih).toLocaleDateString("tr-TR"),
+          url: `/tanitimlar/${t.id}`,
+          category: "tanitimlar",
+          metadata: {
+            hasAddress: !!address,
+            relatedKisiler: (t.katilimcilar || []).map((k: any) => ({
+              id: k.id,
+              ad: k.ad,
+              soyad: k.soyad,
+              tt: k.tt,
+              tc: k.tc,
+            })),
+          },
+        }
+      }),
+
+      operasyonlar: operasyonlar.map((o) => {
+        // Build full address for operasyon
+        const address = o.mahalle
+          ? [
+              `${o.mahalle.ad} Mahallesi`,
+              o.adresDetay,
+              o.mahalle.ilce.ad
+            ].filter(Boolean).join(", ")
+          : null
+
+        return {
+          id: o.id,
+          title: address || "Operasyon",
+          subtitle: o.notlar?.slice(0, 60) || new Date(o.tarih).toLocaleDateString("tr-TR"),
+          url: `/operasyonlar/${o.id}`,
+          category: "operasyonlar",
+          metadata: {
+            hasAddress: !!address,
+            relatedKisiler: (o.katilimcilar || []).map((k: any) => ({
+              id: k.id,
+              ad: k.ad,
+              soyad: k.soyad,
+              tt: k.tt,
+              tc: k.tc,
+            })),
+          },
+        }
+      }),
 
       alarmlar: alarmlar.map((a) => ({
         id: a.id,
@@ -401,9 +638,17 @@ export async function GET(request: NextRequest) {
       takipler: takipler.map((t) => ({
         id: t.id,
         title: t.gsm.numara,
-        subtitle: `${t.gsm.kisi.ad} ${t.gsm.kisi.soyad} - ${t.durum}`,
+        subtitle: `${t.durum}`,
         url: `/takipler/${t.id}`,
         category: "takipler",
+        metadata: {
+          relatedKisiler: [{
+            id: t.gsm.kisi.id,
+            ad: t.gsm.kisi.ad,
+            soyad: t.gsm.kisi.soyad,
+            tc: t.gsm.kisi.tc,
+          }],
+        },
       })),
 
       araclar: araclar.map((a) => ({
@@ -412,69 +657,31 @@ export async function GET(request: NextRequest) {
         subtitle: `${a.model.marka.ad} ${a.model.ad}${a.renk ? ` - ${a.renk}` : ""}`,
         url: `/araclar`,
         category: "araclar",
-      })),
-
-      markalar: markalar.map((m) => ({
-        id: m.id,
-        title: m.ad,
-        subtitle: undefined,
-        url: `/tanimlamalar`,
-        category: "markalar",
         metadata: {
-          isMarka: true,
+          relatedKisiler: (a.kisiler || []).map((k: any) => ({
+            id: k.id,
+            ad: k.ad,
+            soyad: k.soyad,
+            tt: k.tt,
+            tc: k.tc,
+          })),
         },
       })),
-
-      modeller: modeller.map((m) => ({
-        id: m.id,
-        title: m.ad,
-        subtitle: m.marka.ad,
-        url: `/tanimlamalar`,
-        category: "modeller",
-      })),
-
-      lokasyonlar: [
-        ...iller.map((i) => ({
-          id: i.id,
-          title: i.ad,
-          subtitle: i.plaka ? String(i.plaka) : undefined,
-          url: `/tanimlamalar`,
-          category: "lokasyonlar",
-          metadata: {
-            locationType: "il" as const,
-            plaka: i.plaka ? String(i.plaka) : undefined,
-          },
-        })),
-        ...ilceler.map((i) => ({
-          id: i.id,
-          title: i.ad,
-          subtitle: i.il.ad,
-          url: `/tanimlamalar`,
-          category: "lokasyonlar",
-          metadata: {
-            locationType: "ilce" as const,
-            parentLocation: i.il.ad,
-          },
-        })),
-        ...mahalleler.map((m) => ({
-          id: m.id,
-          title: m.ad,
-          subtitle: `${m.ilce.il.ad}, ${m.ilce.ad}`,
-          url: `/tanimlamalar`,
-          category: "lokasyonlar",
-          metadata: {
-            locationType: "mahalle" as const,
-            parentLocation: `${m.ilce.il.ad}, ${m.ilce.ad}`,
-          },
-        })),
-      ].slice(0, limit),
 
       notlar: notlar.map((n) => ({
         id: n.id,
         title: n.icerik.slice(0, 50) + (n.icerik.length > 50 ? "..." : ""),
-        subtitle: `${n.kisi.ad} ${n.kisi.soyad}`,
+        subtitle: n.icerik.length > 50 ? n.icerik : undefined,
         url: `/kisiler/${n.kisiId}`,
         category: "notlar",
+        metadata: {
+          relatedKisiler: [{
+            id: n.kisiId,
+            ad: n.kisi.ad,
+            soyad: n.kisi.soyad,
+            tc: n.kisi.tc,
+          }],
+        },
       })),
 
       loglar: loglar.map((l) => ({

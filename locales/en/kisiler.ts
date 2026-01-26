@@ -149,11 +149,36 @@ export const kisiler: KisilerTranslations = {
   addToIntroduction: "Add to Introduction",
   createNewIntroduction: "Create New Introduction",
   addToExistingIntroduction: "Add to Existing Introduction",
+  addFirstIntroduction: "Add First Introduction",
   noIntroductionsYetDescription: "Use the \"Add to Introduction\" button above to add person to an introduction",
+  introductionsDescription: "Introduction events the person participated in",
   addToOperation: "Add to Operation",
   createNewOperation: "Create New Operation",
   addToExistingOperation: "Add to Existing Operation",
+  addFirstOperation: "Add First Operation",
   noOperationsYetDescription: "Use the \"Add to Operation\" button above to add person to an operation",
+  operationsDescription: "Operation events the person participated in",
+
+  // Tracking
+  trackingStatus: "Tracking Status",
+  unknown: "Unknown",
+  endsAt: "Ends:",
+  daysAgoExpired: "Expired {days} days ago",
+  daysLeft: "{days} days left",
+  noActiveTracking: "No active tracking",
+  gsmTrackingDescription: "Phone numbers and tracking records",
+  addNewGsm: "Add New GSM",
+  activeTracking: "Active Tracking",
+  updateStatus: "Update Status",
+  expired: "Expired",
+  daysRemaining: "Days Left",
+  daysShort: "Days",
+  startDate: "Start",
+  endDate: "End",
+  progress: "Progress",
+  noActiveTrackingForGsm: "No active tracking for this GSM yet",
+  addFirstGsm: "Add First GSM",
+  daysAgo: "Days Ago Expired",
 
   // Vehicle tab
   addVehicle: "Add",
@@ -173,4 +198,22 @@ export const kisiler: KisilerTranslations = {
   removeVehicleConfirm: "are you sure you want to remove the vehicle with plate from this person? This action will not delete the vehicle, only remove its association with this person.",
   removing: "Removing...",
   remove: "Remove",
+
+  // Address details
+  addressInfoAndLocations: "Person's address information and locations",
+  provinceDistrict: "Province / District",
+  neighborhood: "Neighborhood",
+  addressDetailLabel: "Detail",
+  fullAddress: "Full Address",
+
+  // Vehicle details
+  vehicleInfoAndSharing: "Person's registered vehicle information and sharing",
+  sharedWithPersons: "shared with persons",
+  color: "Color",
+  description: "Description",
+  sharedPersons: "Shared Persons",
+
+  // Notes
+  notesAndDescriptions: "Notes and descriptions added about the person",
+  addNote: "Add Note",
 }

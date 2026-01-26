@@ -12,7 +12,6 @@ import {
   Bell,
   CalendarClock,
   Car,
-  Tag,
   StickyNote,
   Activity,
   type LucideIcon,
@@ -43,9 +42,6 @@ const categoryIcons: Record<string, LucideIcon> = {
   alarmlar: Bell,
   takipler: CalendarClock,
   araclar: Car,
-  markalar: Tag,
-  modeller: Tag,
-  lokasyonlar: MapPin,
   notlar: StickyNote,
   loglar: Activity,
 }
@@ -61,9 +57,6 @@ const categoryOrder = [
   "operasyonlar",
   "alarmlar",
   "araclar",
-  "markalar",
-  "modeller",
-  "lokasyonlar",
   "notlar",
   "loglar",
 ]
@@ -71,13 +64,21 @@ const categoryOrder = [
 interface GlobalSearchProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  initialQuery?: string
 }
 
-export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
+export function GlobalSearch({ open, onOpenChange, initialQuery }: GlobalSearchProps) {
   const router = useRouter()
   const { t, locale } = useLocale()
   const [query, setQuery] = React.useState("")
   const { data, isLoading, isFetching } = useGlobalSearch(query, locale)
+
+  // Set initial query when provided
+  React.useEffect(() => {
+    if (initialQuery && open) {
+      setQuery(initialQuery)
+    }
+  }, [initialQuery, open])
 
   // Get category label from translations
   const getCategoryLabel = React.useCallback((categoryKey: string): string => {
@@ -91,9 +92,6 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
       alarmlar: "alarmlar",
       takipler: "takipler",
       araclar: "araclar",
-      markalar: "markalar",
-      modeller: "modeller",
-      lokasyonlar: "lokasyonlar",
       notlar: "notlar",
       loglar: "loglar",
     }

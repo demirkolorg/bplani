@@ -16,6 +16,8 @@ export const tanitimlar: TanitimlarTranslations = {
   createNewTanitim: "Yeni Tanıtım Oluştur",
 
   // Fields
+  title: "Başlık",
+  titlePlaceholder: "Tanıtım başlığı...",
   tanitimDate: "Tanıtım Tarihi",
   tanitimTime: "Tanıtım Saati",
   tanitimAddress: "Tanıtım Adresi",

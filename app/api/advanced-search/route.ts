@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
 
-    // Example: Search in Kisi table
+    // Search in Kisi table with all related data
     const result = await executeQueryWithPagination(
       prisma.kisi,
       query,
@@ -37,6 +37,92 @@ export async function POST(request: NextRequest) {
         page,
         pageSize,
         orderBy: { createdAt: "desc" },
+        include: {
+          gsmler: {
+            select: {
+              numara: true,
+              isPrimary: true,
+              takipler: {
+                where: { isActive: true },
+                select: {
+                  durum: true,
+                  baslamaTarihi: true,
+                  bitisTarihi: true,
+                },
+              },
+            },
+          },
+          adresler: {
+            select: {
+              ad: true,
+              detay: true,
+              isPrimary: true,
+              mahalle: {
+                select: {
+                  ad: true,
+                  ilce: {
+                    select: {
+                      ad: true,
+                      il: {
+                        select: { ad: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          araclar: {
+            include: {
+              arac: {
+                select: { plaka: true },
+              },
+            },
+          },
+          notlar: {
+            select: {
+              icerik: true,
+              createdAt: true,
+            },
+            take: 3,
+            orderBy: { createdAt: "desc" },
+          },
+          faaliyetAlanlari: {
+            select: {
+              faaliyetAlani: {
+                select: { ad: true },
+              },
+            },
+          },
+          tanitimlar: {
+            select: {
+              tanitim: {
+                select: {
+                  tarih: true,
+                  notlar: true,
+                  mahalle: {
+                    select: { ad: true },
+                  },
+                },
+              },
+            },
+            take: 3,
+          },
+          operasyonlar: {
+            select: {
+              operasyon: {
+                select: {
+                  tarih: true,
+                  notlar: true,
+                  mahalle: {
+                    select: { ad: true },
+                  },
+                },
+              },
+            },
+            take: 3,
+          },
+        },
       }
     )
 

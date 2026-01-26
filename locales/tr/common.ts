@@ -35,6 +35,7 @@ export const common: CommonTranslations = {
   // UI Elements
   actions: "İşlemler",
   details: "Detaylar",
+  detail: "Detay",
   all: "Tümü",
   select: "Seç",
   selectAll: "Tümünü Seç",
@@ -84,6 +85,9 @@ export const common: CommonTranslations = {
   makePrimary: "Birincil yap",
   alreadyPrimary: "Zaten Birincil",
   history: "Geçmiş",
+  more: "diğer",
+  location: "Konum",
+  participants: "Katılımcılar",
 
   // Person
   firstName: "Ad",

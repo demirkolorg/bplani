@@ -35,6 +35,7 @@ export interface CommonTranslations {
   // UI Elements
   actions: string
   details: string
+  detail: string
   all: string
   select: string
   selectAll: string
@@ -84,6 +85,9 @@ export interface CommonTranslations {
   makePrimary: string
   alreadyPrimary: string
   history: string
+  more: string
+  location: string
+  participants: string
 
   // Person
   firstName: string
@@ -408,11 +412,36 @@ export interface KisilerTranslations {
   addToIntroduction: string
   createNewIntroduction: string
   addToExistingIntroduction: string
+  addFirstIntroduction: string
   noIntroductionsYetDescription: string
+  introductionsDescription: string
   addToOperation: string
   createNewOperation: string
   addToExistingOperation: string
+  addFirstOperation: string
   noOperationsYetDescription: string
+  operationsDescription: string
+
+  // Tracking
+  trackingStatus: string
+  unknown: string
+  endsAt: string
+  daysAgoExpired: string
+  daysLeft: string
+  noActiveTracking: string
+  gsmTrackingDescription: string
+  addNewGsm: string
+  activeTracking: string
+  updateStatus: string
+  expired: string
+  daysRemaining: string
+  daysShort: string
+  startDate: string
+  endDate: string
+  progress: string
+  noActiveTrackingForGsm: string
+  addFirstGsm: string
+  daysAgo: string
 
   // Vehicle tab
   addVehicle: string
@@ -432,6 +461,24 @@ export interface KisilerTranslations {
   removeVehicleConfirm: string
   removing: string
   remove: string
+
+  // Address details
+  addressInfoAndLocations: string
+  provinceDistrict: string
+  neighborhood: string
+  addressDetailLabel: string
+  fullAddress: string
+
+  // Vehicle details
+  vehicleInfoAndSharing: string
+  sharedWithPersons: string
+  color: string
+  description: string
+  sharedPersons: string
+
+  // Notes
+  notesAndDescriptions: string
+  addNote: string
 }
 
 export interface TakiplerTranslations {
@@ -542,6 +589,8 @@ export interface TanitimlarTranslations {
   createNewTanitim: string
 
   // Fields
+  title: string
+  titlePlaceholder: string
   tanitimDate: string
   tanitimTime: string
   tanitimAddress: string
@@ -623,6 +672,8 @@ export interface OperasyonlarTranslations {
   createNewOperasyon: string
 
   // Fields
+  title: string
+  titlePlaceholder: string
   operasyonDate: string
   operasyonTime: string
   operasyonAddress: string
@@ -1076,7 +1127,6 @@ export interface SearchTranslations {
   kisiler: string
   gsmNumaralari: string
   adresler: string
-  lokasyonlar: string
   notlar: string
   personel: string
   tanitimlar: string
@@ -1085,15 +1135,9 @@ export interface SearchTranslations {
   takipler: string
   alarmlar: string
   loglar: string
-  markalar: string
-  modeller: string
 
-  // Subtitles
-  markaLabel: string
-  ilLabel: string
-  ilceLabel: string
-  mahalleLabel: string
-  ilWithPlaka: string
+  // Related
+  relatedPersons: string
 }
 
 export interface LoglarTranslations {
@@ -1224,6 +1268,8 @@ export interface TabsTranslations {
   closeTab: string
   closeOtherTabs: string
   closeTabsToRight: string
+  closeAllTabs: string
+  newTab: string
 
   // Route titles
   home: string

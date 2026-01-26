@@ -150,6 +150,23 @@ function tabReducer(state: TabState, action: TabAction): TabState {
       }
     }
 
+    case "CLOSE_ALL_EXCEPT_HOME": {
+      // Ana sayfa hariç tüm tableri kapat
+      const homeTab = state.tabs.find((t) => t.path === "/")
+      if (!homeTab) {
+        return {
+          ...state,
+          tabs: [],
+          activeTabId: null,
+        }
+      }
+      return {
+        ...state,
+        tabs: [homeTab],
+        activeTabId: homeTab.id,
+      }
+    }
+
     case "SET_ACTIVE": {
       const { tabId } = action.payload
       const tab = state.tabs.find((t) => t.id === tabId)
@@ -363,6 +380,10 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "CLOSE_ALL_TABS" })
   }, [])
 
+  const closeAllExceptHome = React.useCallback(() => {
+    dispatch({ type: "CLOSE_ALL_EXCEPT_HOME" })
+  }, [])
+
   const closeTabsToRight = React.useCallback((tabId: string) => {
     dispatch({ type: "CLOSE_TABS_TO_RIGHT", payload: { tabId } })
   }, [])
@@ -411,6 +432,7 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
     closeTab,
     closeOtherTabs,
     closeAllTabs,
+    closeAllExceptHome,
     closeTabsToRight,
     setActiveTab,
     updateTabTitle,

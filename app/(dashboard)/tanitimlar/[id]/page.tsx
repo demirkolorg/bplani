@@ -35,7 +35,7 @@ export default function TanitimDetayPage() {
 
   // Tab title'ı dinamik güncelle
   const tanitimTitle = tanitim
-    ? `Tanıtım - ${new Date(tanitim.tarih).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}`
+    ? tanitim.baslik || `Tanıtım - ${new Date(tanitim.tarih).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}`
     : undefined
   useTabTitle(tanitimTitle)
 
@@ -106,17 +106,28 @@ export default function TanitimDetayPage() {
 
           <div>
             <h1 className="text-2xl font-bold">
-              Tanıtım - {tanitimTarihi.toLocaleDateString("tr-TR", {
+              {tanitim.baslik || `Tanıtım - ${tanitimTarihi.toLocaleDateString("tr-TR", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
-              })}
+              })}`}
             </h1>
             <div className="flex items-center gap-2 mt-1 text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="text-sm">
+                {tanitimTarihi.toLocaleDateString("tr-TR", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </span>
               {tanitim.saat && (
-                <span className="text-sm font-medium">
-                  {tanitim.saat}
-                </span>
+                <>
+                  <span>•</span>
+                  <span className="text-sm font-medium">
+                    {tanitim.saat}
+                  </span>
+                </>
               )}
               {fullAddress && (
                 <>
@@ -242,6 +253,7 @@ export default function TanitimDetayPage() {
         onOpenChange={setShowEditModal}
         initialData={{
           id: tanitim.id,
+          baslik: tanitim.baslik,
           tarih: tanitim.tarih,
           saat: tanitim.saat,
           mahalleId: tanitim.mahalleId,

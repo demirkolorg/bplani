@@ -44,6 +44,25 @@ export function getOperasyonColumns(t: Translations, locale: string): ColumnDef<
     },
     // Visible columns
     {
+      id: "baslik",
+      accessorKey: "baslik",
+      header: t.operasyonlar.title,
+      cell: ({ row }) => {
+        const baslik = row.original.baslik
+        const tarih = new Date(row.original.tarih)
+        const displayText = baslik || tarih.toLocaleDateString(dateLocale, {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
+        return (
+          <div className="font-semibold max-w-[300px] truncate" title={displayText}>
+            {displayText}
+          </div>
+        )
+      },
+    },
+    {
       id: "tarih",
       accessorKey: "tarih",
       header: ({ column }) => {

@@ -29,6 +29,7 @@ interface TanitimFormModalProps {
   onOpenChange: (open: boolean) => void
   initialData?: {
     id?: string
+    baslik?: string | null
     tarih?: string | Date
     saat?: string | null
     mahalleId?: string | null
@@ -51,6 +52,7 @@ export function TanitimFormModal({
   const isEditing = !!initialData?.id
 
   // Form state
+  const [baslik, setBaslik] = React.useState<string>(initialData?.baslik || "")
   const [tarih, setTarih] = React.useState<Date>(
     initialData?.tarih ? new Date(initialData.tarih) : new Date()
   )
@@ -76,6 +78,7 @@ export function TanitimFormModal({
   // Reset form when modal opens with new data
   React.useEffect(() => {
     if (open && initialData) {
+      setBaslik(initialData.baslik || "")
       setTarih(initialData.tarih ? new Date(initialData.tarih) : new Date())
       setSaat(initialData.saat || "")
       setLokasyon(
@@ -103,6 +106,7 @@ export function TanitimFormModal({
       await updateTanitim.mutateAsync({
         id: initialData.id,
         data: {
+          baslik: baslik || null,
           tarih,
           saat: saat || null,
           mahalleId: lokasyon.mahalleId || null,
@@ -135,6 +139,18 @@ export function TanitimFormModal({
                 {error}
               </div>
             )}
+
+            {/* Başlık */}
+            <div className="space-y-2">
+              <Label htmlFor="baslik">{t.tanitimlar.title}</Label>
+              <Input
+                id="baslik"
+                value={baslik}
+                onChange={(e) => setBaslik(e.target.value)}
+                placeholder={t.tanitimlar.titlePlaceholder}
+                maxLength={200}
+              />
+            </div>
 
             {/* Tarih ve Saat */}
             <div className="space-y-2">

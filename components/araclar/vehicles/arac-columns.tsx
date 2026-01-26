@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Car, Users } from "lucide-react"
+import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import type { Arac } from "@/hooks/use-araclar-vehicles"
@@ -117,17 +118,22 @@ export function getAracColumns(t: Translations): ColumnDef<Arac>[] {
         return (
           <div className="flex flex-wrap gap-1">
             {displayedKisiler.map((ak) => (
-              <Badge
+              <Link
                 key={ak.kisi.id}
-                variant="outline"
-                className={
-                  ak.kisi.tt
-                    ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
-                    : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
-                }
+                href={`/kisiler/${ak.kisi.id}`}
+                onClick={(e) => e.stopPropagation()}
               >
-                {ak.kisi.ad} {ak.kisi.soyad}
-              </Badge>
+                <Badge
+                  variant="outline"
+                  className={`cursor-pointer hover:opacity-80 transition-opacity ${
+                    ak.kisi.tt
+                      ? "bg-green-50 text-green-700 border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700"
+                      : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
+                  }`}
+                >
+                  {ak.kisi.ad} {ak.kisi.soyad}
+                </Badge>
+              </Link>
             ))}
             {remainingCount > 0 && (
               <Badge variant="secondary">+{remainingCount}</Badge>

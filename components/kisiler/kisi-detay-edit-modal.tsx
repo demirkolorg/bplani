@@ -82,16 +82,19 @@ export function KisiDetayEditModal({ open, onOpenChange, kisi }: KisiDetayEditMo
     if (!validate()) return
 
     try {
+      const trimmedTc = tc.trim()
+      const updateData = {
+        tc: trimmedTc === "" ? null : trimmedTc,
+        ad: ad.trim(),
+        soyad: soyad.trim(),
+        tt,
+        pio,
+        asli,
+      }
+
       await updateKisi.mutateAsync({
         id: kisi.id,
-        data: {
-          tc: tc.trim() || null,
-          ad: ad.trim(),
-          soyad: soyad.trim(),
-          tt,
-          pio,
-          asli,
-        },
+        data: updateData,
       })
       onOpenChange(false)
     } catch (err) {

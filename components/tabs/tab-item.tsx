@@ -6,6 +6,7 @@ import * as Icons from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Tab } from "@/types/tabs"
+import { useLocale } from "@/components/providers/locale-provider"
 import {
   ContextMenu,
   ContextMenuContent,
@@ -22,6 +23,7 @@ interface TabItemProps {
   onClose: () => void
   onCloseOthers: () => void
   onCloseToRight: () => void
+  onCloseAll: () => void
 }
 
 // Dynamic icon resolver
@@ -40,7 +42,9 @@ export function TabItem({
   onClose,
   onCloseOthers,
   onCloseToRight,
+  onCloseAll,
 }: TabItemProps) {
+  const { t } = useLocale()
   const Icon = getIcon(tab.icon)
 
   const handleClose = (e: React.MouseEvent) => {
@@ -93,22 +97,20 @@ export function TabItem({
         {!isPinned && (
           <>
             <ContextMenuItem onClick={onClose}>
-              Sekmeyi Kapat
+              {t.tabs.closeTab}
             </ContextMenuItem>
             <ContextMenuSeparator />
           </>
         )}
         <ContextMenuItem onClick={onCloseOthers}>
-          Diğer Sekmeleri Kapat
+          {t.tabs.closeOtherTabs}
         </ContextMenuItem>
         <ContextMenuItem onClick={onCloseToRight}>
-          Sağdaki Sekmeleri Kapat
+          {t.tabs.closeTabsToRight}
         </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem
-          onClick={() => navigator.clipboard.writeText(window.location.origin + tab.path)}
-        >
-          URL Kopyala
+        <ContextMenuItem onClick={onCloseAll}>
+          {t.tabs.closeAllTabs}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

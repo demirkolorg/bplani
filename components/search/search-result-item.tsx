@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import type { LucideIcon } from "lucide-react"
 import {
   Users,
@@ -12,16 +13,15 @@ import {
   Bell,
   CalendarClock,
   Car,
-  Tag,
   StickyNote,
   Activity,
   Home,
   ChevronRight,
 } from "lucide-react"
 import { CommandItem } from "@/components/ui/command"
+import { Badge } from "@/components/ui/badge"
 import type { SearchResultItem } from "@/lib/validations"
 import { useLocale } from "@/components/providers/locale-provider"
-import { interpolate } from "@/locales"
 
 // Category icons and colors mapping - keys match the category values from the API
 const categoryConfig: Record<string, { icon: LucideIcon; bgColor: string; textColor: string }> = {
@@ -34,9 +34,6 @@ const categoryConfig: Record<string, { icon: LucideIcon; bgColor: string; textCo
   alarmlar: { icon: Bell, bgColor: "bg-red-100 dark:bg-red-900/30", textColor: "text-red-600 dark:text-red-400" },
   takipler: { icon: CalendarClock, bgColor: "bg-cyan-100 dark:bg-cyan-900/30", textColor: "text-cyan-600 dark:text-cyan-400" },
   araclar: { icon: Car, bgColor: "bg-slate-100 dark:bg-slate-900/30", textColor: "text-slate-600 dark:text-slate-400" },
-  markalar: { icon: Tag, bgColor: "bg-amber-100 dark:bg-amber-900/30", textColor: "text-amber-600 dark:text-amber-400" },
-  modeller: { icon: Tag, bgColor: "bg-amber-100 dark:bg-amber-900/30", textColor: "text-amber-600 dark:text-amber-400" },
-  lokasyonlar: { icon: MapPin, bgColor: "bg-teal-100 dark:bg-teal-900/30", textColor: "text-teal-600 dark:text-teal-400" },
   notlar: { icon: StickyNote, bgColor: "bg-yellow-100 dark:bg-yellow-900/30", textColor: "text-yellow-600 dark:text-yellow-400" },
   loglar: { icon: Activity, bgColor: "bg-gray-100 dark:bg-gray-900/30", textColor: "text-gray-600 dark:text-gray-400" },
 }
@@ -63,9 +60,6 @@ export function SearchResultItemComponent({ item, onSelect }: SearchResultItemCo
       alarmlar: "alarmlar",
       takipler: "takipler",
       araclar: "araclar",
-      markalar: "markalar",
-      modeller: "modeller",
-      lokasyonlar: "lokasyonlar",
       notlar: "notlar",
       loglar: "loglar",
     }
@@ -73,33 +67,25 @@ export function SearchResultItemComponent({ item, onSelect }: SearchResultItemCo
     return translationKey ? t.search[translationKey] : categoryKey
   }
 
+  // Check if item has related kisiler (works for all entity types)
+  const relatedKisiler = item.metadata?.relatedKisiler
+    ? (item.metadata.relatedKisiler as Array<{ id: string; ad: string; soyad: string; tt?: boolean; tc?: string | null }>)
+    : null
+
   // Format subtitle based on metadata
   const getFormattedSubtitle = (): string | undefined => {
     if (!item.subtitle && !item.metadata) return undefined
+
+    // Adresler: Show owner, full address shown in title
+    if (item.category === "adresler" && item.metadata?.fullAddress) {
+      return item.subtitle // Kişi adı
+    }
 
     // Kisiler: Show TC or type
     if (item.metadata?.tc) {
       return `${t.common.tcLabel} ${item.metadata.tc}`
     } else if (item.metadata?.tt !== undefined) {
       return item.metadata.tt ? t.kisiler.tipMusteri : t.kisiler.tipAday
-    }
-
-    // Markalar: Show "Marka" label
-    if (item.metadata?.isMarka) {
-      return t.search.markaLabel
-    }
-
-    // Lokasyonlar: Show location type prefix
-    if (item.metadata?.locationType) {
-      if (item.metadata.locationType === "il") {
-        return item.metadata.plaka
-          ? interpolate(t.search.ilWithPlaka, { plaka: item.metadata.plaka })
-          : t.search.ilLabel
-      } else if (item.metadata.locationType === "ilce") {
-        return `${t.search.ilceLabel} - ${item.metadata.parentLocation || ""}`
-      } else if (item.metadata.locationType === "mahalle") {
-        return `${t.search.mahalleLabel} - ${item.metadata.parentLocation || ""}`
-      }
     }
 
     // Default: use subtitle as-is
@@ -132,6 +118,44 @@ export function SearchResultItemComponent({ item, onSelect }: SearchResultItemCo
         </div>
         {formattedSubtitle && (
           <span className="text-xs text-muted-foreground truncate">{formattedSubtitle}</span>
+        )}
+
+        {/* İlişkili Kişiler Bölümü */}
+        {relatedKisiler && relatedKisiler.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+            <div className="text-[10px] text-muted-foreground mb-1.5 font-medium">
+              {t.search.relatedPersons}
+            </div>
+            <div className="space-y-1">
+              {relatedKisiler.slice(0, 3).map((kisi) => (
+                <Link
+                  key={kisi.id}
+                  href={`/kisiler/${kisi.id}`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onSelect(`/kisiler/${kisi.id}`)
+                  }}
+                  className="block"
+                >
+                  <div
+                    className={`text-[11px] px-2 py-1 rounded-md cursor-pointer hover:opacity-80 transition-opacity ${
+                      kisi.tt
+                        ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+                        : "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                    }`}
+                  >
+                    {kisi.ad} {kisi.soyad}
+                    {kisi.tc && <span className="text-[10px] ml-1">({kisi.tc})</span>}
+                  </div>
+                </Link>
+              ))}
+              {relatedKisiler.length > 3 && (
+                <div className="text-[10px] text-muted-foreground px-2">
+                  +{relatedKisiler.length - 3} {t.common.more}
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
 

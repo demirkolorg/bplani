@@ -16,6 +16,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       include: {
         gsmler: {
           orderBy: { isPrimary: "desc" },
+          include: {
+            takipler: {
+              where: { isActive: true },
+              select: {
+                id: true,
+                durum: true,
+                baslamaTarihi: true,
+                bitisTarihi: true,
+                isActive: true,
+              },
+            },
+          },
         },
         adresler: {
           orderBy: { isPrimary: "desc" },

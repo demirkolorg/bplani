@@ -30,6 +30,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 id: true,
                 ad: true,
                 soyad: true,
+                tc: true,
                 tt: true,
                 gsmler: {
                   orderBy: { isPrimary: "desc" },
@@ -120,6 +121,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
                 id: true,
                 ad: true,
                 soyad: true,
+                tc: true,
                 tt: true,
               },
             },

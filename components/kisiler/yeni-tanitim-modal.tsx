@@ -41,6 +41,7 @@ export function YeniTanitimModal({
   const createTanitim = useCreateTanitim()
 
   // Form state
+  const [baslik, setBaslik] = React.useState<string>("")
   const [tarih, setTarih] = React.useState<Date>(new Date())
   const [saat, setSaat] = React.useState<string>("")
   const [lokasyon, setLokasyon] = React.useState<{
@@ -55,6 +56,7 @@ export function YeniTanitimModal({
   // Reset form when modal opens
   React.useEffect(() => {
     if (open) {
+      setBaslik("")
       setTarih(new Date())
       setSaat("")
       setLokasyon({})
@@ -70,6 +72,7 @@ export function YeniTanitimModal({
 
     try {
       await createTanitim.mutateAsync({
+        baslik: baslik || null,
         tarih,
         saat: saat || null,
         mahalleId: lokasyon.mahalleId || null,
@@ -102,6 +105,18 @@ export function YeniTanitimModal({
                 {error}
               </div>
             )}
+
+            {/* Başlık */}
+            <div className="space-y-2">
+              <Label htmlFor="baslik">{t.tanitimlar.title}</Label>
+              <Input
+                id="baslik"
+                value={baslik}
+                onChange={(e) => setBaslik(e.target.value)}
+                placeholder={t.tanitimlar.titlePlaceholder}
+                maxLength={200}
+              />
+            </div>
 
             {/* Tarih ve Saat */}
             <div className="space-y-2">

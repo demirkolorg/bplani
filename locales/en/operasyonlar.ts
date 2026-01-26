@@ -16,6 +16,8 @@ export const operasyonlar: OperasyonlarTranslations = {
   createNewOperasyon: "Create New Operation",
 
   // Fields
+  title: "Title",
+  titlePlaceholder: "Operation title...",
   operasyonDate: "Operation Date",
   operasyonTime: "Operation Time",
   operasyonAddress: "Operation Address",

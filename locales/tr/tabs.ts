@@ -4,6 +4,8 @@ export const tabs: TabsTranslations = {
   closeTab: "Sekmeyi Kapat",
   closeOtherTabs: "Diğer Sekmeleri Kapat",
   closeTabsToRight: "Sağdaki Sekmeleri Kapat",
+  closeAllTabs: "Tümünü Kapat",
+  newTab: "Yeni Sekme",
 
   // Route titles
   home: "Ana Sayfa",

@@ -35,6 +35,7 @@ export const common: CommonTranslations = {
   // UI Elements
   actions: "Actions",
   details: "Details",
+  detail: "Detail",
   all: "All",
   select: "Select",
   selectAll: "Select All",
@@ -84,6 +85,9 @@ export const common: CommonTranslations = {
   makePrimary: "Make Primary",
   alreadyPrimary: "Already Primary",
   history: "History",
+  more: "more",
+  location: "Location",
+  participants: "Participants",
 
   // Person
   firstName: "First Name",

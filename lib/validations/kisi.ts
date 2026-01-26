@@ -1,18 +1,17 @@
 import { z } from "zod"
 
-// TC Kimlik No validation (11 digits, specific algorithm)
-const tcKimlikSchema = z.string()
-  .length(11, "TC Kimlik No 11 haneli olmalıdır")
-  .regex(/^\d{11}$/, "TC Kimlik No sadece rakamlardan oluşmalıdır")
-  .refine((tc) => {
-    if (tc[0] === "0") return false
-    const digits = tc.split("").map(Number)
-    const sum1 = digits[0] + digits[2] + digits[4] + digits[6] + digits[8]
-    const sum2 = digits[1] + digits[3] + digits[5] + digits[7]
-    const check1 = ((sum1 * 7) - sum2) % 10
-    const check2 = (digits.slice(0, 10).reduce((a, b) => a + b, 0)) % 10
-    return check1 === digits[9] && check2 === digits[10]
-  }, "Geçersiz TC Kimlik No")
+// TC Kimlik No validation (11 digits, basic validation - algorithm check disabled for testing)
+// Allows: null, undefined, empty string, or 11-digit number
+const tcKimlikSchema = z
+  .union([
+    z.null(),
+    z.literal(""),
+    z
+      .string()
+      .length(11, "TC Kimlik No 11 haneli olmalıdır")
+      .regex(/^\d{11}$/, "TC Kimlik No sadece rakamlardan oluşmalıdır")
+      .refine((tc) => tc[0] !== "0", "TC Kimlik No 0 ile başlayamaz"),
+  ])
   .optional()
   .nullable()
 

@@ -72,7 +72,7 @@ export function QueryBuilder({
     // Filter out empty/invalid filters
     const validFilters = filters.filter((filter) => {
       // Check if operator needs value
-      const needsValue = ![" isEmpty", "isNotEmpty"].includes(filter.operator)
+      const needsValue = !["isEmpty", "isNotEmpty"].includes(filter.operator)
       if (!needsValue) return true
 
       // Check if value is provided
