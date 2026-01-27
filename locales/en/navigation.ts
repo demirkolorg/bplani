@@ -6,7 +6,7 @@ export const navigation: NavigationTranslations = {
   kisiler: "People",
   numaralar: "Numbers",
   araclar: "Vehicles",
-  takipler: "Follow-ups",
+  takipler: "Decisions",
   tanitimlar: "Events",
   operasyonlar: "Operations",
   personel: "Staff",
@@ -18,4 +18,5 @@ export const navigation: NavigationTranslations = {
   logout: "Logout",
   faaliyetAlanlari: "Activity Areas",
   advancedSearch: "Advanced Search",
+  duyurular: "Announcements",
 }

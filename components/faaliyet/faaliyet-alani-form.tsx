@@ -172,7 +172,7 @@ export function FaaliyetAlaniForm({
 
       <div className="space-y-2">
         <Label htmlFor="ad">
-          Faaliyet Alanı Adı <span className="text-destructive">*</span>
+          {t.faaliyet.faaliyetAlaniAdi} <span className="text-destructive">*</span>
         </Label>
         <Input
           id="ad"
@@ -185,7 +185,7 @@ export function FaaliyetAlaniForm({
       </div>
 
       <div className="space-y-2">
-        <Label>Üst Kategori</Label>
+        <Label>{t.faaliyet.ustKategori}</Label>
         <Popover open={parentOpen} onOpenChange={setParentOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -200,7 +200,7 @@ export function FaaliyetAlaniForm({
                   {selectedParent.ad}
                 </span>
               ) : (
-                <span className="text-muted-foreground">Kök seviye (üst kategori yok)</span>
+                <span className="text-muted-foreground">{t.faaliyet.rootLevel}</span>
               )}
               <ChevronRight className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
@@ -209,7 +209,7 @@ export function FaaliyetAlaniForm({
             <Command>
               <CommandInput placeholder={t.faaliyet.searchUstKategori} />
               <CommandList>
-                <CommandEmpty>Kategori bulunamadı.</CommandEmpty>
+                <CommandEmpty>{t.faaliyet.categoryNotFound}</CommandEmpty>
                 <CommandGroup>
                   <CommandItem
                     onSelect={() => {
@@ -219,7 +219,7 @@ export function FaaliyetAlaniForm({
                   >
                     <div className="flex items-center gap-2">
                       <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                      <span>Kök seviye (üst kategori yok)</span>
+                      <span>{t.faaliyet.rootLevel}</span>
                     </div>
                   </CommandItem>
                   {flatItems.map((item) => (
@@ -242,7 +242,7 @@ export function FaaliyetAlaniForm({
                         )}
                         <span>{item.ad}</span>
                         {!item.isActive && (
-                          <span className="text-xs text-muted-foreground">(pasif)</span>
+                          <span className="text-xs text-muted-foreground">{t.faaliyet.inactive}</span>
                         )}
                       </div>
                     </CommandItem>
@@ -259,7 +259,7 @@ export function FaaliyetAlaniForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="sira">Sıra</Label>
+          <Label htmlFor="sira">{t.faaliyet.order}</Label>
           <Input
             id="sira"
             type="number"
@@ -279,7 +279,7 @@ export function FaaliyetAlaniForm({
               onCheckedChange={(checked) => handleChange("isActive", checked)}
             />
             <Label htmlFor="isActive" className="cursor-pointer">
-              Aktif
+              {t.faaliyet.active}
             </Label>
           </div>
         </div>
@@ -292,13 +292,13 @@ export function FaaliyetAlaniForm({
           onClick={handleCancel}
           disabled={isPending}
         >
-          İptal
+          {t.common.cancel}
         </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && (
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           )}
-          {isEditing ? "Güncelle" : "Oluştur"}
+          {isEditing ? t.common.update : t.common.create}
         </Button>
       </div>
     </>

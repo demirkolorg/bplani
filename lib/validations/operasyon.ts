@@ -6,6 +6,15 @@ export const operasyonKatilimciSchema = z.object({
   gsmId: z.string().cuid("Geçersiz GSM ID").optional().nullable(),
 })
 
+// Araç schema (for creating operasyon with vehicles)
+export const operasyonAracInputSchema = z.object({
+  aracId: z.string().cuid("Geçersiz Araç ID"),
+  aciklama: z.string()
+    .max(500, "Açıklama en fazla 500 karakter olabilir")
+    .optional()
+    .nullable(),
+})
+
 // Create Operasyon schema
 export const createOperasyonSchema = z.object({
   baslik: z.string().max(200, "Başlık en fazla 200 karakter olabilir").optional().nullable(),
@@ -15,6 +24,7 @@ export const createOperasyonSchema = z.object({
   adresDetay: z.string().max(500, "Adres detayı en fazla 500 karakter olabilir").optional().nullable(),
   notlar: z.string().max(5000, "Notlar en fazla 5000 karakter olabilir").optional().nullable(),
   katilimcilar: z.array(operasyonKatilimciSchema).optional(),
+  araclar: z.array(operasyonAracInputSchema).optional(),
 })
 
 // Update Operasyon schema (all fields optional)
@@ -31,6 +41,15 @@ export const updateOperasyonSchema = z.object({
 export const addOperasyonKatilimciSchema = z.object({
   kisiId: z.string().cuid("Geçersiz Kişi ID"),
   gsmId: z.string().cuid("Geçersiz GSM ID").optional().nullable(),
+})
+
+// Add vehicle schema
+export const addOperasyonAracSchema = z.object({
+  aracId: z.string().cuid("Geçersiz Araç ID"),
+  aciklama: z.string()
+    .max(500, "Açıklama en fazla 500 karakter olabilir")
+    .optional()
+    .nullable(),
 })
 
 // List query params schema
@@ -51,4 +70,5 @@ export type OperasyonKatilimciInput = z.infer<typeof operasyonKatilimciSchema>
 export type CreateOperasyonInput = z.infer<typeof createOperasyonSchema>
 export type UpdateOperasyonInput = z.infer<typeof updateOperasyonSchema>
 export type AddOperasyonKatilimciInput = z.infer<typeof addOperasyonKatilimciSchema>
+export type AddOperasyonAracInput = z.infer<typeof addOperasyonAracSchema>
 export type ListOperasyonQuery = z.infer<typeof listOperasyonQuerySchema>

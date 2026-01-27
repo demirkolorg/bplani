@@ -9,28 +9,28 @@ export const ayarlar: AyarlarTranslations = {
 
   // Tab labels
   alarmTab: "Alarm",
-  takipTab: "Follow-up",
+  takipTab: "Decision",
   bildirimTab: "Notification",
   gorunumTab: "Appearance",
 
   // Alarm settings
   alarmTitle: "Alarm Settings",
-  alarmDescription: "Set default day counts for follow-up end alarms",
+  alarmDescription: "Set default day counts for decision end alarms",
   firstAlarm: "First Alarm (days before)",
-  firstAlarmDesc: "How many days before the follow-up end date should the first alarm trigger",
+  firstAlarmDesc: "How many days before the decision end date should the first alarm trigger",
   secondAlarm: "Second Alarm (days before)",
-  secondAlarmDesc: "How many days before the follow-up end date should the second alarm trigger",
+  secondAlarmDesc: "How many days before the decision end date should the second alarm trigger",
   currentRules: "Current Alarm Rules",
   beforeEndDate1: "{days} days before end date - first alarm",
   beforeEndDate2: "{days} days before end date - second alarm",
 
   // Takip settings
-  takipTitle: "Follow-up Settings",
-  takipDescription: "Set default values for creating new follow-ups",
-  defaultDuration: "Default Follow-up Duration (days)",
-  defaultDurationDesc: "Default duration when a new follow-up is created (from start date)",
+  takipTitle: "Decision Settings",
+  takipDescription: "Set default values for creating new decisions",
+  defaultDuration: "Default Decision Duration (days)",
+  defaultDurationDesc: "Default duration when a new decision is created (from start date)",
   exampleScenario: "Example Scenario",
-  exampleScenarioText: "A follow-up created today will end in {duration} days. First alarm will trigger on day {alarm1}, second alarm on day {alarm2}.",
+  exampleScenarioText: "A decision created today will end in {duration} days. First alarm will trigger on day {alarm1}, second alarm on day {alarm2}.",
 
   // Notification settings
   notificationTitle: "Notification Settings",
@@ -64,10 +64,10 @@ export const ayarlar: AyarlarTranslations = {
 
   // Legacy (keeping for backward compatibility)
   title: "Settings",
-  takipDefaults: "Follow-up Defaults",
-  takipDefaultsDesc: "Set default values for creating new follow-ups",
-  defaultTakipDuration: "Default Follow-up Duration",
-  defaultTakipDurationDesc: "Default duration when a new follow-up is created (from start date)",
+  takipDefaults: "Decision Defaults",
+  takipDefaultsDesc: "Set default values for creating new decisions",
+  defaultTakipDuration: "Default Decision Duration",
+  defaultTakipDurationDesc: "Default duration when a new decision is created (from start date)",
   notificationCheckFrequency: "Notification Check Frequency",
   notificationCheckFrequencyDesc: "How often to check for new notifications",
 }

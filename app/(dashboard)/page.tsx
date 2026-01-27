@@ -13,6 +13,7 @@ import {
   Car,
   UserPlus,
   AlertTriangle,
+  Zap,
 } from "lucide-react"
 
 import { useDashboardStats } from "@/hooks/use-dashboard-stats"
@@ -23,6 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GlobalSearch } from "@/components/search/global-search"
 import { TabLink } from "@/components/tabs/tab-link"
+import { DuyuruList } from "@/components/duyurular/duyuru-list"
 import { cn } from "@/lib/utils"
 
 // Stat Card Component
@@ -199,43 +201,57 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quick Actions & Alerts */}
-        <div className="grid md:grid-cols-2 gap-6 mt-2">
-          {/* Quick Actions */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">{t.dashboard.quickActions}</h3>
-            <div className="space-y-1">
-              <TabLink href="/kisiler/yeni">
-                <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <UserPlus className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t.dashboard.newKisi}</span>
-                </div>
-              </TabLink>
-              <TabLink href="/takipler/yeni">
-                <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t.dashboard.newTakip}</span>
-                </div>
-              </TabLink>
-              <TabLink href="/tanitimlar/yeni">
-                <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Megaphone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t.dashboard.newTanitim}</span>
-                </div>
-              </TabLink>
-              <TabLink href="/operasyonlar/yeni">
-                <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <Workflow className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t.dashboard.newOperasyon}</span>
-                </div>
-              </TabLink>
-            </div>
+        {/* Duyurular & Actions Grid */}
+        <div className="grid lg:grid-cols-3 gap-6 mt-2">
+          {/* Duyurular Section - Takes 2 columns on large screens */}
+          <div className="lg:col-span-2">
+            <DuyuruList />
           </div>
 
-          {/* Expiring Takips */}
-          <div>
-            {stats?.takip.expiringSoonList && stats.takip.expiringSoonList.length > 0 ? (
-              <>
+          {/* Quick Actions & Alerts Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30">
+                  <Zap className="h-5 w-5 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">{t.dashboard.quickActions}</h3>
+                  <p className="text-xs text-muted-foreground">{t.common.quickActionsDescription}</p>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <TabLink href="/kisiler/yeni">
+                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                    <UserPlus className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{t.dashboard.newKisi}</span>
+                  </div>
+                </TabLink>
+                <TabLink href="/takipler/yeni">
+                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                    <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{t.dashboard.newTakip}</span>
+                  </div>
+                </TabLink>
+                <TabLink href="/tanitimlar/yeni">
+                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                    <Megaphone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{t.dashboard.newTanitim}</span>
+                  </div>
+                </TabLink>
+                <TabLink href="/operasyonlar/yeni">
+                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                    <Workflow className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{t.dashboard.newOperasyon}</span>
+                  </div>
+                </TabLink>
+              </div>
+            </div>
+
+            {/* Expiring Takips */}
+            {stats?.takip.expiringSoonList && stats.takip.expiringSoonList.length > 0 && (
+              <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
                   {t.dashboard.expiringSoon}
@@ -254,18 +270,20 @@ export default function DashboardPage() {
                     </TabLink>
                   ))}
                 </div>
-              </>
-            ) : null}
+              </div>
+            )}
 
             {/* Pending Alarms */}
-            {stats?.alarm.pending ? (
-              <TabLink href="/alarmlar">
-                <div className="flex items-center gap-2 px-3 py-2 mt-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer text-red-600 dark:text-red-400">
-                  <Bell className="h-4 w-4" />
-                  <span className="text-sm">{interpolate(t.dashboard.pendingAlarms, { count: stats.alarm.pending })}</span>
-                </div>
-              </TabLink>
-            ) : null}
+            {stats?.alarm.pending && (
+              <div>
+                <TabLink href="/alarmlar">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer text-red-600 dark:text-red-400">
+                    <Bell className="h-4 w-4" />
+                    <span className="text-sm">{interpolate(t.dashboard.pendingAlarms, { count: stats.alarm.pending })}</span>
+                  </div>
+                </TabLink>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -71,6 +71,10 @@ model Personel {
   // Kullanıcı tercihleri
   tercihler KullaniciTercihi[]
 
+  // Duyuru iliskileri
+  createdDuyurular Duyuru[] @relation("DuyuruCreatedBy")
+  updatedDuyurular Duyuru[] @relation("DuyuruUpdatedBy")
+
   @@map("personeller")
 }
 
@@ -344,6 +348,7 @@ model Tanitim {
 
   // Coklu katilimci iliskisi
   katilimcilar TanitimKatilimci[]
+  araclar      TanitimArac[]
 
   @@index([tarih])
   @@index([mahalleId])
@@ -383,6 +388,7 @@ model Operasyon {
 
   // Coklu katilimci iliskisi
   katilimcilar OperasyonKatilimci[]
+  araclar      OperasyonArac[]
 
   @@index([tarih])
   @@index([mahalleId])
@@ -399,6 +405,40 @@ model OperasyonKatilimci {
 
   @@unique([operasyonId, kisiId])
   @@map("operasyon_katilimcilari")
+}
+
+// ==================== TANITIM ARAÇ İLİŞKİSİ ====================
+model TanitimArac {
+  id        String   @id @default(cuid())
+  tanitimId String
+  tanitim   Tanitim  @relation(fields: [tanitimId], references: [id], onDelete: Cascade)
+  aracId    String
+  arac      Arac     @relation(fields: [aracId], references: [id], onDelete: Cascade)
+  aciklama  String?  // Neden bu araç bu tanıtıma eklendi
+
+  createdAt DateTime @default(now())
+
+  @@unique([tanitimId, aracId])
+  @@index([tanitimId])
+  @@index([aracId])
+  @@map("tanitim_araclari")
+}
+
+// ==================== OPERASYON ARAÇ İLİŞKİSİ ====================
+model OperasyonArac {
+  id          String     @id @default(cuid())
+  operasyonId String
+  operasyon   Operasyon  @relation(fields: [operasyonId], references: [id], onDelete: Cascade)
+  aracId      String
+  arac        Arac       @relation(fields: [aracId], references: [id], onDelete: Cascade)
+  aciklama    String?    // Neden bu araç bu operasyona eklendi
+
+  createdAt   DateTime   @default(now())
+
+  @@unique([operasyonId, aracId])
+  @@index([operasyonId])
+  @@index([aracId])
+  @@map("operasyon_araclari")
 }
 
 // ==================== ARAÇ TANIMLARI ====================
@@ -480,7 +520,9 @@ model Arac {
   updatedUser   Personel? @relation("AracUpdatedBy", fields: [updatedUserId], references: [id])
 
   // Many-to-many with Kisi
-  kisiler AracKisi[]
+  kisiler      AracKisi[]
+  tanitimlar   TanitimArac[]
+  operasyonlar OperasyonArac[]
 
   @@index([modelId])
   @@index([plaka])
@@ -617,4 +659,32 @@ model KullaniciTercihi {
   @@index([personelId])
   @@index([kategori])
   @@map("kullanici_tercihleri")
+}
+
+// ==================== DUYURU ====================
+enum DuyuruOncelik {
+  NORMAL
+  ONEMLI
+  KRITIK
+}
+
+model Duyuru {
+  id            String         @id @default(cuid())
+  baslik        String
+  icerik        String         @db.Text
+  oncelik       DuyuruOncelik  @default(NORMAL)
+  publishedAt   DateTime       @default(now())
+  expiresAt     DateTime?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  createdUserId String?
+  updatedUserId String?
+  createdUser   Personel?      @relation("DuyuruCreatedBy", fields: [createdUserId], references: [id])
+  updatedUser   Personel?      @relation("DuyuruUpdatedBy", fields: [updatedUserId], references: [id])
+
+  @@index([isActive])
+  @@index([publishedAt])
+  @@index([oncelik])
+  @@map("duyurular")
 }

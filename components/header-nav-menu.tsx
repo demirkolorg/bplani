@@ -17,6 +17,7 @@ import {
   Menu,
   ChevronDown,
   Search,
+  BellRing,
   type LucideIcon,
 } from "lucide-react"
 
@@ -82,6 +83,7 @@ const navGroups: NavGroup[] = [
     items: [
       { titleKey: "personel", url: "/personel", icon: UserCog },
       { titleKey: "ayarlar", url: "/ayarlar", icon: Settings },
+      { titleKey: "duyurular", url: "/duyurular", icon: BellRing },
     ],
   },
   {
@@ -156,11 +158,11 @@ export function HeaderNavBar() {
 
   // Flat list of quick access items
   const quickItems: NavItem[] = [
-    { titleKey: "home", url: "/", icon: Home },
     { titleKey: "kisiler", url: "/kisiler", icon: Users },
     { titleKey: "takipler", url: "/takipler", icon: CalendarClock },
     { titleKey: "tanitimlar", url: "/tanitimlar", icon: Megaphone },
     { titleKey: "operasyonlar", url: "/operasyonlar", icon: Workflow },
+    { titleKey: "advancedSearch", url: "/advanced-search", icon: Search },
   ]
 
   return (
@@ -197,12 +199,6 @@ export function HeaderNavBar() {
               <span>{t.navigation.araclar}</span>
             </TabLink>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <TabLink href="/advanced-search" className="flex items-center gap-2 w-full cursor-pointer">
-              <Search className="h-4 w-4" />
-              <span>{t.navigation.advancedSearch}</span>
-            </TabLink>
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <TabLink href="/alarmlar" className="flex items-center gap-2 w-full cursor-pointer">
@@ -229,6 +225,12 @@ export function HeaderNavBar() {
                 <TabLink href="/personel" className="flex items-center gap-2 w-full cursor-pointer">
                   <UserCog className="h-4 w-4" />
                   <span>{t.navigation.personel}</span>
+                </TabLink>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <TabLink href="/duyurular" className="flex items-center gap-2 w-full cursor-pointer">
+                  <BellRing className="h-4 w-4" />
+                  <span>{t.navigation.duyurular}</span>
                 </TabLink>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

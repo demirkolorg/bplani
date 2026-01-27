@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
 
 import { useBildirimler, useMarkAllAsRead, type Alarm } from "@/hooks/use-alarmlar"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -18,15 +19,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 
 function BildirimItem({ alarm }: { alarm: Alarm }) {
+  const { t } = useLocale()
   const kisi = alarm.takip?.gsm?.kisi
   const numara = alarm.takip?.gsm?.numara
 
   // Alarm tip label
-  const tipLabel = {
-    TAKIP_BITIS: "Takip Bitiş",
-    ODEME_HATIRLATMA: "Ödeme Hatırlatma",
-    OZEL: "Özel",
-  }[alarm.tip]
+  const tipLabel = t.enums.alarmTipi[alarm.tip]
 
   return (
     <Link href={kisi ? `/kisiler/${kisi.id}` : "/alarmlar"}>

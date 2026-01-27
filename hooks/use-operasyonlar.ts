@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { CreateOperasyonInput, UpdateOperasyonInput, ListOperasyonQuery, AddOperasyonKatilimciInput } from "@/lib/validations"
+import type { CreateOperasyonInput, UpdateOperasyonInput, ListOperasyonQuery, AddOperasyonKatilimciInput, AddOperasyonAracInput } from "@/lib/validations"
 
 // Types for API responses
 export interface OperasyonKatilimci {
@@ -19,6 +19,36 @@ export interface OperasyonKatilimci {
       isPrimary: boolean
     }[]
   } | null
+}
+
+export interface OperasyonArac {
+  id: string
+  operasyonId: string
+  aracId: string
+  aciklama: string | null
+  createdAt: string
+  arac: {
+    id: string
+    plaka: string
+    renk: string | null
+    model: {
+      id: string
+      ad: string
+      marka: {
+        id: string
+        ad: string
+      }
+    }
+    kisiler: {
+      kisi: {
+        id: string
+        ad: string
+        soyad: string
+        tt: boolean
+      }
+      aciklama: string | null
+    }[]
+  }
 }
 
 export interface OperasyonMahalle {
@@ -49,6 +79,7 @@ export interface Operasyon {
   createdUserId: string | null
   updatedUserId: string | null
   katilimcilar: OperasyonKatilimci[]
+  araclar: OperasyonArac[]
   createdUser?: { ad: string; soyad: string } | null
   updatedUser?: { ad: string; soyad: string } | null
 }
@@ -71,6 +102,7 @@ export const operasyonKeys = {
   details: () => [...operasyonKeys.all, "detail"] as const,
   detail: (id: string) => [...operasyonKeys.details(), id] as const,
   katilimcilar: (operasyonId: string) => [...operasyonKeys.detail(operasyonId), "katilimcilar"] as const,
+  araclar: (operasyonId: string) => [...operasyonKeys.detail(operasyonId), "araclar"] as const,
   byKisi: (kisiId: string) => [...operasyonKeys.all, "byKisi", kisiId] as const,
 }
 
@@ -163,6 +195,29 @@ async function removeOperasyonKatilimci({ operasyonId, katilimciId }: { operasyo
   }
 }
 
+async function addOperasyonArac({ operasyonId, data }: { operasyonId: string; data: AddOperasyonAracInput }): Promise<OperasyonArac> {
+  const response = await fetch(`/api/operasyonlar/${operasyonId}/araclar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Araç eklenirken hata oluştu")
+  }
+  return response.json()
+}
+
+async function removeOperasyonArac({ operasyonId, aracId }: { operasyonId: string; aracId: string }): Promise<void> {
+  const response = await fetch(`/api/operasyonlar/${operasyonId}/araclar/${aracId}`, {
+    method: "DELETE",
+  })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Araç kaldırılırken hata oluştu")
+  }
+}
+
 async function fetchOperasyonlarByKisi(kisiId: string): Promise<Operasyon[]> {
   const response = await fetch(`/api/kisiler/${kisiId}/operasyonlar`)
   if (!response.ok) {
@@ -248,6 +303,30 @@ export function useRemoveOperasyonKatilimci() {
       queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
       // Invalidate all byKisi queries
       queryClient.invalidateQueries({ queryKey: [...operasyonKeys.all, "byKisi"] })
+    },
+  })
+}
+
+export function useAddOperasyonArac() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: addOperasyonArac,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: operasyonKeys.detail(variables.operasyonId) })
+      queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
+    },
+  })
+}
+
+export function useRemoveOperasyonArac() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: removeOperasyonArac,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: operasyonKeys.detail(variables.operasyonId) })
+      queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
     },
   })
 }

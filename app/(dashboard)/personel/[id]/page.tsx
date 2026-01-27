@@ -38,10 +38,12 @@ import { PersonelFormModal } from "@/components/personel/personel-form-modal"
 import { PersonelPasswordModal } from "@/components/personel/personel-password-modal"
 import { PersonelRolModal } from "@/components/personel/personel-rol-modal"
 import { personelRolLabels, personelRolColors } from "@/lib/validations"
+import { useLocale } from "@/components/providers/locale-provider"
 
 export default function PersonelDetayPage() {
   const params = useTabParams<{ id: string }>()
   const router = useRouter()
+  const { t } = useLocale()
   const id = params.id
 
   const [showEditModal, setShowEditModal] = React.useState(false)
@@ -282,7 +284,7 @@ export default function PersonelDetayPage() {
         {/* Hızlı İşlemler */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Hızlı İşlemler</CardTitle>
+            <CardTitle className="text-lg">{t.common.quickActions}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button

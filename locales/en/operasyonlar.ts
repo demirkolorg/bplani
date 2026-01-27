@@ -68,6 +68,20 @@ export const operasyonlar: OperasyonlarTranslations = {
   removeParticipant: "Remove Participant",
   removeParticipantConfirm: "Are you sure you want to remove this person from the operation?",
 
+  // Vehicles
+  vehicles: "Vehicles",
+  searchVehicle: "Search vehicle...",
+  allVehiclesAdded: "All vehicles already added",
+  vehicleNotFound: "Vehicle not found",
+  noVehiclesYet: "No vehicles added yet",
+  useAddButtonVehicle: "Use the Add button above",
+  removeVehicle: "Remove Vehicle",
+  removeVehicleConfirm: "Are you sure you want to remove this vehicle from the operation?",
+  vehicleInfo: "Vehicle Information",
+  vehicleDescription: "Vehicle description (optional)",
+  newVehicleModalTitle: "Create New Vehicle",
+  newVehicleModalDescription: "Create a new vehicle and add it to the operation",
+
   // New Operasyon Page
   availablePeople: "Available People",
   itemsCount: "{count} items",

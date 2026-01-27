@@ -4,6 +4,7 @@ export const lokasyon: LokasyonTranslations = {
   // Province
   il: "Province",
   iller: "Provinces",
+  illerPageDescription: "View and manage all provinces",
   newIl: "New Province",
   editIl: "Edit Province",
   ilAdi: "Province Name",
@@ -19,6 +20,7 @@ export const lokasyon: LokasyonTranslations = {
   // District
   ilce: "District",
   ilceler: "Districts",
+  ilcelerPageDescription: "View and manage all districts",
   newIlce: "New District",
   editIlce: "Edit District",
   ilceAdi: "District Name",
@@ -32,6 +34,7 @@ export const lokasyon: LokasyonTranslations = {
   // Neighborhood
   mahalle: "Neighborhood",
   mahalleler: "Neighborhoods",
+  mahallelerPageDescription: "View and manage all neighborhoods",
   newMahalle: "New Neighborhood",
   editMahalle: "Edit Neighborhood",
   mahalleAdi: "Neighborhood Name",

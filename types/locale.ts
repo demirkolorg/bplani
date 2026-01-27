@@ -122,6 +122,32 @@ export interface CommonTranslations {
 
   // Selection
   selectedCount: string
+
+  // UI Controls
+  toggleTheme: string
+  switchToEnglish: string
+  switchToTurkish: string
+
+  // Misc
+  or: string
+  createNew: string
+  createNewVehicle: string
+
+  // System values
+  system: string
+  customer: string
+  candidate: string
+
+  // Time expressions
+  daysRemaining: string
+  daysBefore: string
+  expired: string
+  expiredDaysAgo: string
+  neverLoggedIn: string
+
+  // Quick actions
+  quickActions: string
+  quickActionsDescription: string
 }
 
 export interface SidebarTranslations {
@@ -155,6 +181,7 @@ export interface NavigationTranslations {
   logout: string
   faaliyetAlanlari: string
   advancedSearch: string
+  duyurular: string
 }
 
 export interface TableTranslations {
@@ -659,6 +686,20 @@ export interface TanitimlarTranslations {
   removeParticipant: string
   removeParticipantConfirm: string
 
+  // Vehicles
+  vehicles: string
+  searchVehicle: string
+  allVehiclesAdded: string
+  vehicleNotFound: string
+  noVehiclesYet: string
+  useAddButtonVehicle: string
+  removeVehicle: string
+  removeVehicleConfirm: string
+  vehicleInfo: string
+  vehicleDescription: string
+  newVehicleModalTitle: string
+  newVehicleModalDescription: string
+
   // New Tanitim Page
   availablePeople: string
   itemsCount: string
@@ -742,6 +783,20 @@ export interface OperasyonlarTranslations {
   useAddButton: string
   removeParticipant: string
   removeParticipantConfirm: string
+
+  // Vehicles
+  vehicles: string
+  searchVehicle: string
+  allVehiclesAdded: string
+  vehicleNotFound: string
+  noVehiclesYet: string
+  useAddButtonVehicle: string
+  removeVehicle: string
+  removeVehicleConfirm: string
+  vehicleInfo: string
+  vehicleDescription: string
+  newVehicleModalTitle: string
+  newVehicleModalDescription: string
 
   // New Operasyon Page
   availablePeople: string
@@ -917,6 +972,7 @@ export interface LokasyonTranslations {
   // İl
   il: string
   iller: string
+  illerPageDescription: string
   newIl: string
   editIl: string
   ilAdi: string
@@ -932,6 +988,7 @@ export interface LokasyonTranslations {
   // İlçe
   ilce: string
   ilceler: string
+  ilcelerPageDescription: string
   newIlce: string
   editIlce: string
   ilceAdi: string
@@ -945,6 +1002,7 @@ export interface LokasyonTranslations {
   // Mahalle
   mahalle: string
   mahalleler: string
+  mahallelerPageDescription: string
   newMahalle: string
   editMahalle: string
   mahalleAdi: string
@@ -1131,6 +1189,14 @@ export interface FaaliyetTranslations {
   searchFaaliyetAlani: string
   faaliyetAlaniAdiPlaceholder: string
   searchUstKategori: string
+
+  // Form labels
+  ustKategori: string
+  rootLevel: string
+  categoryNotFound: string
+  inactive: string
+  order: string
+  active: string
 }
 
 export interface SearchTranslations {
@@ -1324,6 +1390,8 @@ export interface TabsTranslations {
   personel: string
   personelYeni: string
   personelDetay: string
+  duyurular: string
+  duyuruDetay: string
   ayarlar: string
   loglar: string
   logDetay: string
@@ -1377,7 +1445,9 @@ export interface TanimlamalarTranslations {
 
   // Marka-Model Sub-tabs
   markalar: string
+  markalarPageDescription: string
   modeller: string
+  modellerPageDescription: string
 
   // Button texts
   newIl: string
@@ -1528,6 +1598,160 @@ export interface QueryBuilderTranslations {
   exportError: string
 }
 
+export interface DuyurularTranslations {
+  // Page
+  pageTitle: string
+  pageDescription: string
+  newDuyuruButton: string
+
+  // Form
+  newDuyuru: string
+  editDuyuru: string
+  duyuruDetails: string
+
+  // Fields
+  title: string
+  titlePlaceholder: string
+  content: string
+  contentPlaceholder: string
+  priority: string
+  publishDate: string
+  expiryDate: string
+  expiryDatePlaceholder: string
+  hasExpiryDate: string
+  status: string
+  active: string
+  inactive: string
+
+  // Priority levels
+  priorityNormal: string
+  priorityImportant: string
+  priorityCritical: string
+
+  // Table columns
+  createdBy: string
+  updatedBy: string
+  createdAt: string
+  updatedAt: string
+  unknownUser: string
+
+  // Sort options
+  prioritySort: string
+  publishDateNewOld: string
+  publishDateOldNew: string
+  createdNewOld: string
+  createdOldNew: string
+
+  // Delete
+  deleteDuyuru: string
+  deleteDuyuruConfirm: string
+  deleteSuccess: string
+  deleteError: string
+
+  // Create/Update
+  createSuccess: string
+  createError: string
+  updateSuccess: string
+  updateError: string
+
+  // Validation
+  titleRequired: string
+  contentRequired: string
+  titleMaxLength: string
+  contentMaxLength: string
+
+  // Actions
+  save: string
+  cancel: string
+  edit: string
+  delete: string
+  creating: string
+  updating: string
+
+  // Empty state
+  noAnnouncements: string
+  noAnnouncementsDescription: string
+
+  // Expired
+  expired: string
+  expiresOn: string
+  noExpiry: string
+
+  // Permissions
+  permissionDenied: string
+  adminOnly: string
+}
+
+export interface EnumsTranslations {
+  // Takip Durumu
+  takipDurumu: {
+    UZATILACAK: string
+    DEVAM_EDECEK: string
+    SONLANDIRILACAK: string
+    UZATILDI: string
+  }
+
+  // Alarm Durumu
+  alarmDurumu: {
+    BEKLIYOR: string
+    TETIKLENDI: string
+    GORULDU: string
+    IPTAL: string
+  }
+
+  // Alarm Tipi
+  alarmTipi: {
+    MUSTERI: string
+    ADAY: string
+    TAKIP_BITIS: string
+    ODEME_HATIRLATMA: string
+    OZEL: string
+  }
+
+  // Personel Rol
+  personelRol: {
+    ADMIN: string
+    YONETICI: string
+    PERSONEL: string
+  }
+
+  // Kisi Tipi
+  kisiTipi: {
+    MUSTERI: string
+    ADAY: string
+  }
+
+  // Boolean Labels
+  boolean: {
+    yes: string
+    no: string
+    active: string
+    inactive: string
+    paused: string
+    notPaused: string
+    tt: string
+    notTt: string
+    pio: string
+    notPio: string
+    asli: string
+    notAsli: string
+    primary: string
+    notPrimary: string
+    faaliyet: string
+    noFaaliyet: string
+  }
+
+  // System
+  system: string
+  unknown: string
+  none: string
+
+  // Date indicators
+  daysRemaining: string
+  expired: string
+  neverLoggedIn: string
+}
+
 export interface Translations {
   common: CommonTranslations
   sidebar: SidebarTranslations
@@ -1555,4 +1779,6 @@ export interface Translations {
   api: ApiMessagesTranslations
   notFound: NotFoundTranslations
   dashboard: DashboardTranslations
+  duyurular: DuyurularTranslations
+  enums: EnumsTranslations
 }

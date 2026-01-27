@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { CreateTanitimInput, UpdateTanitimInput, ListTanitimQuery, AddKatilimciInput } from "@/lib/validations"
+import type { CreateTanitimInput, UpdateTanitimInput, ListTanitimQuery, AddKatilimciInput, AddTanitimAracInput } from "@/lib/validations"
 
 // Types for API responses
 export interface TanitimKatilimci {
@@ -19,6 +19,36 @@ export interface TanitimKatilimci {
       isPrimary: boolean
     }[]
   } | null
+}
+
+export interface TanitimArac {
+  id: string
+  tanitimId: string
+  aracId: string
+  aciklama: string | null
+  createdAt: string
+  arac: {
+    id: string
+    plaka: string
+    renk: string | null
+    model: {
+      id: string
+      ad: string
+      marka: {
+        id: string
+        ad: string
+      }
+    }
+    kisiler: {
+      kisi: {
+        id: string
+        ad: string
+        soyad: string
+        tt: boolean
+      }
+      aciklama: string | null
+    }[]
+  }
 }
 
 export interface TanitimMahalle {
@@ -49,6 +79,7 @@ export interface Tanitim {
   createdUserId: string | null
   updatedUserId: string | null
   katilimcilar: TanitimKatilimci[]
+  araclar: TanitimArac[]
   createdUser?: { ad: string; soyad: string } | null
   updatedUser?: { ad: string; soyad: string } | null
 }
@@ -71,6 +102,7 @@ export const tanitimKeys = {
   details: () => [...tanitimKeys.all, "detail"] as const,
   detail: (id: string) => [...tanitimKeys.details(), id] as const,
   katilimcilar: (tanitimId: string) => [...tanitimKeys.detail(tanitimId), "katilimcilar"] as const,
+  araclar: (tanitimId: string) => [...tanitimKeys.detail(tanitimId), "araclar"] as const,
   byKisi: (kisiId: string) => [...tanitimKeys.all, "byKisi", kisiId] as const,
 }
 
@@ -163,6 +195,29 @@ async function removeKatilimci({ tanitimId, katilimciId }: { tanitimId: string; 
   }
 }
 
+async function addArac({ tanitimId, data }: { tanitimId: string; data: AddTanitimAracInput }): Promise<TanitimArac> {
+  const response = await fetch(`/api/tanitimlar/${tanitimId}/araclar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Araç eklenirken hata oluştu")
+  }
+  return response.json()
+}
+
+async function removeArac({ tanitimId, aracId }: { tanitimId: string; aracId: string }): Promise<void> {
+  const response = await fetch(`/api/tanitimlar/${tanitimId}/araclar/${aracId}`, {
+    method: "DELETE",
+  })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || "Araç kaldırılırken hata oluştu")
+  }
+}
+
 async function fetchTanitimlarByKisi(kisiId: string): Promise<Tanitim[]> {
   const response = await fetch(`/api/kisiler/${kisiId}/tanitimlar`)
   if (!response.ok) {
@@ -248,6 +303,30 @@ export function useRemoveKatilimci() {
       queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
       // Invalidate all byKisi queries
       queryClient.invalidateQueries({ queryKey: [...tanitimKeys.all, "byKisi"] })
+    },
+  })
+}
+
+export function useAddTanitimArac() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: addArac,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: tanitimKeys.detail(variables.tanitimId) })
+      queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
+    },
+  })
+}
+
+export function useRemoveTanitimArac() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: removeArac,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: tanitimKeys.detail(variables.tanitimId) })
+      queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
     },
   })
 }

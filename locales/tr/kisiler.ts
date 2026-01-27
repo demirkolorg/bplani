@@ -62,7 +62,7 @@ export const kisiler: KisilerTranslations = {
   addNumberFromAbove: "Yukarıdan numara ekleyin",
   noGsmNumber: "GSM numarası yok",
   deleteGsm: "GSM Sil",
-  deleteGsmConfirm: "Bu GSM ve tüm takip kayıtları silinecek. Devam edilsin mi?",
+  deleteGsmConfirm: "Bu GSM ve tüm karar kayıtları silinecek. Devam edilsin mi?",
 
   // Address
   addresses: "Adresler",
@@ -80,10 +80,10 @@ export const kisiler: KisilerTranslations = {
   neighborhoodSelected: "Mahalle seçildi",
 
   // Relations
-  takipVar: "Takip Var",
-  takipEkle: "Takip Ekle",
-  activeTakipSummary: "Aktif Takip Özeti",
-  noTakip: "Takip Yok",
+  takipVar: "Karar Var",
+  takipEkle: "Karar Ekle",
+  activeTakipSummary: "Aktif Karar Özeti",
+  noTakip: "Karar Yok",
   history: "Geçmiş",
 
   // Notes
@@ -161,15 +161,15 @@ export const kisiler: KisilerTranslations = {
   operationsDescription: "Kişinin katıldığı operasyon etkinlikleri",
 
   // Tracking
-  trackingStatus: "Takip Durumu",
+  trackingStatus: "Karar Durumu",
   unknown: "Bilinmeyen",
   endsAt: "Bitiş:",
   daysAgoExpired: "{days} gün önce sona erdi",
   daysLeft: "{days} gün kaldı",
-  noActiveTracking: "Aktif takip bulunmuyor",
-  gsmTrackingDescription: "Kişiye ait telefon numaraları ve takip kayıtları",
+  noActiveTracking: "Aktif karar bulunmuyor",
+  gsmTrackingDescription: "Kişiye ait telefon numaraları ve karar kayıtları",
   addNewGsm: "Yeni GSM Ekle",
-  activeTracking: "Aktif Takip",
+  activeTracking: "Aktif Karar",
   updateStatus: "Durum Güncelle",
   expired: "Süresi Doldu",
   daysRemaining: "Gün Kaldı",
@@ -177,7 +177,7 @@ export const kisiler: KisilerTranslations = {
   startDate: "Başlangıç",
   endDate: "Bitiş",
   progress: "İlerleme",
-  noActiveTrackingForGsm: "Bu GSM için henüz aktif takip bulunmuyor",
+  noActiveTrackingForGsm: "Bu GSM için henüz aktif karar bulunmuyor",
   addFirstGsm: "İlk GSM'i Ekle",
   daysAgo: "Gün Önce Bitti",
   addFirstOperation: "İlk Operasyonu Ekle",

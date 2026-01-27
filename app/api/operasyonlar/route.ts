@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { katilimcilar, ...operasyonData } = validatedData.data
+    const { katilimcilar, araclar, ...operasyonData } = validatedData.data
 
     // Validate user exists before assigning
     let validUserId: string | null = null
@@ -172,6 +172,14 @@ export async function POST(request: NextRequest) {
               })),
             }
           : undefined,
+        araclar: araclar && araclar.length > 0
+          ? {
+              create: araclar.map((a) => ({
+                aracId: a.aracId,
+                aciklama: a.aciklama,
+              })),
+            }
+          : undefined,
       },
       include: {
         mahalle: {
@@ -192,6 +200,19 @@ export async function POST(request: NextRequest) {
                 soyad: true,
                 tc: true,
                 tt: true,
+              },
+            },
+          },
+        },
+        araclar: {
+          include: {
+            arac: {
+              include: {
+                model: {
+                  include: {
+                    marka: true,
+                  },
+                },
               },
             },
           },

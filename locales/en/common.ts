@@ -122,4 +122,30 @@ export const common: CommonTranslations = {
 
   // Selection
   selectedCount: "{count} selected",
+
+  // UI Controls
+  toggleTheme: "Toggle theme",
+  switchToEnglish: "Switch to English",
+  switchToTurkish: "Türkçe'ye geç",
+
+  // Misc
+  or: "or",
+  createNew: "Create New",
+  createNewVehicle: "Create New Vehicle",
+
+  // System values
+  system: "System",
+  customer: "Customer",
+  candidate: "Candidate",
+
+  // Time expressions
+  daysRemaining: "{days} days remaining",
+  daysBefore: "{days} days",
+  expired: "expired",
+  expiredDaysAgo: "Expired ({days} days ago)",
+  neverLoggedIn: "never logged in",
+
+  // Quick actions
+  quickActions: "Quick Actions",
+  quickActionsDescription: "Quick access and create new records",
 }

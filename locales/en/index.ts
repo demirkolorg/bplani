@@ -24,6 +24,8 @@ import { api } from "./api"
 import { notFound } from "./notFound"
 import { dashboard } from "./dashboard"
 import { queryBuilder } from "./query-builder"
+import { duyurular } from "./duyurular"
+import { enums } from "./enums"
 
 export const en = {
   common,
@@ -52,4 +54,6 @@ export const en = {
   notFound,
   dashboard,
   queryBuilder,
+  duyurular,
+  enums,
 }

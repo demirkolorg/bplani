@@ -15,4 +15,12 @@ export const faaliyet: FaaliyetTranslations = {
   searchFaaliyetAlani: "Search activity area...",
   faaliyetAlaniAdiPlaceholder: "Activity area name",
   searchUstKategori: "Search parent category...",
+
+  // Form labels
+  ustKategori: "Parent Category",
+  rootLevel: "Root level (no parent category)",
+  categoryNotFound: "Category not found.",
+  inactive: "(inactive)",
+  order: "Order",
+  active: "Active",
 }

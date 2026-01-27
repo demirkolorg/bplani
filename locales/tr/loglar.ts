@@ -42,7 +42,7 @@ export const loglar: LoglarTranslations = {
   // Entities
   kisi: "Kişi",
   gsm: "GSM",
-  takip: "Takip",
+  takip: "Karar",
   tanitim: "Etkinlik",
   alarm: "Alarm",
   personel: "Personel",

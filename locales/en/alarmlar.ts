@@ -6,7 +6,7 @@ export const alarmlar: AlarmlarTranslations = {
   pageDescription: "View and manage all alarms",
 
   // Types
-  tipTakipBitis: "Follow-up End",
+  tipTakipBitis: "Decision End",
   tipOdemeHatirlatma: "Payment Reminder",
   tipOzel: "Custom",
 

@@ -4,6 +4,7 @@ export const lokasyon: LokasyonTranslations = {
   // İl
   il: "İl",
   iller: "İller",
+  illerPageDescription: "Tüm illeri görüntüleyin ve yönetin",
   newIl: "Yeni İl",
   editIl: "İl Düzenle",
   ilAdi: "İl Adı",
@@ -19,6 +20,7 @@ export const lokasyon: LokasyonTranslations = {
   // İlçe
   ilce: "İlçe",
   ilceler: "İlçeler",
+  ilcelerPageDescription: "Tüm ilçeleri görüntüleyin ve yönetin",
   newIlce: "Yeni İlçe",
   editIlce: "İlçe Düzenle",
   ilceAdi: "İlçe Adı",
@@ -32,6 +34,7 @@ export const lokasyon: LokasyonTranslations = {
   // Mahalle
   mahalle: "Mahalle",
   mahalleler: "Mahalleler",
+  mahallelerPageDescription: "Tüm mahalleleri görüntüleyin ve yönetin",
   newMahalle: "Yeni Mahalle",
   editMahalle: "Mahalle Düzenle",
   mahalleAdi: "Mahalle Adı",

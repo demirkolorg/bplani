@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useTabParams } from "@/components/providers/params-provider"
 import { useTabTitle } from "@/hooks/use-tab-title"
 import { useLocale } from "@/components/providers/locale-provider"
-import { Pencil, Calendar, MapPin, FileText, Info, Users } from "lucide-react"
+import { Pencil, Calendar, MapPin, FileText, Info, Users, Car } from "lucide-react"
 
 import { useTanitim } from "@/hooks/use-tanitimlar"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { TanitimFormModal } from "@/components/tanitimlar/tanitim-form-modal"
 import { TanitimKatilimciList } from "@/components/tanitimlar/tanitim-katilimci-list"
+import { TanitimAracList } from "@/components/tanitimlar/tanitim-arac-list"
 
 export default function TanitimDetayPage() {
   const { t } = useLocale()
@@ -205,6 +206,14 @@ export default function TanitimDetayPage() {
             ({tanitim.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} {t.kisiler.tipMusteri}, {tanitim.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} {t.kisiler.tipAday})
           </span>
         </div>
+        <Separator orientation="vertical" className="h-6" />
+        <div className="flex items-center gap-2">
+          <Car className="h-4 w-4 text-indigo-600" />
+          <span className="text-sm text-muted-foreground">{t.tanitimlar.vehicles}:</span>
+          <Badge variant="secondary" className="font-mono">
+            {tanitim.araclar?.length || 0}
+          </Badge>
+        </div>
         {fullAddress && (
           <>
             <Separator orientation="vertical" className="h-6" />
@@ -217,10 +226,13 @@ export default function TanitimDetayPage() {
         )}
       </div>
 
-      {/* Main Content - 2 Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Main Content - 3 Column Layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Sol Sütun - Katılımcılar */}
         <TanitimKatilimciList tanitimId={id} />
+
+        {/* Orta Sütun - Araçlar */}
+        <TanitimAracList tanitimId={id} />
 
         {/* Sağ Sütun - Notlar */}
         <Card>

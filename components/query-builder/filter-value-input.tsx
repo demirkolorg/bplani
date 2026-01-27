@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Check, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/components/providers/locale-provider"
+import { interpolate } from "@/locales"
 import type {
   ColumnType,
   FilterOperator,
@@ -39,18 +41,21 @@ export function FilterValueInput({
   value,
   onChange,
   options = [],
-  placeholder = "Değer girin...",
+  placeholder,
 }: FilterValueInputProps) {
   // All hooks at the top - Rules of Hooks
+  const { t } = useLocale()
   const [bulkText, setBulkText] = React.useState("")
   const [bulkOpen, setBulkOpen] = React.useState(false)
   const [selectOpen, setSelectOpen] = React.useState(false)
+
+  const effectivePlaceholder = placeholder || t.queryBuilder.enterValue
 
   // No input needed for isEmpty/isNotEmpty
   if (!operatorNeedsValue(operator)) {
     return (
       <div className="flex items-center text-sm text-muted-foreground">
-        Değer gerekmiyor
+        {t.queryBuilder.noValueNeeded}
       </div>
     )
   }
@@ -69,11 +74,11 @@ export function FilterValueInput({
             >
               {currentList.length > 0 ? (
                 <Badge variant="secondary">
-                  {currentList.length} değer seçildi
+                  {interpolate(t.queryBuilder.valuesSelected, { count: currentList.length })}
                 </Badge>
               ) : (
                 <span className="text-muted-foreground">
-                  Toplu değer yapıştır...
+                  {t.queryBuilder.bulkPaste}
                 </span>
               )}
             </Button>
@@ -81,21 +86,21 @@ export function FilterValueInput({
           <PopoverContent className="w-[400px] p-0" align="start">
             <div className="p-4 space-y-4">
               <div>
-                <Label>Toplu Değer Girişi</Label>
+                <Label>{t.queryBuilder.bulkPasteTitle}</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Her satıra bir değer yazın veya Excel'den kopyalayıp yapıştırın
+                  {t.queryBuilder.bulkPasteDescription}
                 </p>
               </div>
               <Textarea
                 value={bulkText}
                 onChange={(e) => setBulkText(e.target.value)}
-                placeholder="Değer1&#10;Değer2&#10;Değer3..."
+                placeholder={t.queryBuilder.bulkPastePlaceholder}
                 rows={10}
                 className="font-mono text-sm"
               />
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">
-                  {parseBulkInput(bulkText).length} benzersiz değer
+                  {interpolate(t.queryBuilder.uniqueValues, { count: parseBulkInput(bulkText).length })}
                 </span>
                 <div className="flex gap-2">
                   <Button
@@ -107,7 +112,7 @@ export function FilterValueInput({
                       setBulkOpen(false)
                     }}
                   >
-                    Temizle
+                    {t.queryBuilder.clear}
                   </Button>
                   <Button
                     size="sm"
@@ -117,7 +122,7 @@ export function FilterValueInput({
                       setBulkOpen(false)
                     }}
                   >
-                    Uygula
+                    {t.queryBuilder.apply}
                   </Button>
                 </div>
               </div>
@@ -154,7 +159,7 @@ export function FilterValueInput({
       <div className="flex-1 flex gap-2">
         <Input
           type={columnType === "number" ? "number" : columnType === "date" ? "date" : "text"}
-          placeholder="Min"
+          placeholder={t.queryBuilder.min}
           value={betweenValue.min}
           onChange={(e) =>
             onChange({
@@ -166,7 +171,7 @@ export function FilterValueInput({
         <span className="text-muted-foreground self-center">-</span>
         <Input
           type={columnType === "number" ? "number" : columnType === "date" ? "date" : "text"}
-          placeholder="Max"
+          placeholder={t.queryBuilder.max}
           value={betweenValue.max}
           onChange={(e) =>
             onChange({
@@ -208,14 +213,14 @@ export function FilterValueInput({
                   )}
                 </div>
               ) : (
-                <span className="text-muted-foreground">Seçim yapın...</span>
+                <span className="text-muted-foreground">{t.queryBuilder.selectOption}</span>
               )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[300px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="Ara..." />
-              <CommandEmpty>Sonuç bulunamadı.</CommandEmpty>
+              <CommandInput placeholder={t.queryBuilder.search} />
+              <CommandEmpty>{t.queryBuilder.noResults}</CommandEmpty>
               <CommandGroup className="max-h-64 overflow-auto">
                 {options.map((option) => {
                   const isSelected = selectedValues.includes(option.value)
@@ -268,14 +273,14 @@ export function FilterValueInput({
                   {options.find((o) => o.value === selectedValue)?.label || selectedValue}
                 </span>
               ) : (
-                <span className="text-muted-foreground">Seçim yapın...</span>
+                <span className="text-muted-foreground">{t.queryBuilder.selectOption}</span>
               )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[300px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="Ara..." />
-              <CommandEmpty>Sonuç bulunamadı.</CommandEmpty>
+              <CommandInput placeholder={t.queryBuilder.search} />
+              <CommandEmpty>{t.queryBuilder.noResults}</CommandEmpty>
               <CommandGroup className="max-h-64 overflow-auto">
                 {options.map((option) => (
                   <CommandItem
@@ -306,7 +311,7 @@ export function FilterValueInput({
   return (
     <Input
       type={columnType === "number" ? "number" : columnType === "date" ? "date" : "text"}
-      placeholder={placeholder}
+      placeholder={effectivePlaceholder}
       value={typeof value === "string" || typeof value === "number" ? value : ""}
       onChange={(e) => {
         const newValue =

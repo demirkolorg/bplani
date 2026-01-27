@@ -17,7 +17,9 @@ export const tanimlamalar: TanimlamalarTranslations = {
 
   // Marka-Model Sub-tabs
   markalar: "Brands",
+  markalarPageDescription: "View and manage all brands",
   modeller: "Models",
+  modellerPageDescription: "View and manage all models",
 
   // Button texts
   newIl: "New Province",

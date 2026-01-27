@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useTabParams } from "@/components/providers/params-provider"
 import { useTabTitle } from "@/hooks/use-tab-title"
 import { useLocale } from "@/components/providers/locale-provider"
-import { Pencil, Calendar, MapPin, FileText, Info, Users } from "lucide-react"
+import { Pencil, Calendar, MapPin, FileText, Info, Users, Car } from "lucide-react"
 
 import { useOperasyon } from "@/hooks/use-operasyonlar"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { OperasyonFormModal } from "@/components/operasyonlar/operasyon-form-modal"
 import { OperasyonKatilimciList } from "@/components/operasyonlar/operasyon-katilimci-list"
+import { OperasyonAracList } from "@/components/operasyonlar/operasyon-arac-list"
 
 export default function OperasyonDetayPage() {
   const { t } = useLocale()
@@ -205,6 +206,14 @@ export default function OperasyonDetayPage() {
             ({operasyon.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} {t.kisiler.tipMusteri}, {operasyon.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} {t.kisiler.tipAday})
           </span>
         </div>
+        <Separator orientation="vertical" className="h-6" />
+        <div className="flex items-center gap-2">
+          <Car className="h-4 w-4 text-purple-600" />
+          <span className="text-sm text-muted-foreground">{t.operasyonlar.vehicles}:</span>
+          <Badge variant="secondary" className="font-mono">
+            {operasyon.araclar?.length || 0}
+          </Badge>
+        </div>
         {fullAddress && (
           <>
             <Separator orientation="vertical" className="h-6" />
@@ -217,10 +226,13 @@ export default function OperasyonDetayPage() {
         )}
       </div>
 
-      {/* Main Content - 2 Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Main Content - 3 Column Layout */}
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Sol Sütun - Katılımcılar */}
         <OperasyonKatilimciList operasyonId={id} />
+
+        {/* Orta Sütun - Araçlar */}
+        <OperasyonAracList operasyonId={id} />
 
         {/* Sağ Sütun - Notlar */}
         <Card>

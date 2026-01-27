@@ -62,7 +62,7 @@ export const kisiler: KisilerTranslations = {
   addNumberFromAbove: "Add a number from above",
   noGsmNumber: "No phone number",
   deleteGsm: "Delete Phone",
-  deleteGsmConfirm: "This phone and all tracking records will be deleted. Continue?",
+  deleteGsmConfirm: "This phone and all decision records will be deleted. Continue?",
 
   // Address
   addresses: "Addresses",
@@ -80,10 +80,10 @@ export const kisiler: KisilerTranslations = {
   neighborhoodSelected: "Neighborhood selected",
 
   // Relations
-  takipVar: "Has Follow-up",
-  takipEkle: "Add Follow-up",
-  activeTakipSummary: "Active Follow-up Summary",
-  noTakip: "No Follow-up",
+  takipVar: "Has Decision",
+  takipEkle: "Add Decision",
+  activeTakipSummary: "Active Decision Summary",
+  noTakip: "No Decision",
   history: "History",
 
   // Notes
@@ -162,15 +162,15 @@ export const kisiler: KisilerTranslations = {
   operationsDescription: "Operation events the person participated in",
 
   // Tracking
-  trackingStatus: "Tracking Status",
+  trackingStatus: "Decision Status",
   unknown: "Unknown",
   endsAt: "Ends:",
   daysAgoExpired: "Expired {days} days ago",
   daysLeft: "{days} days left",
-  noActiveTracking: "No active tracking",
-  gsmTrackingDescription: "Phone numbers and tracking records",
+  noActiveTracking: "No active decision",
+  gsmTrackingDescription: "Phone numbers and decision records",
   addNewGsm: "Add New GSM",
-  activeTracking: "Active Tracking",
+  activeTracking: "Active Decision",
   updateStatus: "Update Status",
   expired: "Expired",
   daysRemaining: "Days Left",
@@ -178,7 +178,7 @@ export const kisiler: KisilerTranslations = {
   startDate: "Start",
   endDate: "End",
   progress: "Progress",
-  noActiveTrackingForGsm: "No active tracking for this GSM yet",
+  noActiveTrackingForGsm: "No active decision for this GSM yet",
   addFirstGsm: "Add First GSM",
   daysAgo: "Days Ago Expired",
 

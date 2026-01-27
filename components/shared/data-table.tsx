@@ -18,6 +18,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Ch
 import * as XLSX from "xlsx"
 
 import { Button } from "@/components/ui/button"
+import { useLocale } from "@/components/providers/locale-provider"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -48,11 +49,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { useLocale } from "@/components/providers/locale-provider"
 import { interpolate } from "@/locales"
 
 // Deep search function for nested objects
-function deepSearch(obj: unknown, searchTerm: string): boolean {
+function deepSearch(obj: unknown, searchTerm: string, booleanLabels?: { yes: string; no: string; active: string; inactive: string; exists: string; notExists: string }): boolean {
   if (obj === null || obj === undefined) return false
 
   if (typeof obj === "string") {
@@ -65,12 +65,17 @@ function deepSearch(obj: unknown, searchTerm: string): boolean {
 
   if (typeof obj === "boolean") {
     // Boolean için evet/hayır, aktif/pasif araması
-    const boolText = obj ? "evet aktif var" : "hayır pasif yok"
-    return boolText.includes(searchTerm)
+    if (booleanLabels) {
+      const boolText = obj
+        ? `${booleanLabels.yes} ${booleanLabels.active} ${booleanLabels.exists}`.toLowerCase()
+        : `${booleanLabels.no} ${booleanLabels.inactive} ${booleanLabels.notExists}`.toLowerCase()
+      return boolText.includes(searchTerm)
+    }
+    return false
   }
 
   if (Array.isArray(obj)) {
-    return obj.some((item) => deepSearch(item, searchTerm))
+    return obj.some((item) => deepSearch(item, searchTerm, booleanLabels))
   }
 
   if (typeof obj === "object") {
@@ -82,44 +87,30 @@ function deepSearch(obj: unknown, searchTerm: string): boolean {
       if (key === "_count" && typeof value === "object" && value !== null) {
         return Object.values(value).some(v => String(v).includes(searchTerm))
       }
-      return deepSearch(value, searchTerm)
+      return deepSearch(value, searchTerm, booleanLabels)
     })
   }
 
   return false
 }
 
-// Enum/label mappings
-const labelMaps = {
-  // Takip durumları
-  durum: {
-    UZATILACAK: "uzatılacak",
-    DEVAM_EDECEK: "devam edecek",
-    SONLANDIRILACAK: "sonlandırılacak",
-    UZATILDI: "uzatıldı",
-    BEKLIYOR: "bekliyor",
-    TETIKLENDI: "tetiklendi",
-    GORULDU: "görüldü",
-    IPTAL: "iptal",
-  } as Record<string, string>,
-  // Kişi tipleri
-  tip: {
-    MUSTERI: "müşteri",
-    LEAD: "aday",
-    TAKIP_BITIS: "takip bitiş",
-    ODEME_HATIRLATMA: "ödeme hatırlatma",
-    OZEL: "özel",
-  } as Record<string, string>,
-  // Personel rolleri
-  rol: {
-    ADMIN: "admin yönetici",
-    YONETICI: "yönetici",
-    PERSONEL: "personel",
-  } as Record<string, string>,
-}
-
 // Search computed/formatted values (dates, calculated fields, enums)
-function searchComputedValues(obj: Record<string, unknown>, searchTerm: string): boolean {
+function searchComputedValues(
+  obj: Record<string, unknown>,
+  searchTerm: string,
+  translations?: {
+    labelMaps: {
+      durum: Record<string, string>
+      tip: Record<string, string>
+      rol: Record<string, string>
+    }
+    booleanLabels: Record<string, string>
+    system: string
+    daysRemaining: string
+    expired: string
+    neverLoggedIn: string
+  }
+): boolean {
   // Format and search date fields
   const dateFields = ["baslamaTarihi", "bitisTarihi", "tarih", "tetikTarihi", "lastLoginAt"]
   for (const field of dateFields) {
@@ -133,36 +124,37 @@ function searchComputedValues(obj: Record<string, unknown>, searchTerm: string):
   }
 
   // Calculate and search "kalan gün"
-  if (obj.bitisTarihi) {
+  if (obj.bitisTarihi && translations) {
     const date = new Date(obj.bitisTarihi as string)
     const now = new Date()
     const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
     const daysStr = String(daysLeft)
-    const searchText = daysLeft <= 0 ? "süresi doldu geçti" : `${daysLeft} gün kaldı`
+    const searchText = daysLeft <= 0
+      ? translations.expired.toLowerCase()
+      : `${daysLeft} ${translations.daysRemaining}`.toLowerCase()
     if (daysStr.includes(searchTerm) || searchText.includes(searchTerm)) return true
   }
 
   // Search enum fields with Turkish labels
-  for (const [field, map] of Object.entries(labelMaps)) {
-    if (obj[field]) {
-      const labelText = map[obj[field] as string] || String(obj[field]).toLowerCase()
-      if (labelText.includes(searchTerm)) return true
+  if (translations) {
+    for (const [field, map] of Object.entries(translations.labelMaps)) {
+      if (obj[field]) {
+        const labelText = map[obj[field] as string] || String(obj[field]).toLowerCase()
+        if (labelText.includes(searchTerm)) return true
+      }
     }
   }
 
   // Search boolean fields with Turkish labels
   const boolFields = ["isActive", "isPaused", "isPrimary", "pio", "asli"]
   for (const field of boolFields) {
-    if (field in obj) {
+    if (field in obj && translations) {
       const val = obj[field] as boolean
-      const labels: Record<string, string> = {
-        isActive: val ? "aktif" : "pasif",
-        isPaused: val ? "duraklatılmış duraklı" : "aktif",
-        isPrimary: val ? "birincil ana" : "ikincil",
-        pio: val ? "evet pio" : "hayır",
-        asli: val ? "evet asli" : "hayır",
-      }
-      if (labels[field]?.includes(searchTerm)) return true
+      const labels = translations.booleanLabels
+      const labelText = val
+        ? `${labels.active || ""} ${labels.yes || ""} ${labels.exists || ""}`.toLowerCase()
+        : `${labels.inactive || ""} ${labels.no || ""} ${labels.notExists || ""}`.toLowerCase()
+      if (labelText.includes(searchTerm)) return true
     }
   }
 
@@ -520,7 +512,7 @@ export function DataTable<TData, TValue>({
                 matched = date.toLocaleDateString("tr-TR").includes(term)
               }
             } else {
-              matched = "hiç giriş yapmadı".includes(term)
+              matched = t.common.neverLoggedIn.toLowerCase().includes(term)
             }
             break
           }
@@ -533,7 +525,7 @@ export function DataTable<TData, TValue>({
               const now = new Date()
               const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
               const daysStr = String(daysLeft)
-              const searchText = daysLeft <= 0 ? "süresi doldu geçti" : `${daysLeft} gün kaldı`
+              const searchText = daysLeft <= 0 ? t.common.expired.toLowerCase() : t.common.daysRemaining.replace("{days}", String(daysLeft)).toLowerCase()
               matched = daysStr.includes(term) || searchText.includes(term)
             }
             break
@@ -570,7 +562,7 @@ export function DataTable<TData, TValue>({
               ttVal = original.tt as boolean | undefined
             }
             if (ttVal !== undefined) {
-              const tipText = ttVal ? "müşteri" : "aday"
+              const tipText = ttVal ? t.common.customer.toLowerCase() : t.common.candidate.toLowerCase()
               matched = tipText.includes(term)
             }
             break
@@ -644,7 +636,7 @@ export function DataTable<TData, TValue>({
               const userName = `${createdUser.ad || ""} ${createdUser.soyad || ""}`.toLowerCase()
               matched = userName.includes(term)
             } else {
-              matched = "sistem".includes(term)
+              matched = t.common.system.toLowerCase().includes(term)
             }
             break
           }
@@ -661,7 +653,7 @@ export function DataTable<TData, TValue>({
           case "gunOnce": {
             const gunOnce = original.gunOnce as number | undefined
             if (gunOnce !== undefined) {
-              matched = String(gunOnce).includes(term) || `${gunOnce} gün`.includes(term)
+              matched = String(gunOnce).includes(term) || t.common.daysBefore.replace("{days}", String(gunOnce)).toLowerCase().includes(term)
             }
             break
           }
@@ -799,14 +791,14 @@ export function DataTable<TData, TValue>({
               const date = new Date(bitisTarihi as string)
               const now = new Date()
               const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-              value = daysLeft <= 0 ? `Süresi doldu (${Math.abs(daysLeft)} gün önce)` : `${daysLeft} gün`
+              value = daysLeft <= 0 ? t.common.expiredDaysAgo.replace("{days}", String(Math.abs(daysLeft))) : t.common.daysBefore.replace("{days}", String(daysLeft))
             } else {
               value = "-"
             }
           }
           // Boolean alanlar
           else if (typeof value === "boolean") {
-            value = value ? "Evet" : "Hayır"
+            value = value ? t.common.yes : t.common.no
           }
           // Kişi bilgisi (nested)
           else if (columnId === "kisi" || columnId === "kisiAdSoyad" || columnId === "musteri") {
@@ -861,7 +853,7 @@ export function DataTable<TData, TValue>({
             } else {
               ttVal = original.tt as boolean | undefined
             }
-            value = ttVal ? "Müşteri" : "Aday"
+            value = ttVal ? t.common.customer : t.common.candidate
           }
           // Count alanları
           else if (["alarmlar", "tanitim", "not", "aktivite", "katilimciSayisi"].includes(columnId)) {
@@ -891,7 +883,7 @@ export function DataTable<TData, TValue>({
           // Oluşturan (personel)
           else if (columnId === "olusturan") {
             const createdUser = original.createdUser as Record<string, unknown> | undefined
-            value = createdUser ? `${createdUser.ad || ""} ${createdUser.soyad || ""}`.trim() : "Sistem"
+            value = createdUser ? `${createdUser.ad || ""} ${createdUser.soyad || ""}`.trim() : t.common.system
           }
           // Adres bilgileri
           else if (columnId === "adres") {

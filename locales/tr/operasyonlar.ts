@@ -68,6 +68,20 @@ export const operasyonlar: OperasyonlarTranslations = {
   removeParticipant: "Katılımcıyı Kaldır",
   removeParticipantConfirm: "Bu kişiyi operasyondan kaldırmak istediğinizden emin misiniz?",
 
+  // Vehicles
+  vehicles: "Araçlar",
+  searchVehicle: "Araç ara...",
+  allVehiclesAdded: "Tüm araçlar zaten eklendi",
+  vehicleNotFound: "Araç bulunamadı",
+  noVehiclesYet: "Henüz araç eklenmedi",
+  useAddButtonVehicle: "Yukarıdaki Ekle butonunu kullanın",
+  removeVehicle: "Aracı Kaldır",
+  removeVehicleConfirm: "Bu aracı operasyondan kaldırmak istediğinizden emin misiniz?",
+  vehicleInfo: "Araç Bilgisi",
+  vehicleDescription: "Araç açıklaması (opsiyonel)",
+  newVehicleModalTitle: "Yeni Araç Oluştur",
+  newVehicleModalDescription: "Yeni bir araç oluşturun ve operasyona ekleyin",
+
   // New Operasyon Page
   availablePeople: "Mevcut Kişiler",
   itemsCount: "{count} adet",

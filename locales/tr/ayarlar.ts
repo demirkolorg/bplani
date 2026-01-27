@@ -9,28 +9,28 @@ export const ayarlar: AyarlarTranslations = {
 
   // Tab labels
   alarmTab: "Alarm",
-  takipTab: "Takip",
+  takipTab: "Karar",
   bildirimTab: "Bildirim",
   gorunumTab: "Görünüm",
 
   // Alarm settings
   alarmTitle: "Alarm Ayarları",
-  alarmDescription: "Takip bitiş alarmları için varsayılan gün sayılarını ayarlayın",
+  alarmDescription: "Karar bitiş alarmları için varsayılan gün sayılarını ayarlayın",
   firstAlarm: "İlk Alarm (gün önce)",
-  firstAlarmDesc: "Takip bitiş tarihinden kaç gün önce ilk alarm tetiklensin",
+  firstAlarmDesc: "Karar bitiş tarihinden kaç gün önce ilk alarm tetiklensin",
   secondAlarm: "İkinci Alarm (gün önce)",
-  secondAlarmDesc: "Takip bitiş tarihinden kaç gün önce ikinci alarm tetiklensin",
+  secondAlarmDesc: "Karar bitiş tarihinden kaç gün önce ikinci alarm tetiklensin",
   currentRules: "Mevcut Alarm Kuralları",
   beforeEndDate1: "Bitiş tarihinden {days} gün önce ilk alarm",
   beforeEndDate2: "Bitiş tarihinden {days} gün önce ikinci alarm",
 
   // Takip settings
-  takipTitle: "Takip Ayarları",
-  takipDescription: "Yeni takip oluşturma için varsayılan değerleri ayarlayın",
-  defaultDuration: "Varsayılan Takip Süresi (gün)",
-  defaultDurationDesc: "Yeni takip oluşturulduğunda varsayılan süre (başlama tarihinden itibaren)",
+  takipTitle: "Karar Ayarları",
+  takipDescription: "Yeni karar oluşturma için varsayılan değerleri ayarlayın",
+  defaultDuration: "Varsayılan Karar Süresi (gün)",
+  defaultDurationDesc: "Yeni karar oluşturulduğunda varsayılan süre (başlama tarihinden itibaren)",
   exampleScenario: "Örnek Senaryo",
-  exampleScenarioText: "Bugün oluşturulan bir takip, {duration} gün sonra sona erecek. İlk alarm {alarm1}. günde, ikinci alarm {alarm2}. günde tetiklenecek.",
+  exampleScenarioText: "Bugün oluşturulan bir karar, {duration} gün sonra sona erecek. İlk alarm {alarm1}. günde, ikinci alarm {alarm2}. günde tetiklenecek.",
 
   // Notification settings
   notificationTitle: "Bildirim Ayarları",
@@ -64,10 +64,10 @@ export const ayarlar: AyarlarTranslations = {
 
   // Legacy (keeping for backward compatibility)
   title: "Ayarlar",
-  takipDefaults: "Takip Varsayılanları",
-  takipDefaultsDesc: "Yeni takip oluşturma için varsayılan değerleri ayarlayın",
-  defaultTakipDuration: "Varsayılan Takip Süresi",
-  defaultTakipDurationDesc: "Yeni takip oluşturulduğunda varsayılan süre (başlama tarihinden itibaren)",
+  takipDefaults: "Karar Varsayılanları",
+  takipDefaultsDesc: "Yeni karar oluşturma için varsayılan değerleri ayarlayın",
+  defaultTakipDuration: "Varsayılan Karar Süresi",
+  defaultTakipDurationDesc: "Yeni karar oluşturulduğunda varsayılan süre (başlama tarihinden itibaren)",
   notificationCheckFrequency: "Bildirim Kontrol Sıklığı",
   notificationCheckFrequencyDesc: "Yeni bildirimlerin ne sıklıkta kontrol edileceği",
 }

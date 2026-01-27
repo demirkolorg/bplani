@@ -6,7 +6,7 @@ export const alarmlar: AlarmlarTranslations = {
   pageDescription: "Tüm alarmları görüntüleyin ve yönetin",
 
   // Types
-  tipTakipBitis: "Takip Bitiş",
+  tipTakipBitis: "Karar Bitiş",
   tipOdemeHatirlatma: "Ödeme Hatırlatma",
   tipOzel: "Özel",
 

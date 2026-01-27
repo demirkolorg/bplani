@@ -2,16 +2,16 @@ import type { TakiplerTranslations } from "@/types/locale"
 
 export const takipler: TakiplerTranslations = {
   // Page
-  pageTitle: "Follow-ups",
-  pageDescription: "Manage customer follow-ups",
-  newTakipButton: "New Follow-up",
-  newTakipPageTitle: "Add New Follow-up",
-  newTakipPageDescription: "Select phone numbers to add follow-ups",
+  pageTitle: "Decisions",
+  pageDescription: "Manage customer decisions",
+  newTakipButton: "New Decision",
+  newTakipPageTitle: "Add New Decision",
+  newTakipPageDescription: "Select phone numbers to add decisions",
 
-  newTakip: "New Follow-up",
-  editTakip: "Edit Follow-up",
-  takipDetails: "Follow-up Details",
-  addTakip: "Add Follow-up",
+  newTakip: "New Decision",
+  editTakip: "Edit Decision",
+  takipDetails: "Decision Details",
+  addTakip: "Add Decision",
 
   // Fields
   startDate: "Start Date",
@@ -33,13 +33,13 @@ export const takipler: TakiplerTranslations = {
   durumBekliyor: "Waiting",
 
   // Modal descriptions
-  updateStatusTitle: "Update Follow-up Status",
-  updateStatusDescription: "Update follow-up status for phone {gsm}",
-  addTakipDescription: "Create a new follow-up record for phone {gsm}.",
-  activeWillBeExtended: "Existing active follow-up records will automatically be marked as \"Extended\".",
+  updateStatusTitle: "Update Decision Status",
+  updateStatusDescription: "Update decision status for phone {gsm}",
+  addTakipDescription: "Create a new decision record for phone {gsm}.",
+  activeWillBeExtended: "Existing active decision records will automatically be marked as \"Extended\".",
   endDateBeforeStart: "End date cannot be before start date",
-  createModalTitle: "Create New Follow-up",
-  createModalDescription: "Create a new follow-up. It will be automatically created for {name}.",
+  createModalTitle: "Create New Decision",
+  createModalDescription: "Create a new decision. It will be automatically created for {name}.",
   optional: "(Optional)",
   creating: "Creating...",
 
@@ -52,7 +52,7 @@ export const takipler: TakiplerTranslations = {
   alarm: "Alarm",
   daysPassed: "{days} days passed",
   daysRemaining: "{days} days",
-  activeTakip: "Active follow-up",
+  activeTakip: "Active decision",
 
   // Sort options
   endDateNearFar: "End Date (Near → Far)",
@@ -63,12 +63,12 @@ export const takipler: TakiplerTranslations = {
   // Form
   selectGsm: "Phone",
   selectGsmPlaceholder: "Select phone number...",
-  editTakipDescription: "Update follow-up information.",
-  newTakipDescription: "Create a new follow-up record.",
+  editTakipDescription: "Update decision information.",
+  newTakipDescription: "Create a new decision record.",
 
   // Delete
-  deleteTakip: "Delete Follow-up",
-  deleteTakipConfirm: "Are you sure you want to delete this follow-up? This action cannot be undone and associated alarms will also be deleted.",
+  deleteTakip: "Delete Decision",
+  deleteTakipConfirm: "Are you sure you want to delete this decision? This action cannot be undone and associated alarms will also be deleted.",
 
   // Search
   searchPlaceholder: "Search by customer name or phone...",
@@ -80,12 +80,12 @@ export const takipler: TakiplerTranslations = {
   removeAll: "Remove All",
   noResultsFound: "No results found",
   allGsmsSelected: "All phones selected",
-  selectGsmInstructions: "Select phones from the left list to add follow-ups",
-  takipSettings: "Follow-up Settings",
+  selectGsmInstructions: "Select phones from the left list to add decisions",
+  takipSettings: "Decision Settings",
   selectedGsmCount: "Selected Phones:",
-  createMultipleTakip: "Create {count} Follow-ups",
+  createMultipleTakip: "Create {count} Decisions",
   defaultPlusDays: "Default: Start date + 90 days",
-  eachGsmWillGetSeparateTakip: "A separate follow-up record will be created for each phone.",
+  eachGsmWillGetSeparateTakip: "A separate decision record will be created for each phone.",
   canUpdateStatusIndividually: "You can update the status of each one individually later.",
 
   // Validation
@@ -93,11 +93,11 @@ export const takipler: TakiplerTranslations = {
 
   // Detail Page
   gsmNotFound: "Phone not found",
-  backToTakipler: "Back to Follow-ups",
+  backToTakipler: "Back to Decisions",
   goToPersonDetail: "Go to Person Details",
-  addNewTakip: "Add New Follow-up",
-  noActiveTakipDescription: "There is no active follow-up record for this phone.",
-  takipHistory: "Follow-up History",
+  addNewTakip: "Add New Decision",
+  noActiveTakipDescription: "There is no active decision record for this phone.",
+  takipHistory: "Decision History",
   duration: "Duration",
   createdAt: "Created",
   alarmList: "Alarms",

@@ -67,6 +67,20 @@ export const tanitimlar: TanitimlarTranslations = {
   removeParticipant: "Katılımcıyı Kaldır",
   removeParticipantConfirm: "Bu kişiyi etkinlikten kaldırmak istediğinizden emin misiniz?",
 
+  // Vehicles
+  vehicles: "Araçlar",
+  searchVehicle: "Araç ara...",
+  allVehiclesAdded: "Tüm araçlar zaten eklendi",
+  vehicleNotFound: "Araç bulunamadı",
+  noVehiclesYet: "Henüz araç eklenmedi",
+  useAddButtonVehicle: "Yukarıdaki Ekle butonunu kullanın",
+  removeVehicle: "Aracı Kaldır",
+  removeVehicleConfirm: "Bu aracı etkinlikten kaldırmak istediğinizden emin misiniz?",
+  vehicleInfo: "Araç Bilgisi",
+  vehicleDescription: "Araç açıklaması (opsiyonel)",
+  newVehicleModalTitle: "Yeni Araç Oluştur",
+  newVehicleModalDescription: "Yeni bir araç oluşturun ve etkinliğe ekleyin",
+
   // New Tanitim Page
   availablePeople: "Mevcut Kişiler",
   itemsCount: "{count} adet",

@@ -67,6 +67,20 @@ export const tanitimlar: TanitimlarTranslations = {
   removeParticipant: "Remove Participant",
   removeParticipantConfirm: "Are you sure you want to remove this person from the event?",
 
+  // Vehicles
+  vehicles: "Vehicles",
+  searchVehicle: "Search vehicle...",
+  allVehiclesAdded: "All vehicles already added",
+  vehicleNotFound: "Vehicle not found",
+  noVehiclesYet: "No vehicles added yet",
+  useAddButtonVehicle: "Use the Add button above",
+  removeVehicle: "Remove Vehicle",
+  removeVehicleConfirm: "Are you sure you want to remove this vehicle from the event?",
+  vehicleInfo: "Vehicle Information",
+  vehicleDescription: "Vehicle description (optional)",
+  newVehicleModalTitle: "Create New Vehicle",
+  newVehicleModalDescription: "Create a new vehicle and add it to the event",
+
   // New Tanitim Page
   availablePeople: "Available People",
   itemsCount: "{count} items",

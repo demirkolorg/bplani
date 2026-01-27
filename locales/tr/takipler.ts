@@ -2,16 +2,16 @@ import type { TakiplerTranslations } from "@/types/locale"
 
 export const takipler: TakiplerTranslations = {
   // Page
-  pageTitle: "Takipler",
-  pageDescription: "Müşteri takiplerini yönetin",
-  newTakipButton: "Yeni Takip",
-  newTakipPageTitle: "Yeni Takip Ekle",
-  newTakipPageDescription: "Takip eklemek istediğiniz GSM numaralarını seçin",
+  pageTitle: "Kararlar",
+  pageDescription: "Müşteri kararlarını yönetin",
+  newTakipButton: "Yeni Karar",
+  newTakipPageTitle: "Yeni Karar Ekle",
+  newTakipPageDescription: "Karar eklemek istediğiniz GSM numaralarını seçin",
 
-  newTakip: "Yeni Takip",
-  editTakip: "Takip Düzenle",
-  takipDetails: "Takip Detayları",
-  addTakip: "Takip Ekle",
+  newTakip: "Yeni Karar",
+  editTakip: "Karar Düzenle",
+  takipDetails: "Karar Detayları",
+  addTakip: "Karar Ekle",
 
   // Fields
   startDate: "Başlama Tarihi",
@@ -33,13 +33,13 @@ export const takipler: TakiplerTranslations = {
   durumBekliyor: "Bekliyor",
 
   // Modal descriptions
-  updateStatusTitle: "Takip Durumu Güncelle",
-  updateStatusDescription: "{gsm} numaralı GSM için takip durumunu güncelleyin",
-  addTakipDescription: "{gsm} numaralı GSM için yeni takip kaydı oluşturun.",
-  activeWillBeExtended: "Mevcut aktif takip kayıtları otomatik olarak \"Uzatıldı\" durumuna geçecektir.",
+  updateStatusTitle: "Karar Durumu Güncelle",
+  updateStatusDescription: "{gsm} numaralı GSM için karar durumunu güncelleyin",
+  addTakipDescription: "{gsm} numaralı GSM için yeni karar kaydı oluşturun.",
+  activeWillBeExtended: "Mevcut aktif karar kayıtları otomatik olarak \"Uzatıldı\" durumuna geçecektir.",
   endDateBeforeStart: "Bitiş tarihi başlama tarihinden önce olamaz",
-  createModalTitle: "Yeni Takip Oluştur",
-  createModalDescription: "Yeni bir takip oluşturun. {name} için otomatik olarak oluşturulacak.",
+  createModalTitle: "Yeni Karar Oluştur",
+  createModalDescription: "Yeni bir karar oluşturun. {name} için otomatik olarak oluşturulacak.",
   optional: "(Opsiyonel)",
   creating: "Oluşturuluyor...",
 
@@ -52,7 +52,7 @@ export const takipler: TakiplerTranslations = {
   alarm: "Alarm",
   daysPassed: "{days} gün geçti",
   daysRemaining: "{days} gün",
-  activeTakip: "Aktif takip",
+  activeTakip: "Aktif karar",
 
   // Sort options
   endDateNearFar: "Bitiş Tarihi (Yakın → Uzak)",
@@ -63,12 +63,12 @@ export const takipler: TakiplerTranslations = {
   // Form
   selectGsm: "GSM",
   selectGsmPlaceholder: "GSM numarası seçin...",
-  editTakipDescription: "Takip bilgilerini güncelleyin.",
-  newTakipDescription: "Yeni bir takip kaydı oluşturun.",
+  editTakipDescription: "Karar bilgilerini güncelleyin.",
+  newTakipDescription: "Yeni bir karar kaydı oluşturun.",
 
   // Delete
-  deleteTakip: "Takibi Sil",
-  deleteTakipConfirm: "Bu takibi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve bağlı alarmlar da silinecektir.",
+  deleteTakip: "Kararı Sil",
+  deleteTakipConfirm: "Bu kararı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve bağlı alarmlar da silinecektir.",
 
   // Search
   searchPlaceholder: "Müşteri adı veya GSM ile ara...",
@@ -80,12 +80,12 @@ export const takipler: TakiplerTranslations = {
   removeAll: "Tümünü Kaldır",
   noResultsFound: "Sonuç bulunamadı",
   allGsmsSelected: "Tüm GSM'ler seçildi",
-  selectGsmInstructions: "Takip eklemek için sol listeden GSM seçin",
-  takipSettings: "Takip Ayarları",
+  selectGsmInstructions: "Karar eklemek için sol listeden GSM seçin",
+  takipSettings: "Karar Ayarları",
   selectedGsmCount: "Seçilen GSM:",
-  createMultipleTakip: "{count} Takip Oluştur",
+  createMultipleTakip: "{count} Karar Oluştur",
   defaultPlusDays: "Varsayılan: Başlama + 90 gün",
-  eachGsmWillGetSeparateTakip: "Her GSM için ayrı takip kaydı oluşturulacak.",
+  eachGsmWillGetSeparateTakip: "Her GSM için ayrı karar kaydı oluşturulacak.",
   canUpdateStatusIndividually: "Sonrasında her birinin durumunu ayrı ayrı değiştirebilirsiniz.",
 
   // Validation
@@ -93,11 +93,11 @@ export const takipler: TakiplerTranslations = {
 
   // Detail Page
   gsmNotFound: "GSM bulunamadı",
-  backToTakipler: "Takiplere Dön",
+  backToTakipler: "Kararlara Dön",
   goToPersonDetail: "Kişi Detayına Git",
-  addNewTakip: "Yeni Takip Ekle",
-  noActiveTakipDescription: "Bu GSM için aktif bir takip kaydı bulunmamaktadır.",
-  takipHistory: "Takip Geçmişi",
+  addNewTakip: "Yeni Karar Ekle",
+  noActiveTakipDescription: "Bu GSM için aktif bir karar kaydı bulunmamaktadır.",
+  takipHistory: "Karar Geçmişi",
   duration: "Süre",
   createdAt: "Oluşturulma",
   alarmList: "Alarmlar",

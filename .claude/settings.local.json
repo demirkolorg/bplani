@@ -53,7 +53,10 @@
       "Bash(node test-db.js:*)",
       "Bash(psql:*)",
       "Bash(node check-takip.js:*)",
-      "Bash(node check-takip-detailed.js:*)"
+      "Bash(node check-takip-detailed.js:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")"
     ]
   }
 }

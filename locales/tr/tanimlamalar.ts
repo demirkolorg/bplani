@@ -17,7 +17,9 @@ export const tanimlamalar: TanimlamalarTranslations = {
 
   // Marka-Model Sub-tabs
   markalar: "Markalar",
+  markalarPageDescription: "Tüm markaları görüntüleyin ve yönetin",
   modeller: "Modeller",
+  modellerPageDescription: "Tüm modelleri görüntüleyin ve yönetin",
 
   // Button texts
   newIl: "Yeni İl",

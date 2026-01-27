@@ -18,7 +18,7 @@ export const search: SearchTranslations = {
   tanitimlar: "Etkinlikler",
   operasyonlar: "Operasyonlar",
   araclar: "Araçlar",
-  takipler: "Takipler",
+  takipler: "Kararlar",
   alarmlar: "Alarmlar",
   loglar: "Loglar",
 

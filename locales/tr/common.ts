@@ -122,4 +122,30 @@ export const common: CommonTranslations = {
 
   // Selection
   selectedCount: "{count} seçildi",
+
+  // UI Controls
+  toggleTheme: "Tema değiştir",
+  switchToEnglish: "Switch to English",
+  switchToTurkish: "Türkçe'ye geç",
+
+  // Misc
+  or: "veya",
+  createNew: "Yeni Oluştur",
+  createNewVehicle: "Yeni Araç Oluştur",
+
+  // System values
+  system: "Sistem",
+  customer: "Müşteri",
+  candidate: "Aday",
+
+  // Time expressions
+  daysRemaining: "{days} gün kaldı",
+  daysBefore: "{days} gün",
+  expired: "süresi doldu geçti",
+  expiredDaysAgo: "Süresi doldu ({days} gün önce)",
+  neverLoggedIn: "hiç giriş yapmadı",
+
+  // Quick actions
+  quickActions: "Hızlı İşlemler",
+  quickActionsDescription: "Hızlı erişim ve yeni kayıt oluşturma",
 }

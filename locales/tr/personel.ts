@@ -75,7 +75,7 @@ export const personel: PersonelTranslations = {
 
   // Activity tooltips
   createdPersons: "Oluşturulan Kişiler",
-  createdFollowups: "Oluşturulan Takipler",
+  createdFollowups: "Oluşturulan Kararlar",
   createdNotes: "Oluşturulan Notlar",
   createdIntroductions: "Oluşturulan Etkinlikler",
 

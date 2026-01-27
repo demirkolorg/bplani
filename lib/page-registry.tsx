@@ -75,6 +75,10 @@ export const PAGE_COMPONENTS: Record<string, ComponentType> = {
   "/personel/yeni": createDynamicPage(() => import("@/app/(dashboard)/personel/yeni/page")),
   "/personel/[id]": createDynamicPage(() => import("@/app/(dashboard)/personel/[id]/page")),
 
+  // Duyurular
+  "/duyurular": createDynamicPage(() => import("@/app/(dashboard)/duyurular/page")),
+  "/duyurular/[id]": createDynamicPage(() => import("@/app/(dashboard)/duyurular/[id]/page")),
+
   // Ayarlar
   "/ayarlar": createDynamicPage(() => import("@/app/(dashboard)/ayarlar/page")),
 
@@ -141,6 +145,14 @@ export function getPageComponent(path: string): { Component: ComponentType; para
   if (segments.length === 2 && segments[0] === "loglar" && segments[1] !== "yeni") {
     return {
       Component: PAGE_COMPONENTS["/loglar/[id]"],
+      params: { id: segments[1] },
+    }
+  }
+
+  // /duyurular/[id]
+  if (segments.length === 2 && segments[0] === "duyurular") {
+    return {
+      Component: PAGE_COMPONENTS["/duyurular/[id]"],
       params: { id: segments[1] },
     }
   }

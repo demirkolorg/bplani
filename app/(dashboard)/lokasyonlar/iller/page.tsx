@@ -7,26 +7,28 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { IlTable } from "@/components/lokasyon/il-table"
 import { IlFormModal } from "@/components/lokasyon/il-form-modal"
+import { useLocale } from "@/components/providers/locale-provider"
 
 export default function IllerPage() {
   const [modalOpen, setModalOpen] = React.useState(false)
+  const { t } = useLocale()
 
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">İller</h1>
-          <p className="text-muted-foreground">Tüm illeri görüntüleyin ve yönetin</p>
+          <h1 className="text-2xl font-bold">{t.lokasyon.iller}</h1>
+          <p className="text-muted-foreground">{t.lokasyon.illerPageDescription}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setModalOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Hızlı Ekle
+            {t.common.quickAdd}
           </Button>
           <Button asChild>
             <Link href="/lokasyonlar/iller/yeni">
               <Plus className="mr-2 h-4 w-4" />
-              Yeni İl
+              {t.lokasyon.newIl}
             </Link>
           </Button>
         </div>

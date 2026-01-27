@@ -5,7 +5,7 @@ import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 
 export function LocaleToggle() {
-  const { locale, setLocale } = useLocale()
+  const { locale, setLocale, t } = useLocale()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
@@ -25,7 +25,7 @@ export function LocaleToggle() {
       variant="ghost"
       size="icon-sm"
       onClick={() => setLocale(locale === "tr" ? "en" : "tr")}
-      title={locale === "tr" ? "Switch to English" : "Türkçe'ye geç"}
+      title={locale === "tr" ? t.common.switchToEnglish : t.common.switchToTurkish}
     >
       <span className="text-xs font-semibold">
         {locale.toUpperCase()}

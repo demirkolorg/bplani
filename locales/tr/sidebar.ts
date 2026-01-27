@@ -8,7 +8,7 @@ export const sidebar: SidebarTranslations = {
   definitions: "Tanımlar",
   management: "Yönetim",
   system: "Sistem",
-  subtitle: "Analiz Takip Yönetimi",
+  subtitle: "Analiz Karar Yönetimi",
   menu: "Menü",
   other: "Diğer",
 }

@@ -9,7 +9,7 @@ export const numaralar: NumaralarTranslations = {
   numara: "Number",
   kisi: "Person",
   tip: "Type",
-  takip: "Follow-up",
+  takip: "Decision",
   baslama: "Start",
   bitis: "End",
   kalanGun: "Days Left",
@@ -38,7 +38,7 @@ export const numaralar: NumaralarTranslations = {
   gsm: "Phone",
   owner: "Owner",
   isPrimary: "Primary",
-  hasTakip: "Follow-up",
+  hasTakip: "Decision",
   primaryNumber: "Primary Number",
 
   // Search
