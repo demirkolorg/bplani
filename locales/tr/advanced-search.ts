@@ -10,7 +10,7 @@ export const advancedSearch: AdvancedSearchTranslations = {
   tc: "TC Kimlik No",
   kisiTipi: "Müşteri Tipi",
   pio: "PIO (Potansiyel İş Ortağı)",
-  asli: "Asli Kişi",
+  asli: "Adli Kişi",
   faaliyet: "Faaliyet",
   gsm: "GSM Numarası",
   il: "Adres - İl",
