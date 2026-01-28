@@ -19,8 +19,8 @@ export const enums: EnumsTranslations = {
 
   // Alarm Tipi
   alarmTipi: {
-    MUSTERI: "Customer",
-    ADAY: "Candidate",
+    MUSTERI: "Target",
+    ADAY: "Supporter",
     TAKIP_BITIS: "Decision End",
     ODEME_HATIRLATMA: "Payment Reminder",
     OZEL: "Custom",
@@ -35,8 +35,8 @@ export const enums: EnumsTranslations = {
 
   // Kisi Tipi
   kisiTipi: {
-    MUSTERI: "Customer",
-    ADAY: "Candidate",
+    MUSTERI: "Target",
+    ADAY: "Supporter",
   },
 
   // Boolean Labels

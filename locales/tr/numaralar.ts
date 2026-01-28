@@ -15,13 +15,14 @@ export const numaralar: NumaralarTranslations = {
   kalanGun: "Kalan Gün",
 
   // Table values
-  musteri: "Müşteri",
-  aday: "Aday",
+  musteri: "Hedef",
+  aday: "Müzahir",
   takipVar: "Var",
   takipYok: "Yok",
   gunGecti: "gün geçti",
   bugun: "Bugün",
   gun: "gün",
+  tumu: "Tümü",
 
   // Sort options
   numaraAZ: "Numara (A → Z)",

@@ -90,6 +90,7 @@ export interface CommonTranslations {
   more: string
   location: string
   participants: string
+  vehicles: string
 
   // Person
   firstName: string
@@ -111,6 +112,8 @@ export interface CommonTranslations {
   // Labels
   tcLabel: string
   gsmLabel: string
+  ttYes: string
+  ttNo: string
 
   // Status badges
   added: string
@@ -218,6 +221,7 @@ export interface TableTranslations {
   newest: string
   exportToExcel: string
   exportingToExcel: string
+  clearFilters: string
 }
 
 export interface AuthTranslations {
@@ -316,6 +320,8 @@ export interface KisilerTranslations {
   tc11Digit: string
   tip: string
   tt: string
+  ttYes: string
+  ttNo: string
   tipMusteri: string
   tipAday: string
   tipLead: string
@@ -610,6 +616,7 @@ export interface TakiplerTranslations {
   backToTakipler: string
   goToPersonDetail: string
   addNewTakip: string
+  noActiveTakip: string
   noActiveTakipDescription: string
   takipHistory: string
   duration: string
@@ -1051,6 +1058,7 @@ export interface NumaralarTranslations {
   gunGecti: string
   bugun: string
   gun: string
+  tumu: string
 
   // Sort options
   numaraAZ: string
@@ -1172,6 +1180,17 @@ export interface AraclarTranslations {
   // Actions
   deleting: string
   adding: string
+
+  // Error pages
+  aracNotFoundDescription: string
+  backToAraclar: string
+
+  // Related data
+  noKisiler: string
+  tanitimlar: string
+  operasyonlar: string
+  noTanitimlar: string
+  noOperasyonlar: string
 }
 
 export interface FaaliyetTranslations {
@@ -1219,10 +1238,17 @@ export interface SearchTranslations {
   araclar: string
   takipler: string
   alarmlar: string
+  faaliyetAlanlari: string
   loglar: string
 
   // Related
   relatedPersons: string
+  relatedVehicles: string
+  relatedEvents: string
+  relatedOperations: string
+  vehicleOwners: string
+  eventParticipants: string
+  operationParticipants: string
 }
 
 export interface LoglarTranslations {
@@ -1362,7 +1388,9 @@ export interface TabsTranslations {
   kisiYeni: string
   kisiDetay: string
   numaralar: string
+  numaraDetay: string
   araclar: string
+  aracDetay: string
   advancedSearch: string
   takipler: string
   takipYeni: string
@@ -1375,6 +1403,7 @@ export interface TabsTranslations {
   operasyonDetay: string
   alarmlar: string
   tanimlamalar: string
+  faaliyetAlaniDetay: string
   lokasyonlar: string
   iller: string
   ilYeni: string
@@ -1501,12 +1530,18 @@ export interface QueryBuilderTranslations {
   description: string
   submitLabel: string
   addFilter: string
+  addGroup: string
   removeFilter: string
+  removeGroup: string
+  clearAll: string
 
   // Logic
   logic: string
   logicAnd: string
   logicOr: string
+  and: string
+  or: string
+  combinator: string
 
   // Status
   activeFilters: string
@@ -1602,6 +1637,7 @@ export interface DuyurularTranslations {
   // Page
   pageTitle: string
   pageDescription: string
+  pageSubtitle: string
   newDuyuruButton: string
 
   // Form

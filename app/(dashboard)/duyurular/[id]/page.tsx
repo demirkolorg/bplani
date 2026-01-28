@@ -5,6 +5,8 @@ import Link from "next/link"
 import { useRouter, useParams } from "next/navigation"
 import { useLocale } from "@/components/providers/locale-provider"
 import { useUser } from "@/components/providers/auth-provider"
+import { useTabs } from "@/components/providers/tab-provider"
+import { useCurrentTabId } from "@/components/tabs/tab-panel"
 import { Pencil, Megaphone, Calendar, Info, Trash2, User, ArrowLeft } from "lucide-react"
 import { format } from "date-fns"
 import { tr, enUS } from "date-fns/locale"
@@ -23,6 +25,8 @@ export default function DuyuruDetayPage() {
   const { user } = useUser()
   const router = useRouter()
   const params = useParams()
+  const { updateTabTitle } = useTabs()
+  const currentTabId = useCurrentTabId()
   const id = params.id as string
   const dateLocale = locale === "tr" ? tr : enUS
 
@@ -34,6 +38,13 @@ export default function DuyuruDetayPage() {
 
   // Check if user can edit/delete (ADMIN or YONETICI)
   const canEdit = user?.rol === "ADMIN" || user?.rol === "YONETICI"
+
+  // Update tab title when duyuru loads
+  React.useEffect(() => {
+    if (duyuru && currentTabId) {
+      updateTabTitle(currentTabId, duyuru.baslik, true)
+    }
+  }, [duyuru, currentTabId, updateTabTitle])
 
   const handleDelete = async () => {
     await deleteDuyuru.mutateAsync(id)

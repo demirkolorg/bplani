@@ -20,8 +20,15 @@ export const search: SearchTranslations = {
   araclar: "Araçlar",
   takipler: "Kararlar",
   alarmlar: "Alarmlar",
+  faaliyetAlanlari: "Faaliyet Alanları",
   loglar: "Loglar",
 
   // Related
   relatedPersons: "İlişkili Kişiler",
+  relatedVehicles: "İlişkili Araçlar",
+  relatedEvents: "İlişkili Etkinlikler",
+  relatedOperations: "İlişkili Operasyonlar",
+  vehicleOwners: "Araç Sahipleri",
+  eventParticipants: "Etkinlik Katılımcıları",
+  operationParticipants: "Operasyon Katılımcıları",
 }

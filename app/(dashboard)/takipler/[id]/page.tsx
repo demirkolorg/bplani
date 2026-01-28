@@ -14,6 +14,7 @@ import {
   Bell,
   Clock,
   Plus,
+  UserCog,
 } from "lucide-react"
 
 import { useTakiplerByGsm } from "@/hooks/use-takip"
@@ -260,6 +261,39 @@ export default function TakipDetayPage() {
               </div>
             </div>
 
+            {/* Sistem Bilgileri */}
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-sm font-medium mb-3">Sistem Bilgileri</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground mb-1">Oluşturulma Tarihi</p>
+                  <p className="font-medium">{formatDateTime(activeTakip.createdAt)}</p>
+                </div>
+                {activeTakip.createdUser && (
+                  <div>
+                    <p className="text-muted-foreground mb-1">Oluşturan</p>
+                    <div className="flex items-center gap-1">
+                      <UserCog className="h-3 w-3 text-muted-foreground" />
+                      <p className="font-medium">{activeTakip.createdUser.ad} {activeTakip.createdUser.soyad}</p>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <p className="text-muted-foreground mb-1">Son Güncelleme</p>
+                  <p className="font-medium">{formatDateTime(activeTakip.updatedAt)}</p>
+                </div>
+                {activeTakip.updatedUser && (
+                  <div>
+                    <p className="text-muted-foreground mb-1">Son Güncelleyen</p>
+                    <div className="flex items-center gap-1">
+                      <UserCog className="h-3 w-3 text-muted-foreground" />
+                      <p className="font-medium">{activeTakip.updatedUser.ad} {activeTakip.updatedUser.soyad}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Alarmlar */}
             {activeTakip.alarmlar && activeTakip.alarmlar.length > 0 && (
               <div className="mt-6 pt-6 border-t">
@@ -341,7 +375,10 @@ export default function TakipDetayPage() {
                       {t.takipler.durum}
                     </th>
                     <th className="text-left p-3 text-sm font-medium text-muted-foreground">
-                      {t.takipler.createdAt || "Oluşturulma"}
+                      Oluşturulma
+                    </th>
+                    <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                      Oluşturan
                     </th>
                   </tr>
                 </thead>
@@ -365,6 +402,16 @@ export default function TakipDetayPage() {
                         </td>
                         <td className="p-3 text-sm text-muted-foreground">
                           {formatDateTime(takip.createdAt)}
+                        </td>
+                        <td className="p-3 text-sm">
+                          {takip.createdUser ? (
+                            <div className="flex items-center gap-1">
+                              <UserCog className="h-3 w-3 text-muted-foreground" />
+                              <span>{takip.createdUser.ad} {takip.createdUser.soyad}</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </td>
                       </tr>
                     )

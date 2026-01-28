@@ -17,8 +17,10 @@ export const ROUTE_CONFIG: Record<string, RouteConfig> = {
   "/kisiler/[id]": { titleKey: "kisiDetay", icon: "User", isDynamic: true },
 
   "/numaralar": { titleKey: "numaralar", icon: "Phone" },
+  "/numaralar/[id]": { titleKey: "numaraDetay", icon: "Phone", isDynamic: true },
 
   "/araclar": { titleKey: "araclar", icon: "Car" },
+  "/araclar/[id]": { titleKey: "aracDetay", icon: "Car", isDynamic: true },
 
   "/advanced-search": { titleKey: "advancedSearch", icon: "Search" },
 
@@ -39,6 +41,7 @@ export const ROUTE_CONFIG: Record<string, RouteConfig> = {
 
   // Tanımlar
   "/tanimlamalar": { titleKey: "tanimlamalar", icon: "ListTree" },
+  "/tanimlamalar/faaliyet-alanlari/[id]": { titleKey: "faaliyetAlaniDetay", icon: "Briefcase", isDynamic: true },
 
   "/lokasyonlar": { titleKey: "lokasyonlar", icon: "MapPin" },
   "/lokasyonlar/iller": { titleKey: "iller", icon: "MapPin" },
@@ -58,6 +61,9 @@ export const ROUTE_CONFIG: Record<string, RouteConfig> = {
   "/personel": { titleKey: "personel", icon: "UserCog" },
   "/personel/yeni": { titleKey: "personelYeni", icon: "UserPlus" },
   "/personel/[id]": { titleKey: "personelDetay", icon: "UserCog", isDynamic: true },
+
+  "/duyurular": { titleKey: "duyurular", icon: "Megaphone" },
+  "/duyurular/[id]": { titleKey: "duyuruDetay", icon: "Megaphone", isDynamic: true },
 
   "/ayarlar": { titleKey: "ayarlar", icon: "Settings" },
 
@@ -91,6 +97,24 @@ export function matchRoute(path: string): RouteMatch | null {
     return {
       pattern: "/kisiler/[id]",
       config: ROUTE_CONFIG["/kisiler/[id]"],
+      params: { id: segments[1] },
+    }
+  }
+
+  // /numaralar/[id]
+  if (segments.length === 2 && segments[0] === "numaralar") {
+    return {
+      pattern: "/numaralar/[id]",
+      config: ROUTE_CONFIG["/numaralar/[id]"],
+      params: { id: segments[1] },
+    }
+  }
+
+  // /araclar/[id]
+  if (segments.length === 2 && segments[0] === "araclar") {
+    return {
+      pattern: "/araclar/[id]",
+      config: ROUTE_CONFIG["/araclar/[id]"],
       params: { id: segments[1] },
     }
   }
@@ -131,12 +155,30 @@ export function matchRoute(path: string): RouteMatch | null {
     }
   }
 
+  // /duyurular/[id]
+  if (segments.length === 2 && segments[0] === "duyurular") {
+    return {
+      pattern: "/duyurular/[id]",
+      config: ROUTE_CONFIG["/duyurular/[id]"],
+      params: { id: segments[1] },
+    }
+  }
+
   // /loglar/[id]
   if (segments.length === 2 && segments[0] === "loglar" && segments[1] !== "yeni") {
     return {
       pattern: "/loglar/[id]",
       config: ROUTE_CONFIG["/loglar/[id]"],
       params: { id: segments[1] },
+    }
+  }
+
+  // /tanimlamalar/faaliyet-alanlari/[id]
+  if (segments.length === 3 && segments[0] === "tanimlamalar" && segments[1] === "faaliyet-alanlari") {
+    return {
+      pattern: "/tanimlamalar/faaliyet-alanlari/[id]",
+      config: ROUTE_CONFIG["/tanimlamalar/faaliyet-alanlari/[id]"],
+      params: { id: segments[2] },
     }
   }
 

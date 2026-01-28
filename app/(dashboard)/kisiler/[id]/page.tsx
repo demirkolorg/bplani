@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useTabParams } from "@/components/providers/params-provider"
 import { useTabTitle } from "@/hooks/use-tab-title"
 import { useLocale } from "@/components/providers/locale-provider"
+import { useTabs } from "@/components/providers/tab-provider"
 import {
   Pencil,
   User,
@@ -176,6 +177,7 @@ export default function KisiDetayPage() {
   const params = useTabParams<{ id: string }>()
   const id = params.id
   const { t } = useLocale()
+  const { openTab } = useTabs()
 
   const [showDetayModal, setShowDetayModal] = React.useState(false)
   const [showFaaliyetModal, setShowFaaliyetModal] = React.useState(false)
@@ -385,6 +387,7 @@ export default function KisiDetayPage() {
               {kisi.faaliyetAlanlari && kisi.faaliyetAlanlari.length > 0 ? (
                 kisi.faaliyetAlanlari.map((f) => {
                   const faaliyetAd = f.faaliyetAlani.ad
+                  const faaliyetId = f.faaliyetAlani.id
 
                   const handleCopy = async () => {
                     try {
@@ -402,17 +405,26 @@ export default function KisiDetayPage() {
                     )
                   }
 
+                  const handleGoToDetail = () => {
+                    openTab(`/tanimlamalar/faaliyet-alanlari/${faaliyetId}`)
+                  }
+
                   return (
                     <ContextMenu key={f.id}>
                       <ContextMenuTrigger asChild>
                         <Badge
                           variant="outline"
-                          className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300 cursor-context-menu"
+                          className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                          onClick={handleGoToDetail}
                         >
                           {faaliyetAd}
                         </Badge>
                       </ContextMenuTrigger>
                       <ContextMenuContent>
+                        <ContextMenuItem onClick={handleGoToDetail}>
+                          <ArrowUpRight className="h-4 w-4 mr-2" />
+                          {t.common.detail}
+                        </ContextMenuItem>
                         <ContextMenuItem onClick={handleCopy}>
                           <Copy className="h-4 w-4 mr-2" />
                           {t.common.copy}

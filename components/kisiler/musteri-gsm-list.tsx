@@ -1,12 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Star, StarOff, MoreHorizontal, Trash2, Phone, RefreshCw, PlusCircle, ChevronDown, ChevronRight, Clock, Calendar, TrendingUp, AlertCircle, CheckCircle2, History, Signal } from "lucide-react"
+import { Plus, Star, StarOff, MoreHorizontal, Trash2, Phone, RefreshCw, PlusCircle, ChevronDown, ChevronRight, Clock, Calendar, TrendingUp, AlertCircle, CheckCircle2, History, Signal, ExternalLink } from "lucide-react"
 import { format, differenceInDays } from "date-fns"
 import { tr as trLocale, enUS } from "date-fns/locale"
 import { useGsmlerByKisi, useUpdateGsm, useDeleteGsm, type GsmWithTakipler, type GsmTakip } from "@/hooks/use-gsm"
 import { takipDurumLabels, type TakipDurum } from "@/lib/validations"
 import { useLocale } from "@/components/providers/locale-provider"
+import { useTabs } from "@/components/providers/tab-provider"
 import type { Translations } from "@/types/locale"
 
 import { Button } from "@/components/ui/button"
@@ -118,6 +119,7 @@ function GsmRow({
   locale: "tr" | "en"
 }) {
   const [isExpanded, setIsExpanded] = React.useState(false)
+  const { openTab } = useTabs()
   const activeTakip = gsm.takipler.find((t) => t.isActive)
   const pastTakipler = gsm.takipler.filter((t) => !t.isActive)
   const hasPastTakipler = pastTakipler.length > 0
@@ -145,7 +147,13 @@ function GsmRow({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-mono font-bold text-xl truncate">{gsm.numara}</span>
+                <button
+                  onClick={() => openTab(`/numaralar/${gsm.id}`)}
+                  className="font-mono font-bold text-xl truncate hover:text-primary transition-colors flex items-center gap-2 group"
+                >
+                  {gsm.numara}
+                  <ExternalLink className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                </button>
                 {gsm.isPrimary && (
                   <Star className="h-4 w-4 fill-amber-500 text-amber-500 shrink-0" />
                 )}

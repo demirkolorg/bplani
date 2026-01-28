@@ -10,12 +10,18 @@ export const queryBuilder: QueryBuilderTranslations = {
   description: "Define your search criteria",
   submitLabel: "Show Results",
   addFilter: "Add Filter",
+  addGroup: "Add Group",
   removeFilter: "Remove Filter",
+  removeGroup: "Delete Group",
+  clearAll: "Clear All",
 
   // Logic
   logic: "Logic:",
   logicAnd: "AND (All conditions)",
   logicOr: "OR (Any condition)",
+  and: "AND",
+  or: "OR",
+  combinator: "Combinator:",
 
   // Status
   activeFilters: "{count} active filters",
@@ -91,7 +97,7 @@ export const queryBuilder: QueryBuilderTranslations = {
   loadQuery: "Load Query",
   deleteQuery: "Delete Query",
   queryName: "Query Name",
-  queryNamePlaceholder: "e.g. Active Customers",
+  queryNamePlaceholder: "e.g. Active Targets",
   saveSuccess: "Query saved successfully",
   loadSuccess: "Query loaded",
   deleteSuccess: "Query deleted",

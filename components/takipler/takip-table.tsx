@@ -38,14 +38,14 @@ export function TakipTable() {
     router.push(`/takipler/${gsm.gsmId}`)
   }
 
-  const rowWrapper = (gsm: GsmWithActiveTakip, cells: React.ReactNode[]) => (
+  const rowWrapper = (gsm: GsmWithActiveTakip, children: React.ReactNode) => (
     <ContextMenu key={gsm.gsmId}>
       <ContextMenuTrigger asChild>
         <tr
           className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
           onClick={() => handleRowClick(gsm)}
         >
-          {cells}
+          {children}
         </tr>
       </ContextMenuTrigger>
       <ContextMenuContent>

@@ -14,6 +14,7 @@ import {
   Car,
   StickyNote,
   Activity,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react"
 import {
@@ -43,6 +44,7 @@ const categoryIcons: Record<string, LucideIcon> = {
   takipler: CalendarClock,
   araclar: Car,
   notlar: StickyNote,
+  faaliyetAlanlari: Briefcase,
   loglar: Activity,
 }
 
@@ -58,6 +60,7 @@ const categoryOrder = [
   "alarmlar",
   "araclar",
   "notlar",
+  "faaliyetAlanlari",
   "loglar",
 ]
 
@@ -93,6 +96,7 @@ export function GlobalSearch({ open, onOpenChange, initialQuery }: GlobalSearchP
       takipler: "takipler",
       araclar: "araclar",
       notlar: "notlar",
+      faaliyetAlanlari: "faaliyetAlanlari",
       loglar: "loglar",
     }
     const translationKey = keyMap[categoryKey]

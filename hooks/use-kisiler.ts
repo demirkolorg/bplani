@@ -36,6 +36,8 @@ export interface Kisi {
     adresler: number
     notlar: number
     tanitimlar: number
+    operasyonlar: number
+    araclar: number
   }
 }
 

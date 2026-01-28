@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 
 import { useAraclar, useDeleteArac, type Arac } from "@/hooks/use-araclar-vehicles"
@@ -36,6 +37,7 @@ import { AracForm } from "./arac-form"
 import { getAracColumns, getAracSortOptions } from "./arac-columns"
 
 export function AracTable() {
+  const router = useRouter()
   const { t } = useLocale()
   const { data, isLoading } = useAraclar()
   const deleteArac = useDeleteArac()
@@ -67,7 +69,10 @@ export function AracTable() {
   const rowWrapper = (row: Arac, children: React.ReactNode) => (
     <ContextMenu key={row.id}>
       <ContextMenuTrigger asChild>
-        <tr className="border-b transition-colors hover:bg-muted/50 cursor-pointer">
+        <tr
+          className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
+          onClick={() => router.push(`/araclar/${row.id}`)}
+        >
           {children}
         </tr>
       </ContextMenuTrigger>

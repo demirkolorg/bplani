@@ -1,6 +1,5 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, User, FileText, CalendarClock, Megaphone } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Personel } from "@/hooks/use-personel"
 import type { SortOption } from "@/components/shared/data-table"
 import type { Translations } from "@/types/locale"
+import type { DataTableColumnDef } from "@/lib/data-table/types"
 
 // Personel tablosu için özel sıralama seçenekleri
 export function getPersonelSortOptions(t: Translations): SortOption[] {
@@ -24,7 +24,7 @@ export function getPersonelSortOptions(t: Translations): SortOption[] {
 }
 
 
-export function getPersonelColumns(t: Translations, locale: string): ColumnDef<Personel>[] {
+export function getPersonelColumns(t: Translations, locale: string): DataTableColumnDef<Personel>[] {
   const dateLocale = locale === "tr" ? "tr-TR" : "en-US"
 
   // Rol labels
@@ -76,6 +76,15 @@ export function getPersonelColumns(t: Translations, locale: string): ColumnDef<P
       cell: ({ row }) => (
         <span className="font-mono text-sm">{row.original.visibleId}</span>
       ),
+      meta: {
+        filterConfig: {
+          columnId: "visibleId",
+          type: "number",
+          operators: ["equals", "greaterThan", "lessThan"],
+          placeholder: "ID...",
+          label: "ID",
+        },
+      },
     },
     {
       id: "adSoyad",
@@ -107,6 +116,34 @@ export function getPersonelColumns(t: Translations, locale: string): ColumnDef<P
           </div>
         )
       },
+      accessorFn: (row) => `${row.ad || ""} ${row.soyad || ""}`,
+      filterFn: (row, columnId, filterValue) => {
+        const fullName = `${row.original.ad || ""} ${row.original.soyad || ""}`.toLowerCase()
+        const filterStr = String(filterValue).toLowerCase()
+        return fullName.includes(filterStr)
+      },
+      meta: {
+        filterConfig: {
+          columnId: "adSoyad",
+          type: "text",
+          operators: ["contains", "startsWith"],
+          placeholder: "Ad Soyad...",
+          label: t.personel.fullName,
+          customFilterFn: (row, filterValue, operator) => {
+            const fullName = `${row.ad || ""} ${row.soyad || ""}`.toLowerCase()
+            const filterStr = String(filterValue).toLowerCase()
+
+            switch (operator) {
+              case "contains":
+                return fullName.includes(filterStr)
+              case "startsWith":
+                return fullName.startsWith(filterStr)
+              default:
+                return fullName.includes(filterStr)
+            }
+          },
+        },
+      },
     },
     {
       id: "rol",
@@ -120,6 +157,20 @@ export function getPersonelColumns(t: Translations, locale: string): ColumnDef<P
           </Badge>
         )
       },
+      meta: {
+        filterConfig: {
+          columnId: "rol",
+          type: "enum",
+          operators: ["equals", "in"],
+          defaultOperator: "in",
+          options: [
+            { value: "ADMIN", label: t.personel.rolAdmin },
+            { value: "YONETICI", label: t.personel.rolYonetici },
+            { value: "PERSONEL", label: t.personel.rolPersonel },
+          ],
+          label: t.personel.rol,
+        },
+      },
     },
     {
       id: "isActive",
@@ -132,6 +183,28 @@ export function getPersonelColumns(t: Translations, locale: string): ColumnDef<P
         ) : (
           <Badge variant="secondary">{t.personel.inactive}</Badge>
         )
+      },
+      filterFn: (row, columnId, filterValue) => {
+        if (filterValue === "all") return true
+        return String(row.original.isActive) === String(filterValue)
+      },
+      meta: {
+        filterConfig: {
+          columnId: "isActive",
+          type: "boolean",
+          operators: ["equals"],
+          options: [
+            { value: "all", label: t.common.all },
+            { value: "true", label: t.personel.active },
+            { value: "false", label: t.personel.inactive },
+          ],
+          defaultOperator: "equals",
+          label: t.personel.status,
+          customFilterFn: (row, filterValue, operator) => {
+            if (filterValue === "all") return true
+            return String(row.isActive) === String(filterValue)
+          },
+        },
       },
     },
     {
@@ -183,6 +256,50 @@ export function getPersonelColumns(t: Translations, locale: string): ColumnDef<P
             })}
           </span>
         )
+      },
+      accessorFn: (row) => row.lastLoginAt || null,
+      meta: {
+        filterConfig: {
+          columnId: "sonGiris",
+          type: "date",
+          operators: ["before", "after", "between"],
+          label: t.personel.lastLogin,
+          customFilterFn: (row, filterValue, operator) => {
+            const lastLoginAt = row.lastLoginAt
+            if (!lastLoginAt) return false
+
+            const lastLogin = new Date(lastLoginAt)
+            if (isNaN(lastLogin.getTime())) return false
+
+            const filterDate = new Date(filterValue as string)
+            if (isNaN(filterDate.getTime())) {
+              // Handle between
+              if (
+                operator === "between" &&
+                typeof filterValue === "object" &&
+                filterValue !== null &&
+                "min" in filterValue &&
+                "max" in filterValue
+              ) {
+                const minDate = new Date((filterValue as any).min)
+                const maxDate = new Date((filterValue as any).max)
+                return lastLogin >= minDate && lastLogin <= maxDate
+              }
+              return false
+            }
+
+            switch (operator) {
+              case "before":
+                return lastLogin < filterDate
+              case "after":
+                return lastLogin > filterDate
+              case "equals":
+                return lastLogin.toDateString() === filterDate.toDateString()
+              default:
+                return false
+            }
+          },
+        },
       },
     },
   ]

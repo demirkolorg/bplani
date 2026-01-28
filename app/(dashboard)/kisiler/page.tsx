@@ -11,8 +11,8 @@ export default function KisilerPage() {
   const { t } = useLocale()
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="px-8 py-3">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold">{t.kisiler.pageTitle}</h1>
           <p className="text-muted-foreground">{t.kisiler.pageDescription}</p>

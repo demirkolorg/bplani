@@ -10,12 +10,18 @@ export const queryBuilder: QueryBuilderTranslations = {
   description: "Arama kriterlerinizi belirleyin",
   submitLabel: "Sonuçları Göster",
   addFilter: "Filtre Ekle",
+  addGroup: "Grup Ekle",
   removeFilter: "Filtreyi Kaldır",
+  removeGroup: "Grubu Sil",
+  clearAll: "Tümünü Temizle",
 
   // Logic
   logic: "Mantık:",
   logicAnd: "VE (Tüm koşullar)",
   logicOr: "VEYA (Herhangi biri)",
+  and: "VE",
+  or: "VEYA",
+  combinator: "Bağlaç:",
 
   // Status
   activeFilters: "{count} aktif filtre",
@@ -91,7 +97,7 @@ export const queryBuilder: QueryBuilderTranslations = {
   loadQuery: "Sorgu Yükle",
   deleteQuery: "Sorguyu Sil",
   queryName: "Sorgu Adı",
-  queryNamePlaceholder: "Örn: Aktif Müşteriler",
+  queryNamePlaceholder: "Örn: Aktif Hedefler",
   saveSuccess: "Sorgu başarıyla kaydedildi",
   loadSuccess: "Sorgu yüklendi",
   deleteSuccess: "Sorgu silindi",

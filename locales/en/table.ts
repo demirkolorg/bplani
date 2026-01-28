@@ -34,4 +34,5 @@ export const table: TableTranslations = {
   newest: "Newest",
   exportToExcel: "Export to Excel",
   exportingToExcel: "Exporting to Excel...",
+  clearFilters: "Clear all filters",
 }

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { VisibilityState } from "@tanstack/react-table"
+import type { VisibilityState, ColumnFiltersState } from "@tanstack/react-table"
 import type { TabloTercih, TabloAnahtar } from "@/lib/validations"
 
 // Query keys
@@ -63,6 +63,8 @@ export interface TablePreferencesState {
   sorting: { column: string; direction: "asc" | "desc" } | null
   /** Sayfa boyutu */
   pageSize: number
+  /** TanStack native ColumnFiltersState */
+  filters: ColumnFiltersState | undefined
   /** Yükleniyor durumu */
   isLoading: boolean
   /** Kaydetme durumu */
@@ -75,6 +77,8 @@ export interface TablePreferencesState {
   setSorting: (column: string, direction: "asc" | "desc") => void
   /** Sayfa boyutunu güncelle */
   setPageSize: (size: number) => void
+  /** Filtreleri güncelle (TanStack native format) */
+  setFilters: (filters: ColumnFiltersState) => void
   /** Tüm tercihleri sıfırla */
   resetPreferences: () => void
 }
@@ -93,6 +97,7 @@ export function useTablePreferences({
     kolonlar: defaultColumnVisibility,
     siralama: defaultSort ? { kolon: defaultSort.column, yon: defaultSort.direction } : undefined,
     sayfaBoyutu: defaultPageSize,
+    filtreler: undefined,
   })
 
   // Fetch preference from API
@@ -133,6 +138,7 @@ export function useTablePreferences({
         kolonlar: serverTercih.kolonlar || prev.kolonlar,
         siralama: serverTercih.siralama || prev.siralama,
         sayfaBoyutu: serverTercih.sayfaBoyutu || prev.sayfaBoyutu,
+        filtreler: serverTercih.filtreler || prev.filtreler,
       }))
     }
   }, [serverTercih, isLoading])
@@ -218,11 +224,24 @@ export function useTablePreferences({
     [localState, debouncedSave]
   )
 
+  const setFilters = React.useCallback(
+    (filters: ColumnFiltersState) => {
+      const newState = {
+        ...localState,
+        filtreler: filters,
+      }
+      setLocalState(newState)
+      debouncedSave(newState)
+    },
+    [localState, debouncedSave]
+  )
+
   const resetPreferences = React.useCallback(() => {
     const newState: TabloTercih = {
       kolonlar: defaultColumnVisibility,
       siralama: defaultSort ? { kolon: defaultSort.column, yon: defaultSort.direction } : undefined,
       sayfaBoyutu: defaultPageSize,
+      filtreler: undefined,
     }
     setLocalState(newState)
     saveMutation.mutate(newState)
@@ -234,12 +253,14 @@ export function useTablePreferences({
       ? { column: localState.siralama.kolon, direction: localState.siralama.yon }
       : null,
     pageSize: localState.sayfaBoyutu || defaultPageSize,
+    filters: localState.filtreler,
     isLoading,
     isSaving: saveMutation.isPending,
     setColumnVisibility,
     toggleColumnVisibility,
     setSorting,
     setPageSize,
+    setFilters,
     resetPreferences,
   }
 }
@@ -259,6 +280,7 @@ export function useDataTablePreferences(
     columnVisibility: prefs.columnVisibility,
     sorting: prefs.sorting,
     pageSize: prefs.pageSize,
+    filters: prefs.filters,
     isLoading: prefs.isLoading,
     isSaving: prefs.isSaving,
     // Handlers from prefs
@@ -266,6 +288,7 @@ export function useDataTablePreferences(
     toggleColumnVisibility: prefs.toggleColumnVisibility,
     setSorting: prefs.setSorting,
     setPageSize: prefs.setPageSize,
+    setFilters: prefs.setFilters,
     resetPreferences: prefs.resetPreferences,
     // Props for DataTable (with fallback to options)
     defaultColumnVisibility: prefs.columnVisibility,

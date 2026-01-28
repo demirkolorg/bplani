@@ -1,6 +1,5 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, Users, MapPin, Calendar } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Operasyon } from "@/hooks/use-operasyonlar"
 import type { SortOption } from "@/components/shared/data-table"
 import type { Translations } from "@/types/locale"
+import type { DataTableColumnDef } from "@/lib/data-table/types"
 
 // Operasyon tablosu için özel sıralama seçenekleri
 export function getOperasyonSortOptions(t: Translations): SortOption[] {
@@ -27,7 +27,7 @@ export const operasyonSortOptions: SortOption[] = [
   { label: "Oluşturulma (Eski → Yeni)", value: "createdAt-asc", column: "createdAt", direction: "asc" },
 ]
 
-export function getOperasyonColumns(t: Translations, locale: string): ColumnDef<Operasyon>[] {
+export function getOperasyonColumns(t: Translations, locale: string): DataTableColumnDef<Operasyon>[] {
   const dateLocale = locale === "tr" ? "tr-TR" : "en-US"
 
   return [

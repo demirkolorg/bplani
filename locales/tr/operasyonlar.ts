@@ -40,7 +40,7 @@ export const operasyonlar: OperasyonlarTranslations = {
   notes: "Notlar",
   unknownPerson: "Bilinmeyen",
   selectAtLeastOne: "En az bir katılımcı seçmelisiniz",
-  participantStats: "({mCount} Müşteri, {aCount} Aday)",
+  participantStats: "({mCount} Hedef, {aCount} Müzahir)",
 
   // Sort options
   dateNewOld: "Tarih (Yeni → Eski)",

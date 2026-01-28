@@ -1,6 +1,5 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal, Eye, Bell } from "lucide-react"
 import Link from "next/link"
 
@@ -17,6 +16,7 @@ import type { SortOption } from "@/components/shared/data-table"
 import type { Translations } from "@/types/locale"
 import { takipDurumLabels, type TakipDurum } from "@/lib/validations"
 import { interpolate } from "@/locales"
+import type { DataTableColumnDef } from "@/lib/data-table/types"
 
 // Takip tablosu için özel sıralama seçenekleri
 export function getTakipSortOptions(t: Translations): SortOption[] {
@@ -44,7 +44,7 @@ const durumVariants: Record<TakipDurum, "default" | "secondary" | "destructive" 
   UZATILDI: "outline",
 }
 
-export function getTakipColumns(t: Translations): ColumnDef<GsmWithActiveTakip>[] {
+export function getTakipColumns(t: Translations): DataTableColumnDef<GsmWithActiveTakip>[] {
   return [
     // Hidden columns for sorting
     {
@@ -64,6 +64,15 @@ export function getTakipColumns(t: Translations): ColumnDef<GsmWithActiveTakip>[
       cell: ({ row }) => {
         return <span className="font-mono text-sm font-medium">{row.original.gsm}</span>
       },
+      meta: {
+        filterConfig: {
+          columnId: "gsm",
+          type: "text",
+          operators: ["contains", "equals", "inList"],
+          placeholder: "555...",
+          label: "GSM",
+        },
+      },
     },
     {
       id: "kisi",
@@ -80,6 +89,16 @@ export function getTakipColumns(t: Translations): ColumnDef<GsmWithActiveTakip>[
           </Link>
         )
       },
+      accessorFn: (row) => row.kisi || "",
+      meta: {
+        filterConfig: {
+          columnId: "kisi",
+          type: "text",
+          operators: ["contains", "startsWith"],
+          placeholder: "Ad Soyad...",
+          label: t.takipler.person,
+        },
+      },
     },
     {
       id: "baslamaTarihiDisplay",
@@ -94,6 +113,51 @@ export function getTakipColumns(t: Translations): ColumnDef<GsmWithActiveTakip>[
           </span>
         )
       },
+      accessorFn: (row) => row.baslamaTarihi || null,
+      meta: {
+        filterConfig: {
+          columnId: "baslamaTarihiDisplay",
+          type: "date",
+          operators: ["before", "after", "between"],
+          label: t.takipler.startDate,
+          filterField: "baslamaTarihi",
+          customFilterFn: (row, filterValue, operator) => {
+            const baslamaTarihi = row.baslamaTarihi
+            if (!baslamaTarihi) return false
+
+            const baslama = new Date(baslamaTarihi)
+            if (isNaN(baslama.getTime())) return false
+
+            const filterDate = new Date(filterValue as string)
+            if (isNaN(filterDate.getTime())) {
+              // Handle between
+              if (
+                operator === "between" &&
+                typeof filterValue === "object" &&
+                filterValue !== null &&
+                "min" in filterValue &&
+                "max" in filterValue
+              ) {
+                const minDate = new Date((filterValue as any).min)
+                const maxDate = new Date((filterValue as any).max)
+                return baslama >= minDate && baslama <= maxDate
+              }
+              return false
+            }
+
+            switch (operator) {
+              case "before":
+                return baslama < filterDate
+              case "after":
+                return baslama > filterDate
+              case "equals":
+                return baslama.toDateString() === filterDate.toDateString()
+              default:
+                return false
+            }
+          },
+        },
+      },
     },
     {
       id: "bitisTarihiDisplay",
@@ -107,6 +171,51 @@ export function getTakipColumns(t: Translations): ColumnDef<GsmWithActiveTakip>[
             {date.toLocaleDateString("tr-TR")}
           </span>
         )
+      },
+      accessorFn: (row) => row.bitisTarihi || null,
+      meta: {
+        filterConfig: {
+          columnId: "bitisTarihiDisplay",
+          type: "date",
+          operators: ["before", "after", "between"],
+          label: t.takipler.endDate,
+          filterField: "bitisTarihi",
+          customFilterFn: (row, filterValue, operator) => {
+            const bitisTarihi = row.bitisTarihi
+            if (!bitisTarihi) return false
+
+            const bitis = new Date(bitisTarihi)
+            if (isNaN(bitis.getTime())) return false
+
+            const filterDate = new Date(filterValue as string)
+            if (isNaN(filterDate.getTime())) {
+              // Handle between
+              if (
+                operator === "between" &&
+                typeof filterValue === "object" &&
+                filterValue !== null &&
+                "min" in filterValue &&
+                "max" in filterValue
+              ) {
+                const minDate = new Date((filterValue as any).min)
+                const maxDate = new Date((filterValue as any).max)
+                return bitis >= minDate && bitis <= maxDate
+              }
+              return false
+            }
+
+            switch (operator) {
+              case "before":
+                return bitis < filterDate
+              case "after":
+                return bitis > filterDate
+              case "equals":
+                return bitis.toDateString() === filterDate.toDateString()
+              default:
+                return false
+            }
+          },
+        },
       },
     },
     {
@@ -142,6 +251,42 @@ export function getTakipColumns(t: Translations): ColumnDef<GsmWithActiveTakip>[
           </span>
         )
       },
+      accessorFn: (row) => row.kalanGun,
+      meta: {
+        filterConfig: {
+          columnId: "kalanGun",
+          type: "computed",
+          operators: ["equals", "greaterThan", "lessThan", "between"],
+          label: t.takipler.remainingDays,
+          customFilterFn: (row, filterValue, operator) => {
+            const kalanGun = row.kalanGun
+            if (kalanGun === null || kalanGun === undefined) return false
+
+            switch (operator) {
+              case "equals":
+                return kalanGun === Number(filterValue)
+              case "greaterThan":
+                return kalanGun > Number(filterValue)
+              case "lessThan":
+                return kalanGun < Number(filterValue)
+              case "between":
+                if (
+                  typeof filterValue === "object" &&
+                  filterValue !== null &&
+                  "min" in filterValue &&
+                  "max" in filterValue
+                ) {
+                  const min = Number((filterValue as any).min)
+                  const max = Number((filterValue as any).max)
+                  return kalanGun >= min && kalanGun <= max
+                }
+                return false
+              default:
+                return false
+            }
+          },
+        },
+      },
     },
     {
       id: "durum",
@@ -159,6 +304,22 @@ export function getTakipColumns(t: Translations): ColumnDef<GsmWithActiveTakip>[
             )}
           </div>
         )
+      },
+      accessorFn: (row) => row.durum,
+      meta: {
+        filterConfig: {
+          columnId: "durum",
+          type: "enum",
+          operators: ["equals", "in"],
+          defaultOperator: "in",
+          options: [
+            { value: "UZATILACAK", label: t.enums.takipDurumu.UZATILACAK },
+            { value: "DEVAM_EDECEK", label: t.enums.takipDurumu.DEVAM_EDECEK },
+            { value: "SONLANDIRILACAK", label: t.enums.takipDurumu.SONLANDIRILACAK },
+            { value: "UZATILDI", label: t.enums.takipDurumu.UZATILDI },
+          ],
+          label: t.takipler.durum,
+        },
       },
     },
     {

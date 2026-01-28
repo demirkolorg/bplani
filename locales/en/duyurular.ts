@@ -4,6 +4,7 @@ export const duyurular: DuyurularTranslations = {
   // Page
   pageTitle: "Announcements",
   pageDescription: "View and manage system announcements",
+  pageSubtitle: "Latest updates and important announcements",
   newDuyuruButton: "New Announcement",
 
   // Form

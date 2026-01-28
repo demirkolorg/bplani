@@ -1,6 +1,5 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { Car, Users } from "lucide-react"
 import Link from "next/link"
 
@@ -9,6 +8,8 @@ import type { Arac } from "@/hooks/use-araclar-vehicles"
 import type { SortOption } from "@/components/shared/data-table"
 import type { Translations } from "@/types/locale"
 import type { AracRenk } from "@/lib/validations"
+import type { DataTableColumnDef } from "@/lib/data-table/types"
+import { createOperatorFilterFn, createNestedFilterFn } from "@/lib/data-table/column-filter-fns"
 
 // Helper to get translated color labels
 export function getAracRenkLabels(t: Translations): Record<AracRenk, string> {
@@ -44,7 +45,7 @@ export function getAracSortOptions(t: Translations): SortOption[] {
   ]
 }
 
-export function getAracColumns(t: Translations): ColumnDef<Arac>[] {
+export function getAracColumns(t: Translations): DataTableColumnDef<Arac>[] {
   const renkLabels = getAracRenkLabels(t)
 
   return [
@@ -70,9 +71,23 @@ export function getAracColumns(t: Translations): ColumnDef<Arac>[] {
           <span className="font-mono font-medium">{plaka}</span>
         )
       },
+      filterFn: createOperatorFilterFn<Arac>(
+        (row) => row.plaka,
+        "text"
+      ),
+      meta: {
+        filterConfig: {
+          columnId: "plaka",
+          type: "text",
+          operators: ["contains", "equals", "inList"],
+          placeholder: "34 ABC 123",
+          label: t.araclar.plaka,
+        },
+      },
     },
     {
       id: "markaModel",
+      accessorFn: (row) => `${row.model.marka.ad} ${row.model.ad}`,
       header: t.araclar.markaModel,
       cell: ({ row }) => {
         const model = row.original.model
@@ -82,6 +97,18 @@ export function getAracColumns(t: Translations): ColumnDef<Arac>[] {
             <span className="text-muted-foreground"> / {model.ad}</span>
           </div>
         )
+      },
+      filterFn: createNestedFilterFn<Arac>(
+        (row) => row.model,
+        ["marka.ad", "ad"]
+      ),
+      meta: {
+        filterConfig: {
+          type: "text",
+          operators: ["contains"],
+          defaultOperator: "contains",
+          placeholder: t.araclar.markaModel,
+        },
       },
     },
     {
@@ -95,6 +122,28 @@ export function getAracColumns(t: Translations): ColumnDef<Arac>[] {
         ) : (
           <span className="text-muted-foreground">-</span>
         )
+      },
+      filterFn: (row, columnId, filterValue) => {
+        if (!filterValue || typeof filterValue !== "object") return true
+        const { operator, value } = filterValue as { operator: string; value: string | string[] }
+        const cellValue = row.getValue<string>(columnId)
+
+        if (operator === "equals") return cellValue === value
+        if (operator === "in") return Array.isArray(value) && value.includes(cellValue)
+        return false
+      },
+      meta: {
+        filterConfig: {
+          columnId: "renk",
+          type: "enum",
+          operators: ["equals", "in"],
+          defaultOperator: "in",
+          options: Object.keys(renkLabels).map(key => ({
+            value: key,
+            label: renkLabels[key as AracRenk],
+          })),
+          label: t.araclar.renk,
+        },
       },
     },
     {

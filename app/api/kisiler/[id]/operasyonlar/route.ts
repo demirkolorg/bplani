@@ -40,6 +40,30 @@ export async function GET(
                 },
               },
             },
+            araclar: {
+              include: {
+                arac: {
+                  include: {
+                    model: {
+                      include: {
+                        marka: true,
+                      },
+                    },
+                    kisiler: {
+                      include: {
+                        kisi: {
+                          select: {
+                            id: true,
+                            ad: true,
+                            soyad: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },

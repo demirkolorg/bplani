@@ -33,6 +33,56 @@ interface KisiInfo {
 interface AracKisiInfo {
   kisi: KisiInfo
   aciklama?: string | null
+  id: string
+}
+
+interface MahalleInfo {
+  id: string
+  ad: string
+  ilce: {
+    id: string
+    ad: string
+    il: {
+      id: string
+      ad: string
+      plaka: number | null
+    }
+  }
+}
+
+interface KatilimciInfo {
+  id: string
+  kisi?: {
+    id: string
+    ad: string
+    soyad: string
+    tc: string | null
+    tt: boolean
+  } | null
+}
+
+interface TanitimInfo {
+  id: string
+  baslik: string | null
+  tarih: string
+  saat: string | null
+  mahalleId: string | null
+  mahalle: MahalleInfo | null
+  adresDetay: string | null
+  notlar: string | null
+  katilimcilar: KatilimciInfo[]
+}
+
+interface OperasyonInfo {
+  id: string
+  baslik: string | null
+  tarih: string
+  saat: string | null
+  mahalleId: string | null
+  mahalle: MahalleInfo | null
+  adresDetay: string | null
+  notlar: string | null
+  katilimcilar: KatilimciInfo[]
 }
 
 export interface Arac {
@@ -48,6 +98,8 @@ export interface Arac {
   updatedUser: UserInfo | null
   model: ModelInfo
   kisiler: AracKisiInfo[]
+  tanitimlar?: { tanitim: TanitimInfo }[]
+  operasyonlar?: { operasyon: OperasyonInfo }[]
 }
 
 interface PaginatedResponse<T> {

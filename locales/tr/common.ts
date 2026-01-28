@@ -90,6 +90,7 @@ export const common: CommonTranslations = {
   more: "diğer",
   location: "Konum",
   participants: "Katılımcılar",
+  vehicles: "Araçlar",
 
   // Person
   firstName: "Ad",
@@ -102,7 +103,7 @@ export const common: CommonTranslations = {
   tcFormatPlaceholder: "11 haneli TC kimlik numarası",
 
   // Search placeholders
-  searchGsmOrCustomer: "GSM numarası veya müşteri ara...",
+  searchGsmOrCustomer: "GSM numarası veya hedef ara...",
   selectGsm: "GSM seçin...",
   noResultsFound: "Sonuç bulunamadı.",
   gsmNotFound: "GSM bulunamadı.",
@@ -111,6 +112,8 @@ export const common: CommonTranslations = {
   // Labels
   tcLabel: "TC:",
   gsmLabel: "GSM:",
+  ttYes: "Hedef",
+  ttNo: "Müzahir",
 
   // Status badges
   added: "Eklendi",
@@ -135,8 +138,8 @@ export const common: CommonTranslations = {
 
   // System values
   system: "Sistem",
-  customer: "Müşteri",
-  candidate: "Aday",
+  customer: "Hedef",
+  candidate: "Müzahir",
 
   // Time expressions
   daysRemaining: "{days} gün kaldı",

@@ -1,6 +1,5 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, Calendar, User, AlertCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Duyuru } from "@/hooks/use-duyurular"
 import type { SortOption } from "@/components/shared/data-table"
 import type { Translations } from "@/types/locale"
+import type { DataTableColumnDef } from "@/lib/data-table/types"
 
 // Duyuru tablosu için sıralama seçenekleri
 export function getDuyuruSortOptions(t: Translations): SortOption[] {
@@ -20,7 +20,7 @@ export function getDuyuruSortOptions(t: Translations): SortOption[] {
   ]
 }
 
-export function getDuyuruColumns(t: Translations, locale: string): ColumnDef<Duyuru>[] {
+export function getDuyuruColumns(t: Translations, locale: string): DataTableColumnDef<Duyuru>[] {
   const dateLocale = locale === "tr" ? "tr-TR" : "en-US"
 
   // Priority badge config
@@ -67,6 +67,20 @@ export function getDuyuruColumns(t: Translations, locale: string): ColumnDef<Duy
           </Badge>
         )
       },
+      meta: {
+        filterConfig: {
+          columnId: "oncelik",
+          type: "enum",
+          operators: ["equals", "in"],
+          defaultOperator: "in",
+          options: [
+            { value: "KRITIK", label: t.duyurular.priorityCritical },
+            { value: "ONEMLI", label: t.duyurular.priorityImportant },
+            { value: "NORMAL", label: t.duyurular.priorityNormal },
+          ],
+          label: t.duyurular.priority,
+        },
+      },
     },
     {
       id: "baslik",
@@ -79,6 +93,15 @@ export function getDuyuruColumns(t: Translations, locale: string): ColumnDef<Duy
             {baslik}
           </div>
         )
+      },
+      meta: {
+        filterConfig: {
+          columnId: "baslik",
+          type: "text",
+          operators: ["contains", "startsWith"],
+          placeholder: t.duyurular.title,
+          label: t.duyurular.title,
+        },
       },
     },
     {
@@ -121,6 +144,14 @@ export function getDuyuruColumns(t: Translations, locale: string): ColumnDef<Duy
           </div>
         )
       },
+      meta: {
+        filterConfig: {
+          columnId: "publishedAt",
+          type: "date",
+          operators: ["before", "after", "between"],
+          label: t.duyurular.publishDate,
+        },
+      },
     },
     {
       id: "expiresAt",
@@ -162,6 +193,28 @@ export function getDuyuruColumns(t: Translations, locale: string): ColumnDef<Duy
             {isActive ? t.duyurular.active : t.duyurular.inactive}
           </Badge>
         )
+      },
+      filterFn: (row, columnId, filterValue) => {
+        if (filterValue === "all") return true
+        return String(row.original.isActive) === String(filterValue)
+      },
+      meta: {
+        filterConfig: {
+          columnId: "isActive",
+          type: "boolean",
+          operators: ["equals"],
+          options: [
+            { value: "all", label: t.common.all },
+            { value: "true", label: t.duyurular.active },
+            { value: "false", label: t.duyurular.inactive },
+          ],
+          defaultOperator: "equals",
+          label: t.duyurular.status,
+          customFilterFn: (row, filterValue, operator) => {
+            if (filterValue === "all") return true
+            return String(row.isActive) === String(filterValue)
+          },
+        },
       },
     },
     {

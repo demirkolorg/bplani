@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
       takipler,
       araclar,
       notlar,
+      faaliyetAlanlari,
       loglar,
     ] = await Promise.all([
       // Kişiler - Turkish-aware search
@@ -209,6 +210,7 @@ export async function GET(request: NextRequest) {
           adresDetay: string | null
           mahalle: string | null
           katilimcilar: string
+          relatedAraclar: string
         }>>`
           SELECT
             t.id,
@@ -240,7 +242,39 @@ export async function GET(request: NextRequest) {
                 WHERE tk."tanitimId" = t.id
               ),
               '[]'::jsonb
-            )::text as katilimcilar
+            )::text as katilimcilar,
+            COALESCE(
+              (SELECT jsonb_agg(subq.data)
+               FROM (
+                 SELECT DISTINCT ON (a.id) jsonb_build_object(
+                   'id', a.id,
+                   'plaka', a.plaka,
+                   'renk', a.renk,
+                   'model', jsonb_build_object(
+                     'ad', mo.ad,
+                     'marka', jsonb_build_object('ad', ma.ad)
+                   ),
+                   'sahipler', COALESCE(
+                     (SELECT jsonb_agg(jsonb_build_object(
+                       'id', k.id, 'ad', k.ad, 'soyad', k.soyad, 'tt', k.tt, 'tc', k.tc
+                     ))
+                     FROM arac_kisileri ak
+                     JOIN kisiler k ON ak."kisiId" = k.id
+                     WHERE ak."aracId" = a.id
+                     LIMIT 3),
+                     '[]'::jsonb
+                   )
+                 ) as data
+                 FROM tanitim_araclari ta
+                 JOIN araclar a ON ta."aracId" = a.id
+                 JOIN modeller mo ON a."modelId" = mo.id
+                 JOIN markalar ma ON mo."markaId" = ma.id
+                 WHERE ta."tanitimId" = t.id
+                 ORDER BY a.id
+                 LIMIT 5
+               ) subq),
+              '[]'::jsonb
+            )::text as "relatedAraclar"
           FROM tanitimlar t
           LEFT JOIN mahalleler m ON t."mahalleId" = m.id
           LEFT JOIN ilceler ilce ON m."ilceId" = ilce.id
@@ -262,6 +296,7 @@ export async function GET(request: NextRequest) {
           ...r,
           mahalle: r.mahalle ? JSON.parse(r.mahalle) : null,
           katilimcilar: JSON.parse(r.katilimcilar),
+          relatedAraclar: JSON.parse(r.relatedAraclar),
         }))
       })(),
 
@@ -278,6 +313,7 @@ export async function GET(request: NextRequest) {
           adresDetay: string | null
           mahalle: string | null
           katilimcilar: string
+          relatedAraclar: string
         }>>`
           SELECT
             o.id,
@@ -309,7 +345,39 @@ export async function GET(request: NextRequest) {
                 WHERE ok."operasyonId" = o.id
               ),
               '[]'::jsonb
-            )::text as katilimcilar
+            )::text as katilimcilar,
+            COALESCE(
+              (SELECT jsonb_agg(subq.data)
+               FROM (
+                 SELECT DISTINCT ON (a.id) jsonb_build_object(
+                   'id', a.id,
+                   'plaka', a.plaka,
+                   'renk', a.renk,
+                   'model', jsonb_build_object(
+                     'ad', mo.ad,
+                     'marka', jsonb_build_object('ad', ma.ad)
+                   ),
+                   'sahipler', COALESCE(
+                     (SELECT jsonb_agg(jsonb_build_object(
+                       'id', k.id, 'ad', k.ad, 'soyad', k.soyad, 'tt', k.tt, 'tc', k.tc
+                     ))
+                     FROM arac_kisileri ak
+                     JOIN kisiler k ON ak."kisiId" = k.id
+                     WHERE ak."aracId" = a.id
+                     LIMIT 3),
+                     '[]'::jsonb
+                   )
+                 ) as data
+                 FROM operasyon_araclari oa
+                 JOIN araclar a ON oa."aracId" = a.id
+                 JOIN modeller mo ON a."modelId" = mo.id
+                 JOIN markalar ma ON mo."markaId" = ma.id
+                 WHERE oa."operasyonId" = o.id
+                 ORDER BY a.id
+                 LIMIT 5
+               ) subq),
+              '[]'::jsonb
+            )::text as "relatedAraclar"
           FROM operasyonlar o
           LEFT JOIN mahalleler m ON o."mahalleId" = m.id
           LEFT JOIN ilceler ilce ON m."ilceId" = ilce.id
@@ -331,6 +399,7 @@ export async function GET(request: NextRequest) {
           ...r,
           mahalle: r.mahalle ? JSON.parse(r.mahalle) : null,
           katilimcilar: JSON.parse(r.katilimcilar),
+          relatedAraclar: JSON.parse(r.relatedAraclar),
         }))
       })(),
 
@@ -407,6 +476,8 @@ export async function GET(request: NextRequest) {
           renk: string | null
           model: string
           kisiler: string
+          relatedTanitimlar: string
+          relatedOperasyonlar: string
         }>>`
           SELECT
             a.id,
@@ -432,7 +503,59 @@ export async function GET(request: NextRequest) {
                 WHERE ak."aracId" = a.id
               ),
               '[]'::jsonb
-            )::text as kisiler
+            )::text as kisiler,
+            COALESCE(
+              (SELECT jsonb_agg(subq.data)
+               FROM (
+                 SELECT DISTINCT ON (t.id) jsonb_build_object(
+                   'id', t.id,
+                   'baslik', t.baslik,
+                   'tarih', t.tarih,
+                   'katilimcilar', COALESCE(
+                     (SELECT jsonb_agg(jsonb_build_object(
+                       'id', k.id, 'ad', k.ad, 'soyad', k.soyad, 'tt', k.tt, 'tc', k.tc
+                     ))
+                     FROM tanitim_katilimcilari tk
+                     JOIN kisiler k ON tk."kisiId" = k.id
+                     WHERE tk."tanitimId" = t.id
+                     LIMIT 3),
+                     '[]'::jsonb
+                   )
+                 ) as data
+                 FROM tanitim_araclari ta
+                 JOIN tanitimlar t ON ta."tanitimId" = t.id
+                 WHERE ta."aracId" = a.id
+                 ORDER BY t.id, t.tarih DESC
+                 LIMIT 5
+               ) subq),
+              '[]'::jsonb
+            )::text as "relatedTanitimlar",
+            COALESCE(
+              (SELECT jsonb_agg(subq.data)
+               FROM (
+                 SELECT DISTINCT ON (o.id) jsonb_build_object(
+                   'id', o.id,
+                   'baslik', o.baslik,
+                   'tarih', o.tarih,
+                   'katilimcilar', COALESCE(
+                     (SELECT jsonb_agg(jsonb_build_object(
+                       'id', k.id, 'ad', k.ad, 'soyad', k.soyad, 'tt', k.tt, 'tc', k.tc
+                     ))
+                     FROM operasyon_katilimcilari ok
+                     JOIN kisiler k ON ok."kisiId" = k.id
+                     WHERE ok."operasyonId" = o.id
+                     LIMIT 3),
+                     '[]'::jsonb
+                   )
+                 ) as data
+                 FROM operasyon_araclari oa
+                 JOIN operasyonlar o ON oa."operasyonId" = o.id
+                 WHERE oa."aracId" = a.id
+                 ORDER BY o.id, o.tarih DESC
+                 LIMIT 5
+               ) subq),
+              '[]'::jsonb
+            )::text as "relatedOperasyonlar"
           FROM araclar a
           JOIN modeller mo ON a."modelId" = mo.id
           JOIN markalar ma ON mo."markaId" = ma.id
@@ -449,6 +572,8 @@ export async function GET(request: NextRequest) {
           ...r,
           model: JSON.parse(r.model),
           kisiler: JSON.parse(r.kisiler),
+          relatedTanitimlar: JSON.parse(r.relatedTanitimlar),
+          relatedOperasyonlar: JSON.parse(r.relatedOperasyonlar),
         }))
       })(),
 
@@ -482,34 +607,52 @@ export async function GET(request: NextRequest) {
         }))
       })(),
 
-      // Loglar - Turkish-aware search
+      // Faaliyet Alanlari - Turkish-aware search
       (async () => {
         const normalizedQuery = normalizeTurkish(query)
         const searchPattern = `%${normalizedQuery}%`
 
         const results = await prisma.$queryRaw<Array<{
           id: string
-          aciklama: string | null
-          entityAd: string | null
-          entityType: string | null
-          islem: string
-          userAd: string | null
-          userSoyad: string | null
+          ad: string
+          parentId: string | null
+          parent: string | null
+          kisiCount: number
         }>>`
-          SELECT id, aciklama, "entityAd", "entityType", islem, "userAd", "userSoyad"
-          FROM loglar
+          SELECT
+            fa.id,
+            fa.ad,
+            fa."parentId",
+            CASE
+              WHEN fa."parentId" IS NOT NULL THEN
+                jsonb_build_object('id', p.id, 'ad', p.ad)::text
+              ELSE NULL
+            END as parent,
+            (
+              SELECT COUNT(*)::int
+              FROM kisi_faaliyet_alanlari kfa
+              JOIN kisiler k ON kfa."kisiId" = k.id
+              WHERE kfa."faaliyetAlaniId" = fa.id
+                AND k."isArchived" = false
+            ) as "kisiCount"
+          FROM faaliyet_alanlari fa
+          LEFT JOIN faaliyet_alanlari p ON fa."parentId" = p.id
           WHERE
-            LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(aciklama, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+            fa."isActive" = true
+            AND LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(fa.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
-            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE("entityAd", ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
-              LIKE ${searchPattern}
-            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE("userAd", ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
-              LIKE ${searchPattern}
-          ORDER BY "createdAt" DESC
           LIMIT ${limit}
         `
 
-        return results
+        return results.map(r => ({
+          ...r,
+          parent: r.parent ? JSON.parse(r.parent) : null,
+        }))
+      })(),
+
+      // Loglar - Disabled for global search
+      (async () => {
+        return []
       })(),
     ])
 
@@ -531,7 +674,7 @@ export async function GET(request: NextRequest) {
         id: g.id,
         title: g.numara,
         subtitle: `${g.kisi.ad} ${g.kisi.soyad}`,
-        url: `/kisiler/${g.kisiId}`,
+        url: `/numaralar/${g.id}`,
         category: "gsmler",
         metadata: {
           relatedKisiler: [{
@@ -604,6 +747,13 @@ export async function GET(request: NextRequest) {
               tt: k.tt,
               tc: k.tc,
             })),
+            relatedAraclar: (t.relatedAraclar || []).map((a: any) => ({
+              id: a.id,
+              plaka: a.plaka,
+              model: a.model,
+              renk: a.renk,
+              sahipler: a.sahipler,
+            })),
           },
         }
       }),
@@ -632,6 +782,13 @@ export async function GET(request: NextRequest) {
               soyad: k.soyad,
               tt: k.tt,
               tc: k.tc,
+            })),
+            relatedAraclar: (o.relatedAraclar || []).map((a: any) => ({
+              id: a.id,
+              plaka: a.plaka,
+              model: a.model,
+              renk: a.renk,
+              sahipler: a.sahipler,
             })),
           },
         }
@@ -675,6 +832,18 @@ export async function GET(request: NextRequest) {
             tt: k.tt,
             tc: k.tc,
           })),
+          relatedTanitimlar: (a.relatedTanitimlar || []).map((t: any) => ({
+            id: t.id,
+            baslik: t.baslik,
+            tarih: t.tarih,
+            katilimcilar: t.katilimcilar,
+          })),
+          relatedOperasyonlar: (a.relatedOperasyonlar || []).map((o: any) => ({
+            id: o.id,
+            baslik: o.baslik,
+            tarih: o.tarih,
+            katilimcilar: o.katilimcilar,
+          })),
         },
       })),
 
@@ -694,13 +863,21 @@ export async function GET(request: NextRequest) {
         },
       })),
 
-      loglar: loglar.map((l) => ({
-        id: l.id,
-        title: l.entityAd || l.aciklama || l.islem,
-        subtitle: `${l.userAd || ""} ${l.userSoyad || ""} - ${l.entityType || ""}`.trim(),
-        url: `/loglar`,
-        category: "loglar",
+      faaliyetAlanlari: faaliyetAlanlari.map((fa) => ({
+        id: fa.id,
+        title: fa.ad,
+        subtitle: fa.parent
+          ? `${fa.parent.ad} / ${fa.kisiCount} kişi`
+          : `${fa.kisiCount} kişi`,
+        url: `/tanimlamalar/faaliyet-alanlari/${fa.id}`,
+        category: "faaliyetAlanlari",
+        metadata: {
+          kisiCount: fa.kisiCount,
+          parent: fa.parent || undefined,
+        },
       })),
+
+      loglar: [], // Disabled for global search
     }
 
     // Calculate total results

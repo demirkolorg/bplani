@@ -39,6 +39,30 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             },
           },
         },
+        araclar: {
+          include: {
+            arac: {
+              include: {
+                model: {
+                  include: {
+                    marka: true,
+                  },
+                },
+                kisiler: {
+                  include: {
+                    kisi: {
+                      select: {
+                        id: true,
+                        ad: true,
+                        soyad: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         createdUser: { select: { ad: true, soyad: true } },
         updatedUser: { select: { ad: true, soyad: true } },
       },
@@ -123,6 +147,30 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
                 soyad: true,
                 tc: true,
                 tt: true,
+              },
+            },
+          },
+        },
+        araclar: {
+          include: {
+            arac: {
+              include: {
+                model: {
+                  include: {
+                    marka: true,
+                  },
+                },
+                kisiler: {
+                  include: {
+                    kisi: {
+                      select: {
+                        id: true,
+                        ad: true,
+                        soyad: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },

@@ -3,7 +3,7 @@ import type { TakiplerTranslations } from "@/types/locale"
 export const takipler: TakiplerTranslations = {
   // Page
   pageTitle: "Decisions",
-  pageDescription: "Manage customer decisions",
+  pageDescription: "Manage target decisions",
   newTakipButton: "New Decision",
   newTakipPageTitle: "Add New Decision",
   newTakipPageDescription: "Select phone numbers to add decisions",
@@ -71,12 +71,12 @@ export const takipler: TakiplerTranslations = {
   deleteTakipConfirm: "Are you sure you want to delete this decision? This action cannot be undone and associated alarms will also be deleted.",
 
   // Search
-  searchPlaceholder: "Search by customer name or phone...",
+  searchPlaceholder: "Search by target name or phone...",
 
   // New Takip Page
   availableGsms: "Available Phones",
   itemsCount: "{count} items",
-  searchGsmOrCustomer: "Search phone or customer...",
+  searchGsmOrCustomer: "Search phone or target...",
   removeAll: "Remove All",
   noResultsFound: "No results found",
   allGsmsSelected: "All phones selected",
@@ -96,6 +96,7 @@ export const takipler: TakiplerTranslations = {
   backToTakipler: "Back to Decisions",
   goToPersonDetail: "Go to Person Details",
   addNewTakip: "Add New Decision",
+  noActiveTakip: "No active decision",
   noActiveTakipDescription: "There is no active decision record for this phone.",
   takipHistory: "Decision History",
   duration: "Duration",

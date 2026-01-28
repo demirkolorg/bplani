@@ -12,6 +12,11 @@ export const tabloTercihSchema = z.object({
     yon: z.enum(["asc", "desc"]),
   }).optional(),
   sayfaBoyutu: z.number().int().positive().max(100).optional(),
+  // TanStack native ColumnFiltersState format
+  filtreler: z.array(z.object({
+    id: z.string(),
+    value: z.any(), // { operator: string, value: any }
+  })).optional(),
 })
 
 // Tema tercihleri için yapı

@@ -44,7 +44,7 @@ export function DuyuruList() {
           </div>
           <div>
             <h2 className="text-lg font-bold">{t.duyurular.pageTitle}</h2>
-            <p className="text-xs text-muted-foreground">Son güncellemeler ve önemli duyurular</p>
+            <p className="text-xs text-muted-foreground">{t.duyurular.pageSubtitle}</p>
           </div>
         </div>
         {data.data.length > 0 && (

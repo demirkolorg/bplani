@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Megaphone, Calendar, MapPin, Users, ExternalLink, Plus, ChevronDown, History, Clock, FileText } from "lucide-react"
+import { Megaphone, Calendar, MapPin, Users, ExternalLink, Plus, ChevronDown, History, Clock, FileText, Car } from "lucide-react"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
 
@@ -37,6 +37,10 @@ function TanitimRow({ tanitim }: { tanitim: Tanitim }) {
   const katilimcilar = tanitim.katilimcilar?.filter((k) => k.kisi) || []
   const visibleKatilimcilar = katilimcilar.slice(0, 3)
   const remainingCount = katilimcilar.length - 3
+
+  const araclar = tanitim.araclar?.filter((a) => a.arac) || []
+  const visibleAraclar = araclar.slice(0, 3)
+  const remainingAracCount = araclar.length - 3
 
   // Combined address (location + detail)
   const fullAddress = [lokasyon, tanitim.adresDetay].filter(Boolean).join(" - ")
@@ -94,6 +98,42 @@ function TanitimRow({ tanitim }: { tanitim: Tanitim }) {
             <div className="flex-1">
               <div className="text-xs text-muted-foreground mb-1">{t.common.location}</div>
               <div className="text-sm">{fullAddress}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Araçlar */}
+        {araclar.length > 0 && (
+          <div className="flex items-start gap-3">
+            <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+              <Car className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-muted-foreground mb-1">{t.common.vehicles}</div>
+              <div className="flex flex-wrap gap-2">
+                {visibleAraclar.map((a) => (
+                  <Badge
+                    key={a.id}
+                    variant="outline"
+                    className="text-xs bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-700"
+                  >
+                    <span className="font-mono font-bold">{a.arac?.plaka}</span>
+                    <span className="text-muted-foreground ml-1">
+                      {a.arac?.model?.marka?.ad} {a.arac?.model?.ad}
+                    </span>
+                  </Badge>
+                ))}
+                {remainingAracCount > 0 && (
+                  <Link href={`/tanitimlar/${tanitim.id}`}>
+                    <Badge
+                      variant="outline"
+                      className="text-xs cursor-pointer hover:bg-muted transition-colors"
+                    >
+                      +{remainingAracCount}
+                    </Badge>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -1,14 +1,16 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
-import { Phone, Check, X } from "lucide-react"
+import { Phone, Check, X, ExternalLink } from "lucide-react"
 import { differenceInDays, format } from "date-fns"
 import { tr as trLocale } from "date-fns/locale"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { useTabs } from "@/components/providers/tab-provider"
 import type { NumaraWithKisi } from "@/hooks/use-numaralar"
 import type { SortOption } from "@/components/shared/data-table"
 import type { NumaralarTranslations } from "@/types/locale"
+import type { DataTableColumnDef } from "@/lib/data-table/types"
 
 // Numara tablosu için sıralama seçenekleri
 export function getNumaraSortOptions(t: NumaralarTranslations): SortOption[] {
@@ -22,7 +24,7 @@ export function getNumaraSortOptions(t: NumaralarTranslations): SortOption[] {
   ]
 }
 
-export function getNumaraColumns(t: NumaralarTranslations): ColumnDef<NumaraWithKisi>[] {
+export function getNumaraColumns(t: NumaralarTranslations): DataTableColumnDef<NumaraWithKisi>[] {
   return [
     // Hidden columns for sorting
     {
@@ -42,9 +44,29 @@ export function getNumaraColumns(t: NumaralarTranslations): ColumnDef<NumaraWith
       ),
       cell: ({ row }) => {
         const numara = row.original.numara
+        const gsmId = row.original.id
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const { openTab } = useTabs()
+
         return (
-          <span className="font-mono font-medium">{numara}</span>
+          <Button
+            variant="link"
+            className="p-0 h-auto font-mono font-medium hover:text-primary group"
+            onClick={() => openTab(`/numaralar/${gsmId}`)}
+          >
+            {numara}
+            <ExternalLink className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </Button>
         )
+      },
+      meta: {
+        filterConfig: {
+          columnId: "numara",
+          type: "text",
+          operators: ["contains", "equals", "inList"],
+          placeholder: "555...",
+          label: t.numara,
+        },
       },
     },
     {
@@ -84,6 +106,31 @@ export function getNumaraColumns(t: NumaralarTranslations): ColumnDef<NumaraWith
           </Badge>
         )
       },
+      accessorFn: (row) => row.kisi?.tt,
+      filterFn: (row, columnId, filterValue) => {
+        if (filterValue === "all") return true
+        const tt = row.original.kisi?.tt
+        return String(tt) === String(filterValue)
+      },
+      meta: {
+        filterConfig: {
+          columnId: "kisiTip",
+          type: "boolean",
+          operators: ["equals"],
+          options: [
+            { value: "all", label: t.tumu || "Tümü" },
+            { value: "true", label: t.musteri },
+            { value: "false", label: t.aday },
+          ],
+          defaultOperator: "equals",
+          label: t.tip,
+          customFilterFn: (row, filterValue, operator) => {
+            if (filterValue === "all") return true
+            const tt = row.kisi?.tt
+            return String(tt) === String(filterValue)
+          },
+        },
+      },
     },
     {
       id: "takipVar",
@@ -103,6 +150,31 @@ export function getNumaraColumns(t: NumaralarTranslations): ColumnDef<NumaraWith
           </div>
         )
       },
+      accessorFn: (row) => row.takipler && row.takipler.length > 0,
+      filterFn: (row, columnId, filterValue) => {
+        if (filterValue === "all") return true
+        const hasTakip = row.original.takipler && row.original.takipler.length > 0
+        return String(hasTakip) === String(filterValue)
+      },
+      meta: {
+        filterConfig: {
+          columnId: "takipVar",
+          type: "boolean",
+          operators: ["equals"],
+          options: [
+            { value: "all", label: t.tumu || "Tümü" },
+            { value: "true", label: t.takipVar },
+            { value: "false", label: t.takipYok },
+          ],
+          defaultOperator: "equals",
+          label: t.takip,
+          customFilterFn: (row, filterValue, operator) => {
+            if (filterValue === "all") return true
+            const hasTakip = row.takipler && row.takipler.length > 0
+            return String(hasTakip) === String(filterValue)
+          },
+        },
+      },
     },
     {
       id: "baslamaTarihi",
@@ -121,6 +193,51 @@ export function getNumaraColumns(t: NumaralarTranslations): ColumnDef<NumaraWith
             {format(baslamaTarihi, "d MMM yyyy", { locale: trLocale })}
           </span>
         )
+      },
+      accessorFn: (row) => row.takipler?.[0]?.baslamaTarihi || null,
+      meta: {
+        filterConfig: {
+          columnId: "baslamaTarihi",
+          type: "date",
+          operators: ["before", "after", "between"],
+          label: t.baslama,
+          customFilterFn: (row, filterValue, operator) => {
+            const takipler = row.takipler
+            if (!takipler || takipler.length === 0 || !takipler[0].baslamaTarihi) {
+              return false
+            }
+            const baslamaTarihi = new Date(takipler[0].baslamaTarihi)
+            if (isNaN(baslamaTarihi.getTime())) return false
+
+            const filterDate = new Date(filterValue as string)
+            if (isNaN(filterDate.getTime())) {
+              // Handle between
+              if (
+                operator === "between" &&
+                typeof filterValue === "object" &&
+                filterValue !== null &&
+                "min" in filterValue &&
+                "max" in filterValue
+              ) {
+                const minDate = new Date((filterValue as any).min)
+                const maxDate = new Date((filterValue as any).max)
+                return baslamaTarihi >= minDate && baslamaTarihi <= maxDate
+              }
+              return false
+            }
+
+            switch (operator) {
+              case "before":
+                return baslamaTarihi < filterDate
+              case "after":
+                return baslamaTarihi > filterDate
+              case "equals":
+                return baslamaTarihi.toDateString() === filterDate.toDateString()
+              default:
+                return false
+            }
+          },
+        },
       },
     },
     {
@@ -188,6 +305,56 @@ export function getNumaraColumns(t: NumaralarTranslations): ColumnDef<NumaraWith
             </Badge>
           )
         }
+      },
+      accessorFn: (row) => {
+        const takipler = row.takipler
+        if (!takipler || takipler.length === 0 || !takipler[0].bitisTarihi) return null
+        const bitisTarihi = new Date(takipler[0].bitisTarihi)
+        if (isNaN(bitisTarihi.getTime())) return null
+        const today = new Date()
+        return differenceInDays(bitisTarihi, today)
+      },
+      meta: {
+        filterConfig: {
+          columnId: "kalanGun",
+          type: "computed",
+          operators: ["equals", "greaterThan", "lessThan", "between"],
+          label: t.kalanGun,
+          customFilterFn: (row, filterValue, operator) => {
+            const takipler = row.takipler
+            if (!takipler || takipler.length === 0 || !takipler[0].bitisTarihi) {
+              return false
+            }
+            const bitisTarihi = new Date(takipler[0].bitisTarihi)
+            if (isNaN(bitisTarihi.getTime())) return false
+
+            const today = new Date()
+            const kalanGun = differenceInDays(bitisTarihi, today)
+
+            switch (operator) {
+              case "equals":
+                return kalanGun === Number(filterValue)
+              case "greaterThan":
+                return kalanGun > Number(filterValue)
+              case "lessThan":
+                return kalanGun < Number(filterValue)
+              case "between":
+                if (
+                  typeof filterValue === "object" &&
+                  filterValue !== null &&
+                  "min" in filterValue &&
+                  "max" in filterValue
+                ) {
+                  const min = Number((filterValue as any).min)
+                  const max = Number((filterValue as any).max)
+                  return kalanGun >= min && kalanGun <= max
+                }
+                return false
+              default:
+                return false
+            }
+          },
+        },
       },
     },
   ]

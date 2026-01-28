@@ -3,9 +3,10 @@
 import * as React from "react"
 import { format, parse, isValid } from "date-fns"
 import { tr } from "date-fns/locale"
-import { CalendarIcon, Clock, MapPin, FileText } from "lucide-react"
+import { CalendarIcon, Clock, MapPin, FileText, Car, Plus, X, Check, ChevronsUpDown } from "lucide-react"
 
 import { useCreateOperasyon } from "@/hooks/use-operasyonlar"
+import { useAraclar, type Arac } from "@/hooks/use-araclar-vehicles"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,9 +21,19 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import { LokasyonSelector } from "@/components/lokasyon/lokasyon-selector"
 import { useLocale } from "@/components/providers/locale-provider"
 import { interpolate } from "@/locales"
+import { cn } from "@/lib/utils"
+import { AracForm } from "@/components/araclar/vehicles"
 
 interface YeniOperasyonModalProps {
   open: boolean
@@ -39,6 +50,7 @@ export function YeniOperasyonModal({
 }: YeniOperasyonModalProps) {
   const { t } = useLocale()
   const createOperasyon = useCreateOperasyon()
+  const { data: araclarData } = useAraclar({ limit: 100 })
 
   // Form state
   const [baslik, setBaslik] = React.useState<string>("")
@@ -53,6 +65,22 @@ export function YeniOperasyonModal({
   const [notlar, setNotlar] = React.useState("")
   const [error, setError] = React.useState("")
 
+  // Araç states
+  const [selectedAracIds, setSelectedAracIds] = React.useState<Set<string>>(new Set())
+  const [isAracDialogOpen, setIsAracDialogOpen] = React.useState(false)
+  const [isNewAracDialogOpen, setIsNewAracDialogOpen] = React.useState(false)
+  const [aracSelectorOpen, setAracSelectorOpen] = React.useState(false)
+  const [selectedAracId, setSelectedAracId] = React.useState("")
+
+  const araclar = araclarData?.data || []
+  const availableAraclar = React.useMemo(() => {
+    return araclar.filter((a) => !selectedAracIds.has(a.id))
+  }, [araclar, selectedAracIds])
+
+  const selectedAraclar = React.useMemo(() => {
+    return araclar.filter((a) => selectedAracIds.has(a.id))
+  }, [araclar, selectedAracIds])
+
   // Reset form when modal opens
   React.useEffect(() => {
     if (open) {
@@ -63,8 +91,25 @@ export function YeniOperasyonModal({
       setAdresDetay("")
       setNotlar("")
       setError("")
+      setSelectedAracIds(new Set())
+      setSelectedAracId("")
     }
   }, [open])
+
+  const handleAddArac = () => {
+    if (!selectedAracId) return
+    setSelectedAracIds((prev) => new Set([...prev, selectedAracId]))
+    setSelectedAracId("")
+    setIsAracDialogOpen(false)
+  }
+
+  const handleRemoveArac = (aracId: string) => {
+    setSelectedAracIds((prev) => {
+      const next = new Set(prev)
+      next.delete(aracId)
+      return next
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,6 +124,7 @@ export function YeniOperasyonModal({
         adresDetay: adresDetay || null,
         notlar: notlar || null,
         katilimcilar: [{ kisiId }],
+        araclar: selectedAracIds.size > 0 ? Array.from(selectedAracIds).map((aracId) => ({ aracId })) : undefined,
       })
       onOpenChange(false)
     } catch (err) {
@@ -124,7 +170,7 @@ export function YeniOperasyonModal({
                 <CalendarIcon className="h-4 w-4" />
                 {t.operasyonlar.dateTime}
               </Label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <Input
                   type="text"
                   placeholder={t.common.dateFormatPlaceholder}
@@ -152,9 +198,7 @@ export function YeniOperasyonModal({
                     />
                   </PopoverContent>
                 </Popover>
-              </div>
-              <div className="flex gap-2 items-center">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                 <Input
                   type="time"
                   placeholder={t.common.timeFormatPlaceholder}
@@ -162,8 +206,8 @@ export function YeniOperasyonModal({
                   onChange={(e) => setSaat(e.target.value)}
                   className="w-32"
                 />
-                <span className="text-xs text-muted-foreground">{t.operasyonlar.optional}</span>
               </div>
+              <span className="text-xs text-muted-foreground">{t.operasyonlar.optional}</span>
             </div>
 
             {/* Lokasyon */}
@@ -205,6 +249,58 @@ export function YeniOperasyonModal({
                 rows={3}
               />
             </div>
+
+            {/* Araçlar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <Car className="h-4 w-4 text-purple-600" />
+                  {t.operasyonlar.vehicles}
+                  <span className="text-xs text-muted-foreground font-normal">({t.operasyonlar.optional})</span>
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAracDialogOpen(true)}
+                  disabled={availableAraclar.length === 0}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  {t.common.add}
+                </Button>
+              </div>
+              {selectedAraclar.length > 0 ? (
+                <div className="space-y-2">
+                  {selectedAraclar.map((arac) => (
+                    <div
+                      key={arac.id}
+                      className="flex items-center justify-between p-2 rounded-md border bg-purple-50 border-purple-300 dark:bg-purple-950 dark:border-purple-700"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Car className="h-4 w-4 text-purple-600 shrink-0" />
+                        <span className="font-mono font-bold text-sm">{arac.plaka}</span>
+                        <span className="text-sm text-muted-foreground truncate">
+                          {arac.model.marka.ad} {arac.model.ad}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleRemoveArac(arac.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Araç eklenmedi
+                </p>
+              )}
+            </div>
           </div>
 
           <DialogFooter>
@@ -225,6 +321,140 @@ export function YeniOperasyonModal({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Araç Ekleme Dialog */}
+      <Dialog open={isAracDialogOpen} onOpenChange={(open) => {
+        setIsAracDialogOpen(open)
+        if (!open) {
+          setSelectedAracId("")
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.operasyonlar.vehicles}</DialogTitle>
+            <DialogDescription>
+              Operasyona eklenecek aracı seçin
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t.operasyonlar.searchVehicle}</Label>
+              <Popover open={aracSelectorOpen} onOpenChange={setAracSelectorOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={aracSelectorOpen}
+                    className="w-full justify-between"
+                    type="button"
+                  >
+                    {selectedAracId
+                      ? availableAraclar.find(a => a.id === selectedAracId)?.plaka
+                      : t.operasyonlar.searchVehicle}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[360px] p-0">
+                  <Command>
+                    <CommandInput placeholder={t.operasyonlar.searchVehicle} />
+                    <CommandList>
+                      <CommandEmpty>
+                        {availableAraclar.length === 0
+                          ? t.operasyonlar.allVehiclesAdded
+                          : t.operasyonlar.vehicleNotFound}
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {availableAraclar.map((arac) => (
+                          <CommandItem
+                            key={arac.id}
+                            value={`${arac.plaka} ${arac.model.marka.ad} ${arac.model.ad}`}
+                            onSelect={() => {
+                              setSelectedAracId(arac.id)
+                              setAracSelectorOpen(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedAracId === arac.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div>
+                              <span className="font-mono font-bold">{arac.plaka}</span>
+                              <span className="text-muted-foreground text-sm ml-2">
+                                {arac.model.marka.ad} {arac.model.ad}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {selectedAracId && (
+              <Button
+                onClick={handleAddArac}
+                disabled={!selectedAracId}
+                className="w-full"
+                type="button"
+              >
+                {t.common.add}
+              </Button>
+            )}
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  {t.common.or}
+                </span>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setIsAracDialogOpen(false)
+                setIsNewAracDialogOpen(true)
+              }}
+              type="button"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {t.common.createNewVehicle}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Yeni Araç Form Dialog */}
+      <Dialog open={isNewAracDialogOpen} onOpenChange={setIsNewAracDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t.operasyonlar.newVehicleModalTitle}</DialogTitle>
+            <DialogDescription>
+              {t.operasyonlar.newVehicleModalDescription}
+            </DialogDescription>
+          </DialogHeader>
+          <AracForm
+            inModal
+            onSuccess={() => {
+              setIsNewAracDialogOpen(false)
+              setIsAracDialogOpen(true)
+            }}
+            onCancel={() => {
+              setIsNewAracDialogOpen(false)
+              setIsAracDialogOpen(true)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }

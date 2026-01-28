@@ -1,6 +1,5 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { User, Phone, Pause, Clock } from "lucide-react"
 import { format, differenceInDays } from "date-fns"
 import { tr as trLocale, enUS } from "date-fns/locale"
@@ -10,6 +9,8 @@ import type { Alarm } from "@/hooks/use-alarmlar"
 import type { SortOption } from "@/components/shared/data-table"
 import type { Translations } from "@/types/locale"
 import { interpolate } from "@/locales"
+import type { DataTableColumnDef } from "@/lib/data-table/types"
+import { createOperatorFilterFn } from "@/lib/data-table/column-filter-fns"
 
 // Alarm tablosu için sıralama seçenekleri
 export function getAlarmSortOptions(t: Translations): SortOption[] {
@@ -29,7 +30,7 @@ export const alarmSortOptions: SortOption[] = [
   { label: "Oluşturma (Eski)", value: "createdAt-asc", column: "createdAt", direction: "asc" },
 ]
 
-export function getAlarmColumns(t: Translations, locale: string): ColumnDef<Alarm>[] {
+export function getAlarmColumns(t: Translations, locale: string): DataTableColumnDef<Alarm>[] {
   const dateLocale = locale === "tr" ? trLocale : enUS
 
   // Tip labels
@@ -57,6 +58,7 @@ export function getAlarmColumns(t: Translations, locale: string): ColumnDef<Alar
     // Visible columns
     {
       id: "durum",
+      accessorKey: "durum",
       header: t.alarmlar.durum,
       cell: ({ row }) => {
         const durum = row.original.durum
@@ -77,9 +79,33 @@ export function getAlarmColumns(t: Translations, locale: string): ColumnDef<Alar
           </div>
         )
       },
+      filterFn: (row, columnId, filterValue) => {
+        if (!filterValue || typeof filterValue !== "object") return true
+        const { operator, value } = filterValue as { operator: string; value: string | string[] }
+        const cellValue = row.getValue<string>(columnId)
+
+        if (operator === "equals") return cellValue === value
+        if (operator === "in") return Array.isArray(value) && value.includes(cellValue)
+        return false
+      },
+      meta: {
+        filterConfig: {
+          type: "enum",
+          operators: ["equals", "in"],
+          defaultOperator: "in",
+          options: [
+            { value: "BEKLIYOR", label: t.alarmlar.durumBekliyor },
+            { value: "TETIKLENDI", label: t.alarmlar.durumTetiklendi },
+            { value: "GORULDU", label: t.alarmlar.durumGoruldu },
+            { value: "IPTAL", label: t.alarmlar.durumIptal },
+          ],
+          placeholder: t.alarmlar.durum,
+        }
+      },
     },
     {
       id: "tip",
+      accessorKey: "tip",
       header: t.alarmlar.tip,
       cell: ({ row }) => {
         const tip = row.original.tip
@@ -89,9 +115,32 @@ export function getAlarmColumns(t: Translations, locale: string): ColumnDef<Alar
           </Badge>
         )
       },
+      filterFn: (row, columnId, filterValue) => {
+        if (!filterValue || typeof filterValue !== "object") return true
+        const { operator, value } = filterValue as { operator: string; value: string | string[] }
+        const cellValue = row.getValue<string>(columnId)
+
+        if (operator === "equals") return cellValue === value
+        if (operator === "in") return Array.isArray(value) && value.includes(cellValue)
+        return false
+      },
+      meta: {
+        filterConfig: {
+          type: "enum",
+          operators: ["equals", "in"],
+          defaultOperator: "in",
+          options: [
+            { value: "TAKIP_BITIS", label: t.alarmlar.tipTakipBitis },
+            { value: "ODEME_HATIRLATMA", label: t.alarmlar.tipOdemeHatirlatma },
+            { value: "OZEL", label: t.alarmlar.tipOzel },
+          ],
+          placeholder: t.alarmlar.tip,
+        }
+      },
     },
     {
       id: "baslik",
+      accessorFn: (row) => `${row.baslik || ""} ${row.mesaj || ""}`,
       header: t.alarmlar.baslikMesaj,
       cell: ({ row }) => {
         const baslik = row.original.baslik
@@ -109,6 +158,18 @@ export function getAlarmColumns(t: Translations, locale: string): ColumnDef<Alar
             )}
           </div>
         )
+      },
+      filterFn: createOperatorFilterFn<Alarm>(
+        (row) => `${row.baslik || ""} ${row.mesaj || ""}`,
+        "text"
+      ),
+      meta: {
+        filterConfig: {
+          type: "text",
+          operators: ["contains"],
+          defaultOperator: "contains",
+          placeholder: t.alarmlar.baslikMesaj,
+        }
       },
     },
     {
@@ -172,9 +233,22 @@ export function getAlarmColumns(t: Translations, locale: string): ColumnDef<Alar
           </div>
         )
       },
+      filterFn: createOperatorFilterFn<Alarm>(
+        (row) => row.tetikTarihi,
+        "date"
+      ),
+      meta: {
+        filterConfig: {
+          type: "date",
+          operators: ["before", "after", "between"],
+          defaultOperator: "before",
+          placeholder: t.alarmlar.tetikTarihi,
+        }
+      },
     },
     {
       id: "gunOnce",
+      accessorKey: "gunOnce",
       header: t.alarmlar.gunOnce,
       cell: ({ row }) => {
         return (
@@ -182,6 +256,18 @@ export function getAlarmColumns(t: Translations, locale: string): ColumnDef<Alar
             {row.original.gunOnce} {t.alarmlar.days}
           </Badge>
         )
+      },
+      filterFn: createOperatorFilterFn<Alarm>(
+        (row) => row.gunOnce,
+        "number"
+      ),
+      meta: {
+        filterConfig: {
+          type: "number",
+          operators: ["equals", "greaterThan", "lessThan"],
+          defaultOperator: "equals",
+          placeholder: t.alarmlar.gunOnce,
+        }
       },
     },
     {

@@ -390,7 +390,7 @@ export default function YeniTanitimPage() {
                 <CalendarIcon className="h-4 w-4" />
                 {t.tanitimlar.dateTime}
               </Label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <Input
                   type="text"
                   placeholder={t.common.dateFormatPlaceholder}
@@ -418,9 +418,7 @@ export default function YeniTanitimPage() {
                     />
                   </PopoverContent>
                 </Popover>
-              </div>
-              <div className="flex gap-2 items-center">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                 <Input
                   type="time"
                   placeholder={t.common.timeFormatPlaceholder}
@@ -428,8 +426,8 @@ export default function YeniTanitimPage() {
                   onChange={(e) => setSaat(e.target.value)}
                   className="w-32"
                 />
-                <span className="text-xs text-muted-foreground">{t.tanitimlar.optional}</span>
               </div>
+              <span className="text-xs text-muted-foreground">{t.tanitimlar.optional}</span>
             </div>
 
             {/* Lokasyon */}

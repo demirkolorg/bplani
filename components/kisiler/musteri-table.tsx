@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Eye, Trash2 } from "lucide-react"
+import type { ColumnFiltersState } from "@tanstack/react-table"
 
 import { useKisiler, useDeleteKisi, type Kisi } from "@/hooks/use-kisiler"
 import { useDataTablePreferences } from "@/hooks/use-table-preferences"
@@ -27,7 +28,7 @@ export function KisiTable() {
   const { data, isLoading } = useKisiler()
   const deleteKisi = useDeleteKisi()
 
-  // Table preferences (column visibility, sorting, page size)
+  // Table preferences (column visibility, sorting, page size, filters)
   const prefs = useDataTablePreferences("kisiler", {
     defaultSort: { column: "createdAt", direction: "desc" },
     defaultPageSize: 20,
@@ -35,6 +36,14 @@ export function KisiTable() {
 
   const columns = React.useMemo(() => getKisiColumns(t), [t])
   const sortOptions = React.useMemo(() => getKisiSortOptions(t), [t])
+
+  // Load saved filters on mount
+  const [initialFilters] = React.useState(() => prefs.filters || [])
+
+  // Handle filter changes with persistence
+  const handleFiltersChange = React.useCallback((filters: ColumnFiltersState) => {
+    prefs.setFilters(filters)
+  }, [prefs.setFilters])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -94,23 +103,27 @@ export function KisiTable() {
         defaultSort={prefs.defaultSort}
         pageSize={prefs.pageSize}
         defaultColumnVisibility={prefs.columnVisibility}
+        defaultColumnFilters={initialFilters}
         onRowClick={handleRowClick}
         rowWrapper={rowWrapper}
         onColumnVisibilityChange={prefs.setColumnVisibility}
         onSortChange={prefs.setSorting}
         onPageSizeChange={prefs.setPageSize}
+        onColumnFiltersChange={handleFiltersChange}
         columnVisibilityLabels={{
-          tt: t.kisiler.tt,
           tip: t.kisiler.tip,
           tc: t.kisiler.tcKimlik,
           adSoyad: t.common.fullName,
           faaliyet: t.kisiler.faaliyet,
           gsm: "GSM",
           adres: t.kisiler.addresses,
-          tanitim: t.navigation.tanitimlar,
+          tanitim: "Tanıtım",
+          operasyon: "Operasyon",
+          arac: "Araç",
           not: t.common.note,
           pio: t.kisiler.pio,
           asli: t.kisiler.asli,
+          tt: t.kisiler.tt,
         }}
       />
 

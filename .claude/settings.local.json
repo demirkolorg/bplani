@@ -56,7 +56,17 @@
       "Bash(node check-takip-detailed.js:*)",
       "Bash(head:*)",
       "Bash(tail:*)",
-      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")"
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "WebFetch(domain:tanstack.com)",
+      "Bash(pkill:*)",
+      "Bash(test:*)",
+      "WebSearch",
+      "WebFetch(domain:react-querybuilder.js.org)",
+      "WebFetch(domain:github.com)",
+      "Bash(timeout /t 3)",
+      "Bash(timeout 5 bash:*)",
+      "Bash(cat:*)",
+      "Bash(wc:*)"
     ]
   }
 }

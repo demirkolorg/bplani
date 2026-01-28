@@ -86,8 +86,8 @@ export const araclar: AraclarTranslations = {
   searchKisi: "Search person...",
   kisiNotFound: "No person found.",
   kisilerSelected: "{count} person(s) selected",
-  musteri: "Customer",
-  aday: "Lead",
+  musteri: "Target",
+  aday: "Supporter",
 
   // Sorting
   sortPlateAsc: "Plate (A → Z)",
@@ -98,4 +98,15 @@ export const araclar: AraclarTranslations = {
   // Actions
   deleting: "Deleting...",
   adding: "Adding...",
+
+  // Error pages
+  aracNotFoundDescription: "The vehicle you are looking for could not be found or may have been deleted.",
+  backToAraclar: "Back to Vehicles",
+
+  // Related data
+  noKisiler: "No persons registered to this vehicle",
+  tanitimlar: "Introductions",
+  operasyonlar: "Operations",
+  noTanitimlar: "This vehicle has not been used in any introductions",
+  noOperasyonlar: "This vehicle has not been used in any operations",
 }

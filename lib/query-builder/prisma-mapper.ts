@@ -1,9 +1,10 @@
 /**
  * Prisma Filter Mapper
  * Converts QueryOutput to Prisma where clause
+ * Supports nested filter groups (DevExpress-style)
  */
 
-import type { QueryOutput, Filter, FilterValue } from "./types"
+import type { QueryOutput, Filter, FilterValue, FilterGroup, FilterRule } from "./types"
 
 /**
  * Special field mappings for related tables
@@ -286,9 +287,9 @@ function mapOperatorToCondition(operator: string, value: any, field: string): Re
 }
 
 /**
- * Maps a single filter to Prisma where condition
+ * Maps a single filter rule to Prisma where condition
  */
-function mapFilterToPrisma(filter: Filter): Record<string, any> {
+function mapFilterRuleToPrisma(filter: FilterRule): Record<string, any> {
   const { field, operator, value } = filter
 
   // Check if this is a related field
@@ -371,7 +372,78 @@ function mapFilterToPrisma(filter: Filter): Record<string, any> {
 }
 
 /**
+ * Maps a single filter to Prisma where condition (backwards compatibility wrapper)
+ */
+function mapFilterToPrisma(filter: Filter): Record<string, any> {
+  return mapFilterRuleToPrisma(filter)
+}
+
+/**
+ * Recursively maps a FilterGroup to Prisma where clause
+ * Supports nested AND/OR groups (DevExpress-style)
+ *
+ * @example
+ * const group = {
+ *   id: "1",
+ *   combinator: "AND",
+ *   rules: [
+ *     { id: "r1", field: "name", operator: "contains", value: "John" }
+ *   ],
+ *   groups: [
+ *     {
+ *       id: "g1",
+ *       combinator: "OR",
+ *       rules: [
+ *         { id: "r2", field: "age", operator: "greaterThan", value: 18 },
+ *         { id: "r3", field: "city", operator: "equals", value: "Istanbul" }
+ *       ],
+ *       groups: []
+ *     }
+ *   ]
+ * }
+ *
+ * const where = mapFilterGroupToPrisma(group)
+ * // {
+ * //   AND: [
+ * //     { name: { contains: "John", mode: "insensitive" } },
+ * //     { OR: [
+ * //       { age: { gt: 18 } },
+ * //       { city: { equals: "Istanbul" } }
+ * //     ]}
+ * //   ]
+ * // }
+ */
+export function mapFilterGroupToPrisma(group: FilterGroup): Record<string, any> {
+  // Map all rules in this group
+  const ruleConditions = group.rules.map((rule) => mapFilterRuleToPrisma(rule))
+
+  // Recursively map all nested groups
+  const groupConditions = group.groups.map((subGroup) =>
+    mapFilterGroupToPrisma(subGroup)
+  )
+
+  // Combine rules and nested groups
+  const allConditions = [...ruleConditions, ...groupConditions]
+
+  // If no conditions, return empty object
+  if (allConditions.length === 0) {
+    return {}
+  }
+
+  // If only one condition, return it directly
+  if (allConditions.length === 1) {
+    return allConditions[0]
+  }
+
+  // Multiple conditions: combine with AND or OR
+  return {
+    [group.combinator]: allConditions,
+  }
+}
+
+/**
  * Converts QueryOutput to Prisma where clause
+ * (Backwards compatibility with flat filter structure)
  *
  * @example
  * const query = {

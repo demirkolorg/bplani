@@ -1,8 +1,98 @@
-# Advanced Query Builder
+# Query Builder - DevExpress-Style Nested Filters
 
-Type-aware, bulk-paste supported query builder for Next.js with Prisma integration.
+Modern, tip güvenli, Prisma ORM entegrasyonlu gelişmiş query builder. DevExpress FilterBuilder'a benzer iç içe grup desteği (nested AND/OR logic) ile.
 
-## Features
+## Özellikler
+
+### ✅ Temel Özellikler
+- **4 Column Type**: text, number, select, date
+- **12+ Operator**: contains, equals, startsWith, greaterThan, between, vb.
+- **Bulk Input**: Excel'den kopyala-yapıştır desteği
+- **Multi-select**: Çoklu seçim için in/notIn operatörleri
+- **Type-safe**: TypeScript ile tam tip güvenliği
+- **i18n Support**: TR/EN lokalizasyon desteği
+- **Prisma Integration**: Otomatik Prisma where clause dönüşümü
+
+### 🆕 Nested Group Desteği (YENİ!)
+- **İç içe AND/OR Grupları**: Sınırsız seviye nested grup desteği
+- **Görsel Grup Göstergeleri**: Indentation ve border ile grup seviyeleri
+- **Grup-içi Combinator Toggle**: Her grup için ayrı AND/OR seçimi
+- **Recursive Prisma Mapping**: Karmaşık query'leri otomatik dönüştürme
+
+## Kullanım
+
+### Nested Groups ile Kullanım (Önerilen)
+
+```tsx
+import { QueryBuilder } from "@/lib/query-builder"
+
+function AdvancedSearchPage() {
+  const handleSearch = async (whereClause: any) => {
+    // whereClause zaten Prisma formatında
+    const results = await prisma.user.findMany({
+      where: whereClause,
+      take: 100,
+    })
+  }
+
+  return (
+    <QueryBuilder
+      columns={columns}
+      onSubmitGroup={handleSearch}  // Direkt Prisma where clause
+      useNestedGroups={true}         // Nested grup UI'ı aktif et
+      title="Gelişmiş Arama"
+      description="İç içe gruplar oluşturabilirsiniz"
+    />
+  )
+}
+```
+
+### Legacy Flat Filters
+
+```tsx
+<QueryBuilder
+  columns={columns}
+  onSubmit={handleSearch}  // QueryOutput format
+  useNestedGroups={false}  // veya belirtmeyin (default: false)
+/>
+```
+
+## Nested Groups Örneği
+
+```
+AND
+  ├─ name contains "Ali"
+  ├─ age > 18
+  └─ OR
+      ├─ city equals "Istanbul"
+      └─ AND
+          ├─ status equals "active"
+          └─ createdAt after "2024-01-01"
+```
+
+Bu query otomatik olarak şu Prisma where clause'una dönüşür:
+
+```typescript
+{
+  AND: [
+    { name: { contains: "Ali", mode: "insensitive" } },
+    { age: { gt: 18 } },
+    {
+      OR: [
+        { city: { equals: "Istanbul" } },
+        {
+          AND: [
+            { status: { equals: "active" } },
+            { createdAt: { gt: new Date("2024-01-01") } }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Features (Eski dokümantasyon)
 
 - ✅ **Type-Aware Filtering**: Different operators for Text, Number, Select, and Date columns
 - ✅ **Bulk Paste Support**: Copy-paste 100+ values from Excel/Notepad

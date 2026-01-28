@@ -90,6 +90,7 @@ export const common: CommonTranslations = {
   more: "more",
   location: "Location",
   participants: "Participants",
+  vehicles: "Vehicles",
 
   // Person
   firstName: "First Name",
@@ -102,7 +103,7 @@ export const common: CommonTranslations = {
   tcFormatPlaceholder: "11 digit ID number",
 
   // Search placeholders
-  searchGsmOrCustomer: "Search GSM number or customer...",
+  searchGsmOrCustomer: "Search GSM number or target...",
   selectGsm: "Select GSM...",
   noResultsFound: "No results found.",
   gsmNotFound: "GSM not found.",
@@ -111,6 +112,8 @@ export const common: CommonTranslations = {
   // Labels
   tcLabel: "ID:",
   gsmLabel: "GSM:",
+  ttYes: "Target",
+  ttNo: "Supporter",
 
   // Status badges
   added: "Added",
@@ -135,8 +138,8 @@ export const common: CommonTranslations = {
 
   // System values
   system: "System",
-  customer: "Customer",
-  candidate: "Candidate",
+  customer: "Target",
+  candidate: "Supporter",
 
   // Time expressions
   daysRemaining: "{days} days remaining",

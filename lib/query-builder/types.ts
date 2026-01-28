@@ -97,14 +97,31 @@ export type FilterValue =
   | { min: number | string; max: number | string } // For between
   | null // For isEmpty/isNotEmpty
 
-// Single filter
-export interface Filter {
+// Single filter rule (renamed from Filter for clarity)
+export interface FilterRule {
+  id: string
   field: string
   operator: FilterOperator
   value: FilterValue
 }
 
-// Query output (POST body format)
+// Legacy Filter type for backwards compatibility
+export type Filter = FilterRule
+
+// Recursive filter group
+export interface FilterGroup {
+  id: string
+  combinator: "AND" | "OR"
+  rules: FilterRule[]
+  groups: FilterGroup[] // Nested groups
+}
+
+// Query builder state
+export interface QueryBuilderState {
+  rootGroup: FilterGroup
+}
+
+// Query output (POST body format) - kept for backwards compatibility
 export interface QueryOutput {
   logic: "AND" | "OR"
   filters: Filter[]

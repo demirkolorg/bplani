@@ -17,10 +17,17 @@ import {
   Activity,
   Home,
   ChevronRight,
+  Briefcase,
 } from "lucide-react"
 import { CommandItem } from "@/components/ui/command"
 import { Badge } from "@/components/ui/badge"
 import type { SearchResultItem } from "@/lib/validations"
+import type {
+  RelatedKisi,
+  RelatedArac,
+  RelatedTanitim,
+  RelatedOperasyon
+} from "@/lib/validations/search"
 import { useLocale } from "@/components/providers/locale-provider"
 
 // Category icons and colors mapping - keys match the category values from the API
@@ -35,6 +42,7 @@ const categoryConfig: Record<string, { icon: LucideIcon; bgColor: string; textCo
   takipler: { icon: CalendarClock, bgColor: "bg-cyan-100 dark:bg-cyan-900/30", textColor: "text-cyan-600 dark:text-cyan-400" },
   araclar: { icon: Car, bgColor: "bg-slate-100 dark:bg-slate-900/30", textColor: "text-slate-600 dark:text-slate-400" },
   notlar: { icon: StickyNote, bgColor: "bg-yellow-100 dark:bg-yellow-900/30", textColor: "text-yellow-600 dark:text-yellow-400" },
+  faaliyetAlanlari: { icon: Briefcase, bgColor: "bg-teal-100 dark:bg-teal-900/30", textColor: "text-teal-600 dark:text-teal-400" },
   loglar: { icon: Activity, bgColor: "bg-gray-100 dark:bg-gray-900/30", textColor: "text-gray-600 dark:text-gray-400" },
 }
 
@@ -61,6 +69,7 @@ export function SearchResultItemComponent({ item, onSelect }: SearchResultItemCo
       takipler: "takipler",
       araclar: "araclar",
       notlar: "notlar",
+      faaliyetAlanlari: "faaliyetAlanlari",
       loglar: "loglar",
     }
     const translationKey = keyMap[categoryKey]
@@ -70,6 +79,21 @@ export function SearchResultItemComponent({ item, onSelect }: SearchResultItemCo
   // Check if item has related kisiler (works for all entity types)
   const relatedKisiler = item.metadata?.relatedKisiler
     ? (item.metadata.relatedKisiler as Array<{ id: string; ad: string; soyad: string; tt?: boolean; tc?: string | null }>)
+    : null
+
+  // Parse related araclar
+  const relatedAraclar = item.metadata?.relatedAraclar
+    ? (item.metadata.relatedAraclar as Array<RelatedArac>)
+    : null
+
+  // Parse related tanitimlar
+  const relatedTanitimlar = item.metadata?.relatedTanitimlar
+    ? (item.metadata.relatedTanitimlar as Array<RelatedTanitim>)
+    : null
+
+  // Parse related operasyonlar
+  const relatedOperasyonlar = item.metadata?.relatedOperasyonlar
+    ? (item.metadata.relatedOperasyonlar as Array<RelatedOperasyon>)
     : null
 
   // Format subtitle based on metadata
@@ -152,6 +176,152 @@ export function SearchResultItemComponent({ item, onSelect }: SearchResultItemCo
               {relatedKisiler.length > 3 && (
                 <div className="text-[10px] text-muted-foreground px-2">
                   +{relatedKisiler.length - 3} {t.common.more}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* İlişkili Araçlar */}
+        {relatedAraclar && relatedAraclar.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+            <div className="text-[10px] text-muted-foreground mb-1.5 font-medium">
+              {t.search.relatedVehicles}
+            </div>
+            <div className="space-y-1">
+              {relatedAraclar.slice(0, 2).map((arac) => (
+                <div key={arac.id} className="text-[11px] px-2 py-1 rounded-md bg-slate-50 text-slate-700 dark:bg-slate-950 dark:text-slate-300">
+                  <div className="font-mono font-semibold">{arac.plaka}</div>
+                  <div className="text-[10px] opacity-80">
+                    {arac.model.marka.ad} {arac.model.ad}
+                    {arac.renk && ` - ${arac.renk}`}
+                  </div>
+                  {arac.sahipler && arac.sahipler.length > 0 && (
+                    <div className="text-[10px] opacity-70 mt-0.5">
+                      {t.search.vehicleOwners}: {arac.sahipler.map(s => `${s.ad} ${s.soyad}`).join(", ")}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {relatedAraclar.length > 2 && (
+                <div className="text-[10px] text-muted-foreground px-2">
+                  +{relatedAraclar.length - 2} {t.common.more}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* İlişkili Etkinlikler */}
+        {relatedTanitimlar && relatedTanitimlar.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+            <div className="text-[10px] text-muted-foreground mb-1.5 font-medium">
+              {t.search.relatedEvents}
+            </div>
+            <div className="space-y-1">
+              {relatedTanitimlar.slice(0, 2).map((tanitim) => (
+                <div key={tanitim.id}>
+                  <Link
+                    href={`/tanitimlar/${tanitim.id}`}
+                    onClick={(e) => { e.stopPropagation(); onSelect(`/tanitimlar/${tanitim.id}`) }}
+                    className="block"
+                  >
+                    <div className="text-[11px] px-2 py-1 rounded-md bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-300 cursor-pointer hover:opacity-80">
+                      <div className="font-semibold">
+                        {tanitim.baslik || new Date(tanitim.tarih).toLocaleDateString("tr-TR")}
+                      </div>
+                    </div>
+                  </Link>
+                  {tanitim.katilimcilar && tanitim.katilimcilar.length > 0 && (
+                    <div className="text-[10px] mt-1 px-2 space-x-1">
+                      {tanitim.katilimcilar.slice(0, 2).map((kisi) => (
+                        <Link
+                          key={kisi.id}
+                          href={`/kisiler/${kisi.id}`}
+                          onClick={(e) => { e.stopPropagation(); onSelect(`/kisiler/${kisi.id}`) }}
+                          className="inline-block"
+                        >
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 ${
+                              kisi.tt
+                                ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                                : "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+                            }`}
+                          >
+                            {kisi.ad} {kisi.soyad}
+                          </span>
+                        </Link>
+                      ))}
+                      {tanitim.katilimcilar.length > 2 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          +{tanitim.katilimcilar.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {relatedTanitimlar.length > 2 && (
+                <div className="text-[10px] text-muted-foreground px-2">
+                  +{relatedTanitimlar.length - 2} {t.common.more}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* İlişkili Operasyonlar */}
+        {relatedOperasyonlar && relatedOperasyonlar.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-border/50" onClick={(e) => e.stopPropagation()}>
+            <div className="text-[10px] text-muted-foreground mb-1.5 font-medium">
+              {t.search.relatedOperations}
+            </div>
+            <div className="space-y-1">
+              {relatedOperasyonlar.slice(0, 2).map((operasyon) => (
+                <div key={operasyon.id}>
+                  <Link
+                    href={`/operasyonlar/${operasyon.id}`}
+                    onClick={(e) => { e.stopPropagation(); onSelect(`/operasyonlar/${operasyon.id}`) }}
+                    className="block"
+                  >
+                    <div className="text-[11px] px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 cursor-pointer hover:opacity-80">
+                      <div className="font-semibold">
+                        {operasyon.baslik || new Date(operasyon.tarih).toLocaleDateString("tr-TR")}
+                      </div>
+                    </div>
+                  </Link>
+                  {operasyon.katilimcilar && operasyon.katilimcilar.length > 0 && (
+                    <div className="text-[10px] mt-1 px-2 space-x-1">
+                      {operasyon.katilimcilar.slice(0, 2).map((kisi) => (
+                        <Link
+                          key={kisi.id}
+                          href={`/kisiler/${kisi.id}`}
+                          onClick={(e) => { e.stopPropagation(); onSelect(`/kisiler/${kisi.id}`) }}
+                          className="inline-block"
+                        >
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 ${
+                              kisi.tt
+                                ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                                : "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+                            }`}
+                          >
+                            {kisi.ad} {kisi.soyad}
+                          </span>
+                        </Link>
+                      ))}
+                      {operasyon.katilimcilar.length > 2 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          +{operasyon.katilimcilar.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {relatedOperasyonlar.length > 2 && (
+                <div className="text-[10px] text-muted-foreground px-2">
+                  +{relatedOperasyonlar.length - 2} {t.common.more}
                 </div>
               )}
             </div>

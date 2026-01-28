@@ -86,8 +86,8 @@ export const araclar: AraclarTranslations = {
   searchKisi: "Kişi ara...",
   kisiNotFound: "Kişi bulunamadı.",
   kisilerSelected: "{count} kişi seçildi",
-  musteri: "Müşteri",
-  aday: "Aday",
+  musteri: "Hedef",
+  aday: "Müzahir",
 
   // Sorting
   sortPlateAsc: "Plaka (A → Z)",
@@ -98,4 +98,15 @@ export const araclar: AraclarTranslations = {
   // Actions
   deleting: "Siliniyor...",
   adding: "Ekleniyor...",
+
+  // Error pages
+  aracNotFoundDescription: "Aradığınız araç bulunamadı veya silinmiş olabilir.",
+  backToAraclar: "Araçlara Dön",
+
+  // Related data
+  noKisiler: "Bu araca kayıtlı kişi bulunmuyor",
+  tanitimlar: "Tanıtımlar",
+  operasyonlar: "Operasyonlar",
+  noTanitimlar: "Bu araç hiçbir tanıtımda kullanılmamış",
+  noOperasyonlar: "Bu araç hiçbir operasyonda kullanılmamış",
 }

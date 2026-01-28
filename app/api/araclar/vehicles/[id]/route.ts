@@ -26,6 +26,76 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             kisi: { select: { id: true, ad: true, soyad: true, tt: true } },
           },
         },
+        tanitimlar: {
+          include: {
+            tanitim: {
+              include: {
+                mahalle: {
+                  include: {
+                    ilce: {
+                      include: {
+                        il: true,
+                      },
+                    },
+                  },
+                },
+                katilimcilar: {
+                  include: {
+                    kisi: {
+                      select: {
+                        id: true,
+                        ad: true,
+                        soyad: true,
+                        tc: true,
+                        tt: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            tanitim: {
+              tarih: "desc",
+            },
+          },
+        },
+        operasyonlar: {
+          include: {
+            operasyon: {
+              include: {
+                mahalle: {
+                  include: {
+                    ilce: {
+                      include: {
+                        il: true,
+                      },
+                    },
+                  },
+                },
+                katilimcilar: {
+                  include: {
+                    kisi: {
+                      select: {
+                        id: true,
+                        ad: true,
+                        soyad: true,
+                        tc: true,
+                        tt: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            operasyon: {
+              tarih: "desc",
+            },
+          },
+        },
         createdUser: { select: { ad: true, soyad: true } },
         updatedUser: { select: { ad: true, soyad: true } },
       },

@@ -50,6 +50,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { interpolate } from "@/locales"
+import type { ColumnFilterState } from "@/lib/data-table/column-filter-config"
+import { fuzzyFilter, getSearchableText } from "@/lib/data-table/fuzzy-filter"
 
 // Deep search function for nested objects
 function deepSearch(obj: unknown, searchTerm: string, booleanLabels?: { yes: string; no: string; active: string; inactive: string; exists: string; notExists: string }): boolean {
@@ -201,6 +203,164 @@ function searchComputedValues(
   return false
 }
 
+// Apply filter logic based on operator and type
+function applyFilterLogic(
+  cellValue: unknown,
+  filterValue: unknown,
+  operator: string,
+  columnType?: string
+): boolean {
+  // Handle null/undefined
+  if (cellValue === null || cellValue === undefined) {
+    return operator === "isEmpty"
+  }
+
+  // Handle isEmpty/isNotEmpty
+  if (operator === "isEmpty") {
+    return !cellValue || (typeof cellValue === "string" && cellValue.trim() === "")
+  }
+  if (operator === "isNotEmpty") {
+    return !!cellValue && (typeof cellValue !== "string" || cellValue.trim() !== "")
+  }
+
+  // Text operators
+  if (columnType === "text" || typeof cellValue === "string") {
+    const cellStr = String(cellValue).toLowerCase()
+    const filterStr = String(filterValue).toLowerCase()
+
+    switch (operator) {
+      case "contains":
+        return cellStr.includes(filterStr)
+      case "doesNotContain":
+        return !cellStr.includes(filterStr)
+      case "startsWith":
+        return cellStr.startsWith(filterStr)
+      case "endsWith":
+        return cellStr.endsWith(filterStr)
+      case "equals":
+        return cellStr === filterStr
+      case "notEquals":
+        return cellStr !== filterStr
+      case "inList":
+        if (Array.isArray(filterValue)) {
+          return filterValue.some((v) => cellStr.includes(String(v).toLowerCase()))
+        }
+        return false
+      case "notInList":
+        if (Array.isArray(filterValue)) {
+          return !filterValue.some((v) => cellStr.includes(String(v).toLowerCase()))
+        }
+        return false
+      default:
+        return false
+    }
+  }
+
+  // Number operators
+  if (columnType === "number" || typeof cellValue === "number") {
+    const cellNum = Number(cellValue)
+    const filterNum = Number(filterValue)
+
+    if (isNaN(cellNum)) return false
+
+    switch (operator) {
+      case "equals":
+        return cellNum === filterNum
+      case "notEquals":
+        return cellNum !== filterNum
+      case "greaterThan":
+        return cellNum > filterNum
+      case "lessThan":
+        return cellNum < filterNum
+      case "between":
+        if (
+          typeof filterValue === "object" &&
+          filterValue !== null &&
+          "min" in filterValue &&
+          "max" in filterValue
+        ) {
+          const min = Number((filterValue as any).min)
+          const max = Number((filterValue as any).max)
+          return cellNum >= min && cellNum <= max
+        }
+        return false
+      case "inList":
+        if (Array.isArray(filterValue)) {
+          return filterValue.some((v) => Number(v) === cellNum)
+        }
+        return false
+      case "notInList":
+        if (Array.isArray(filterValue)) {
+          return !filterValue.some((v) => Number(v) === cellNum)
+        }
+        return false
+      default:
+        return false
+    }
+  }
+
+  // Date operators
+  if (columnType === "date" || cellValue instanceof Date || typeof cellValue === "string") {
+    const cellDate = new Date(cellValue as string | Date)
+    if (isNaN(cellDate.getTime())) return false
+
+    const filterDate = new Date(filterValue as string | Date)
+    if (isNaN(filterDate.getTime())) {
+      // Handle between for dates
+      if (
+        operator === "between" &&
+        typeof filterValue === "object" &&
+        filterValue !== null &&
+        "min" in filterValue &&
+        "max" in filterValue
+      ) {
+        const minDate = new Date((filterValue as any).min)
+        const maxDate = new Date((filterValue as any).max)
+        return cellDate >= minDate && cellDate <= maxDate
+      }
+      return false
+    }
+
+    switch (operator) {
+      case "equals":
+        return cellDate.toDateString() === filterDate.toDateString()
+      case "before":
+        return cellDate < filterDate
+      case "after":
+        return cellDate > filterDate
+      default:
+        return false
+    }
+  }
+
+  // Boolean/Enum operators
+  if (columnType === "boolean" || columnType === "enum") {
+    const cellStr = String(cellValue).toLowerCase()
+    const filterStr = String(filterValue).toLowerCase()
+
+    switch (operator) {
+      case "equals":
+        return cellStr === filterStr
+      case "notEquals":
+        return cellStr !== filterStr
+      case "in":
+        if (Array.isArray(filterValue)) {
+          return filterValue.some((v) => String(v).toLowerCase() === cellStr)
+        }
+        return false
+      case "notIn":
+        if (Array.isArray(filterValue)) {
+          return !filterValue.some((v) => String(v).toLowerCase() === cellStr)
+        }
+        return false
+      default:
+        return false
+    }
+  }
+
+  return false
+}
+
 type TableDensity = "compact" | "normal" | "wide"
 
 const densityStyles: Record<TableDensity, { header: string; cell: string }> = {
@@ -251,12 +411,16 @@ interface DataTableProps<TData, TValue> {
   columnVisibilityLabels?: ColumnVisibilityLabels
   defaultColumnVisibility?: VisibilityState
   headerActions?: React.ReactNode
+  /** Default column filters (from preferences) */
+  defaultColumnFilters?: ColumnFiltersState
   /** Callback when column visibility changes */
   onColumnVisibilityChange?: (visibility: VisibilityState) => void
   /** Callback when sorting changes */
   onSortChange?: (column: string, direction: "asc" | "desc") => void
   /** Callback when page size changes */
   onPageSizeChange?: (size: number) => void
+  /** Callback when column filters change */
+  onColumnFiltersChange?: (filters: ColumnFiltersState) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -272,13 +436,22 @@ export function DataTable<TData, TValue>({
   rowWrapper,
   columnVisibilityLabels = {},
   defaultColumnVisibility,
+  defaultColumnFilters,
   headerActions,
   onColumnVisibilityChange,
   onSortChange,
   onPageSizeChange,
+  onColumnFiltersChange,
 }: DataTableProps<TData, TValue>) {
   const styles = densityStyles[density]
   const { t } = useLocale()
+
+  // Label maps for enum fields
+  const labelMaps = {
+    durum: t.enums.takipDurumu,
+    tip: t.enums.alarmTipi,
+    rol: t.enums.personelRol,
+  }
 
   // Get translated common sort option labels
   const getCommonSortLabel = (value: string): string => {
@@ -308,7 +481,9 @@ export function DataTable<TData, TValue>({
       ? `${defaultSort.column}-${defaultSort.direction}`
       : ""
   )
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    defaultColumnFilters || []
+  )
   // Hide sort-only columns (date fields) by default, merge with provided defaults
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     createdAt: false,
@@ -323,25 +498,43 @@ export function DataTable<TData, TValue>({
   })
 
   const [sortOpen, setSortOpen] = React.useState(false)
-  const [showColumnFilters, setShowColumnFilters] = React.useState(false)
-  const [columnFilterValues, setColumnFilterValues] = React.useState<Record<string, string>>({})
-
-  // Combined filter state to trigger re-filtering when column filters change
-  const globalFilter = React.useMemo(
-    () => ({ search: globalFilterInput, columns: columnFilterValues }),
-    [globalFilterInput, columnFilterValues]
-  )
 
   // Check if any column filter is active
-  const hasActiveColumnFilters = Object.values(columnFilterValues).some((v) => v.trim() !== "")
+  const hasActiveColumnFilters = columnFilters.length > 0
 
-  const handleColumnFilterChange = (columnId: string, value: string) => {
-    setColumnFilterValues((prev) => ({ ...prev, [columnId]: value }))
+  // Advanced filter change handler (TanStack native)
+  const handleAdvancedFilterChange = (columnId: string, filter: ColumnFilterState | null) => {
+    setColumnFilters((prev) => {
+      const newFilters = filter === null || filter.value === null
+        ? prev.filter(f => f.id !== columnId)
+        : [...prev.filter(f => f.id !== columnId), { id: columnId, value: filter }]
+
+      return newFilters
+    })
   }
 
   const clearAllColumnFilters = () => {
-    setColumnFilterValues({})
+    setColumnFilters([])
   }
+
+  // Notify parent when filters change (after render cycle, skip initial render)
+  const isInitialMount = React.useRef(true)
+  const prevFiltersRef = React.useRef<ColumnFiltersState>(columnFilters)
+
+  React.useEffect(() => {
+    // Skip initial mount (when defaultColumnFilters is loaded)
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      prevFiltersRef.current = columnFilters
+      return
+    }
+
+    // Only notify on actual changes
+    if (JSON.stringify(prevFiltersRef.current) !== JSON.stringify(columnFilters)) {
+      prevFiltersRef.current = columnFilters
+      onColumnFiltersChange?.(columnFilters)
+    }
+  }, [columnFilters, onColumnFiltersChange])
 
   const handleSortChange = (value: string) => {
     setSelectedSort(value)
@@ -377,359 +570,24 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    globalFilterFn: (row, _columnId, filterValue) => {
-      const { search, columns } = filterValue as { search: string; columns: Record<string, string> }
+    onGlobalFilterChange: setGlobalFilterInput,
+    // TanStack native fuzzy filter
+    globalFilterFn: (row, columnId, value) => {
+      const searchTerm = String(value || "").toLowerCase().trim()
+      if (!searchTerm) return true
 
-      // Global search
-      const searchTerm = (search || "").toLowerCase().trim()
-      if (searchTerm) {
-        const original = row.original as Record<string, unknown>
-        const foundInData = deepSearch(original, searchTerm)
-        const foundInComputed = searchComputedValues(original, searchTerm)
-        if (!foundInData && !foundInComputed) {
-          return false
-        }
-      }
+      // Get all searchable text from row
+      const searchableText = getSearchableText(row, t)
 
-      // Column filters (AND logic)
-      const original = row.original as Record<string, unknown>
-      for (const [columnId, filterVal] of Object.entries(columns || {})) {
-        const term = (filterVal || "").toLowerCase().trim()
-        if (!term) continue
-
-        let matched = false
-
-        // Handle specific columns
-        switch (columnId) {
-          // GSM columns
-          case "gsm":
-          case "numara":
-            if (original.gsmler) {
-              matched = deepSearch(original.gsmler, term)
-            } else if (original.gsm) {
-              matched = deepSearch(original.gsm, term)
-            } else if (original.numara) {
-              matched = String(original.numara).includes(term)
-            }
-            break
-
-          // Adres columns
-          case "adres":
-            if (original.adresler) {
-              matched = deepSearch(original.adresler, term)
-            } else if (original.mahalle) {
-              matched = deepSearch(original.mahalle, term)
-            } else if (original.adresDetay) {
-              matched = deepSearch(original.adresDetay, term)
-            }
-            break
-
-          // Ad Soyad columns
-          case "adSoyad":
-            const fullName = `${original.ad || ""} ${original.soyad || ""}`.toLowerCase()
-            matched = fullName.includes(term)
-            break
-
-          // Kişi columns (takip, alarm, numara tablolarında)
-          case "kisi":
-          case "kisiAdSoyad":
-          case "musteri": {
-            const gsm = original.gsm as Record<string, unknown> | undefined
-            const kisi = (gsm?.kisi || original.kisi) as Record<string, unknown> | undefined
-            if (kisi) {
-              const kisiName = `${kisi.ad || ""} ${kisi.soyad || ""}`.toLowerCase()
-              matched = kisiName.includes(term)
-              if (!matched && kisi.tc) {
-                matched = String(kisi.tc).includes(term)
-              }
-            }
-            break
-          }
-
-          // TC column
-          case "tc":
-            matched = original.tc ? String(original.tc).includes(term) : false
-            break
-
-          // Boolean columns
-          case "pio":
-          case "asli":
-          case "isActive":
-          case "isPaused":
-          case "takipVar": {
-            const boolVal = original[columnId] as boolean | undefined
-            // takipVar özel: takipler array'inin varlığına bakar
-            const checkVal = columnId === "takipVar"
-              ? Boolean((original.takipler as unknown[])?.length)
-              : boolVal
-            const boolText = checkVal ? "evet var aktif" : "hayır yok pasif"
-            matched = boolText.includes(term)
-            break
-          }
-
-          // Date display columns
-          case "baslamaTarihiDisplay":
-          case "baslamaTarihi": {
-            const dateField = original.baslamaTarihi || (original.takipler as Array<Record<string, unknown>>)?.[0]?.baslamaTarihi
-            if (dateField) {
-              const date = new Date(dateField as string)
-              if (!isNaN(date.getTime())) {
-                matched = date.toLocaleDateString("tr-TR").includes(term)
-              }
-            }
-            break
-          }
-
-          case "bitisTarihiDisplay":
-          case "bitisTarihi": {
-            const dateField = original.bitisTarihi || (original.takipler as Array<Record<string, unknown>>)?.[0]?.bitisTarihi
-            if (dateField) {
-              const date = new Date(dateField as string)
-              if (!isNaN(date.getTime())) {
-                matched = date.toLocaleDateString("tr-TR").includes(term)
-              }
-            }
-            break
-          }
-
-          case "tarih":
-          case "tetikTarihi": {
-            const dateVal = original[columnId] as string | undefined
-            if (dateVal) {
-              const date = new Date(dateVal)
-              if (!isNaN(date.getTime())) {
-                matched = date.toLocaleDateString("tr-TR").includes(term)
-              }
-            }
-            break
-          }
-
-          case "sonGiris": {
-            const lastLogin = original.lastLoginAt as string | undefined
-            if (lastLogin) {
-              const date = new Date(lastLogin)
-              if (!isNaN(date.getTime())) {
-                matched = date.toLocaleDateString("tr-TR").includes(term)
-              }
-            } else {
-              matched = t.common.neverLoggedIn.toLowerCase().includes(term)
-            }
-            break
-          }
-
-          // Kalan gün column
-          case "kalanGun": {
-            const bitisTarihi = original.bitisTarihi || (original.takipler as Array<Record<string, unknown>>)?.[0]?.bitisTarihi
-            if (bitisTarihi) {
-              const date = new Date(bitisTarihi as string)
-              const now = new Date()
-              const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-              const daysStr = String(daysLeft)
-              const searchText = daysLeft <= 0 ? t.common.expired.toLowerCase() : t.common.daysRemaining.replace("{days}", String(daysLeft)).toLowerCase()
-              matched = daysStr.includes(term) || searchText.includes(term)
-            }
-            break
-          }
-
-          // Durum column
-          case "durum": {
-            const durumVal = original.durum as string | undefined
-            if (durumVal) {
-              const durumText = labelMaps.durum[durumVal] || durumVal.toLowerCase()
-              matched = durumText.includes(term)
-            }
-            break
-          }
-
-          // Tip column (alarm only - AlarmTip enum)
-          case "tip": {
-            const tipVal = original.tip as string | undefined
-            if (tipVal) {
-              const tipText = labelMaps.tip[tipVal] || tipVal.toLowerCase()
-              matched = tipText.includes(term)
-            }
-            break
-          }
-
-          // Kisi tip (tt boolean: true=Müşteri, false=Aday)
-          case "tt":
-          case "kisiTip": {
-            let ttVal: boolean | undefined
-            if (columnId === "kisiTip") {
-              const kisi = original.kisi as Record<string, unknown> | undefined
-              ttVal = kisi?.tt as boolean | undefined
-            } else {
-              ttVal = original.tt as boolean | undefined
-            }
-            if (ttVal !== undefined) {
-              const tipText = ttVal ? t.common.customer.toLowerCase() : t.common.candidate.toLowerCase()
-              matched = tipText.includes(term)
-            }
-            break
-          }
-
-          // Rol column (personel)
-          case "rol": {
-            const rolVal = original.rol as string | undefined
-            if (rolVal) {
-              const rolText = labelMaps.rol[rolVal] || rolVal.toLowerCase()
-              matched = rolText.includes(term)
-            }
-            break
-          }
-
-          // Count columns
-          case "alarmlar":
-          case "tanitim":
-          case "not":
-          case "aktivite":
-          case "ilceSayisi":
-          case "mahalleSayisi":
-          case "adresSayisi":
-          case "katilimciSayisi": {
-            const countObj = original._count as Record<string, number> | undefined
-            let countVal = 0
-            if (columnId === "katilimciSayisi") {
-              countVal = (original.katilimcilar as unknown[])?.length || 0
-            } else if (countObj) {
-              // Map column to _count field
-              const countField = columnId === "tanitim" ? "tanitimlar"
-                : columnId === "not" ? "notlar"
-                : columnId === "ilceSayisi" ? "ilceler"
-                : columnId === "mahalleSayisi" ? "mahalleler"
-                : columnId === "adresSayisi" ? "adresler"
-                : columnId
-              countVal = countObj[countField] || 0
-            }
-            // aktivite için tüm sayıları topla
-            if (columnId === "aktivite" && countObj) {
-              const total = Object.values(countObj).reduce((a, b) => a + b, 0)
-              matched = String(total).includes(term)
-            } else {
-              matched = String(countVal).includes(term)
-            }
-            break
-          }
-
-          // Katılımcılar column (tanitim)
-          case "katilimcilar": {
-            const katilimcilar = original.katilimcilar as Array<Record<string, unknown>> | undefined
-            if (katilimcilar) {
-              for (const k of katilimcilar) {
-                const kisiData = k.kisi as Record<string, unknown> | undefined
-                if (kisiData) {
-                  const name = `${kisiData.ad || ""} ${kisiData.soyad || ""}`.toLowerCase()
-                  if (name.includes(term)) {
-                    matched = true
-                    break
-                  }
-                }
-              }
-            }
-            break
-          }
-
-          // Oluşturan column (alarm)
-          case "olusturan": {
-            const createdUser = original.createdUser as Record<string, unknown> | undefined
-            if (createdUser) {
-              const userName = `${createdUser.ad || ""} ${createdUser.soyad || ""}`.toLowerCase()
-              matched = userName.includes(term)
-            } else {
-              matched = t.common.system.toLowerCase().includes(term)
-            }
-            break
-          }
-
-          // Başlık/Mesaj column (alarm)
-          case "baslik": {
-            const baslik = (original.baslik as string)?.toLowerCase() || ""
-            const mesaj = (original.mesaj as string)?.toLowerCase() || ""
-            matched = baslik.includes(term) || mesaj.includes(term)
-            break
-          }
-
-          // Gün önce column (alarm)
-          case "gunOnce": {
-            const gunOnce = original.gunOnce as number | undefined
-            if (gunOnce !== undefined) {
-              matched = String(gunOnce).includes(term) || t.common.daysBefore.replace("{days}", String(gunOnce)).toLowerCase().includes(term)
-            }
-            break
-          }
-
-          // visibleId column (personel)
-          case "visibleId": {
-            matched = original.visibleId ? String(original.visibleId).includes(term) : false
-            break
-          }
-
-          // Faaliyet column (kişi)
-          case "faaliyet": {
-            const faaliyet = original.faaliyet as string | undefined
-            if (faaliyet) {
-              // HTML taglerini temizle
-              const cleanText = faaliyet.replace(/<[^>]*>/g, "").toLowerCase()
-              matched = cleanText.includes(term)
-            }
-            break
-          }
-
-          // Notlar column (tanitim)
-          case "notlar": {
-            const notlar = original.notlar as string | undefined
-            if (notlar) {
-              const cleanText = notlar.replace(/<[^>]*>/g, "").toLowerCase()
-              matched = cleanText.includes(term)
-            }
-            break
-          }
-
-          // Lokasyon columns
-          case "plaka": {
-            const plaka = original.plaka as number | undefined
-            matched = plaka ? String(plaka).padStart(2, "0").includes(term) : false
-            break
-          }
-
-          case "il": {
-            const il = original.il as Record<string, unknown> | undefined
-            const ilce = original.ilce as Record<string, unknown> | undefined
-            const targetIl = il || (ilce?.il as Record<string, unknown>)
-            if (targetIl) {
-              const ilAd = (targetIl.ad as string)?.toLowerCase() || ""
-              const plaka = targetIl.plaka as number | undefined
-              matched = ilAd.includes(term) || (plaka ? String(plaka).includes(term) : false)
-            }
-            break
-          }
-
-          case "ilce": {
-            const ilce = original.ilce as Record<string, unknown> | undefined
-            if (ilce) {
-              matched = ((ilce.ad as string)?.toLowerCase() || "").includes(term)
-            }
-            break
-          }
-
-          // Default: generic search
-          default: {
-            const val = original[columnId]
-            matched = deepSearch(val, term)
-          }
-        }
-
-        if (!matched) return false
-      }
-
-      return true
+      // Fuzzy match using match-sorter
+      return searchableText.includes(searchTerm)
     },
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-      globalFilter,
+      globalFilter: globalFilterInput,
       pagination,
     },
   })
@@ -826,22 +684,22 @@ export function DataTable<TData, TValue>({
           // Durum enum'ları
           else if (columnId === "durum") {
             const durumVal = original.durum as string | undefined
-            if (durumVal && labelMaps.durum[durumVal]) {
-              value = labelMaps.durum[durumVal]
+            if (durumVal) {
+              value = labelMaps.durum[durumVal as keyof typeof labelMaps.durum] || durumVal
             }
           }
           // Tip enum'ları
           else if (columnId === "tip") {
             const tipVal = original.tip as string | undefined
-            if (tipVal && labelMaps.tip[tipVal]) {
-              value = labelMaps.tip[tipVal]
+            if (tipVal) {
+              value = labelMaps.tip[tipVal as keyof typeof labelMaps.tip] || tipVal
             }
           }
           // Rol enum'ları
           else if (columnId === "rol") {
             const rolVal = original.rol as string | undefined
-            if (rolVal && labelMaps.rol[rolVal]) {
-              value = labelMaps.rol[rolVal]
+            if (rolVal) {
+              value = labelMaps.rol[rolVal as keyof typeof labelMaps.rol] || rolVal
             }
           }
           // TT (müşteri/aday)
@@ -954,25 +812,18 @@ export function DataTable<TData, TValue>({
               <Download className="h-4 w-4" />
             )}
           </Button>
-          {/* Column Filter Toggle */}
-          <Button
-            variant={showColumnFilters ? "default" : "outline"}
-            size="icon"
-            onClick={() => {
-              if (showColumnFilters) {
-                // Kapanırken filtreleri temizle
-                clearAllColumnFilters()
-              }
-              setShowColumnFilters(!showColumnFilters)
-            }}
-            className="relative"
-            title={t.table.columnFilters}
-          >
-            <Filter className="h-4 w-4" />
-            {hasActiveColumnFilters && (
-              <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-destructive" />
-            )}
-          </Button>
+
+          {/* Clear All Filters Button */}
+          {hasActiveColumnFilters && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={clearAllColumnFilters}
+              title={t.table.clearFilters || "Tüm filtreleri temizle"}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
 
           {/* Column Visibility Dropdown */}
           <DropdownMenu>
@@ -1095,28 +946,6 @@ export function DataTable<TData, TValue>({
                 ))}
               </tr>
             ))}
-            {showColumnFilters && (
-              <tr className="border-b bg-muted/30">
-                {table.getHeaderGroups()[0]?.headers.map((header) => {
-                  // Skip filter for actions column, hidden columns, and columns with null header
-                  const headerDef = header.column.columnDef.header
-                  const isNullHeader = typeof headerDef === "function" && headerDef(header.getContext()) === null
-                  const skipFilter = header.id === "actions" || !header.column.getIsVisible() || isNullHeader || !headerDef
-                  return (
-                    <th key={`filter-${header.id}`} className="px-2 py-1.5">
-                      {!skipFilter && (
-                        <Input
-                          placeholder={t.table.filterPlaceholder}
-                          value={columnFilterValues[header.id] || ""}
-                          onChange={(e) => handleColumnFilterChange(header.id, e.target.value)}
-                          className="h-7 text-xs"
-                        />
-                      )}
-                    </th>
-                  )
-                })}
-              </tr>
-            )}
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
             {isLoading ? (

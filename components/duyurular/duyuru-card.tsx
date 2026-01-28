@@ -41,6 +41,13 @@ export function DuyuruCard({ duyuru }: DuyuruCardProps) {
   const config = priorityConfig[duyuru.oncelik]
   const Icon = config.icon
 
+  // Map priority enum to translation key
+  const priorityLabelKey = {
+    KRITIK: 'priorityCritical',
+    ONEMLI: 'priorityImportant',
+    NORMAL: 'priorityNormal',
+  }[duyuru.oncelik] as keyof typeof t.duyurular
+
   const isExpired = duyuru.expiresAt && new Date(duyuru.expiresAt) < new Date()
 
   return (
@@ -59,7 +66,7 @@ export function DuyuruCard({ duyuru }: DuyuruCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-1.5 mb-1">
               <Badge className={`${config.badgeColor} text-[10px] px-1.5 py-0`}>
-                {t.duyurular[`priority${duyuru.oncelik.charAt(0) + duyuru.oncelik.slice(1).toLowerCase()}` as keyof typeof t.duyurular]}
+                {t.duyurular[priorityLabelKey]}
               </Badge>
               {isExpired && (
                 <Badge variant="destructive" className="text-[10px] px-1.5 py-0">

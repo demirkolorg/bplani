@@ -1,6 +1,5 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, Users, MapPin, Calendar } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Tanitim } from "@/hooks/use-tanitimlar"
 import type { SortOption } from "@/components/shared/data-table"
 import type { Translations } from "@/types/locale"
+import type { DataTableColumnDef } from "@/lib/data-table/types"
 
 // Tanıtım tablosu için özel sıralama seçenekleri
 export function getTanitimSortOptions(t: Translations): SortOption[] {
@@ -27,7 +27,7 @@ export const tanitimSortOptions: SortOption[] = [
   { label: "Oluşturulma (Eski → Yeni)", value: "createdAt-asc", column: "createdAt", direction: "asc" },
 ]
 
-export function getTanitimColumns(t: Translations, locale: string): ColumnDef<Tanitim>[] {
+export function getTanitimColumns(t: Translations, locale: string): DataTableColumnDef<Tanitim>[] {
   const dateLocale = locale === "tr" ? "tr-TR" : "en-US"
 
   return [

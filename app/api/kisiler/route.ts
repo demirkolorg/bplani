@@ -87,6 +87,8 @@ export async function GET(request: NextRequest) {
             adresler: true,
             notlar: true,
             tanitimlar: true,
+            operasyonlar: true,
+            araclar: true,
           },
         },
       },

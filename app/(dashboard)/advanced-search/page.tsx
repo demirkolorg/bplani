@@ -271,8 +271,9 @@ export default function AdvancedSearchPage() {
         columns={columns}
         onSubmit={handleSearch}
         title="Arama Kriterleri"
-        description="Filtreleme koşullarınızı belirleyin"
+        description="Filtreleme koşullarınızı belirleyin. İç içe gruplar oluşturabilirsiniz."
         submitLabel="Ara"
+        useNestedGroups={true}
       />
 
       {/* Results */}

@@ -29,9 +29,11 @@ export const PAGE_COMPONENTS: Record<string, ComponentType> = {
 
   // Numaralar
   "/numaralar": createDynamicPage(() => import("@/app/(dashboard)/numaralar/page")),
+  "/numaralar/[id]": createDynamicPage(() => import("@/app/(dashboard)/numaralar/[id]/page")),
 
   // Araçlar
   "/araclar": createDynamicPage(() => import("@/app/(dashboard)/araclar/page")),
+  "/araclar/[id]": createDynamicPage(() => import("@/app/(dashboard)/araclar/[id]/page")),
 
   // Takipler
   "/takipler": createDynamicPage(() => import("@/app/(dashboard)/takipler/page")),
@@ -53,6 +55,7 @@ export const PAGE_COMPONENTS: Record<string, ComponentType> = {
 
   // Tanımlamalar
   "/tanimlamalar": createDynamicPage(() => import("@/app/(dashboard)/tanimlamalar/page")),
+  "/tanimlamalar/faaliyet-alanlari/[id]": createDynamicPage(() => import("@/app/(dashboard)/tanimlamalar/faaliyet-alanlari/[id]/page")),
 
   // Lokasyonlar
   "/lokasyonlar": createDynamicPage(() => import("@/app/(dashboard)/lokasyonlar/page")),
@@ -109,6 +112,22 @@ export function getPageComponent(path: string): { Component: ComponentType; para
     }
   }
 
+  // /numaralar/[id]
+  if (segments.length === 2 && segments[0] === "numaralar") {
+    return {
+      Component: PAGE_COMPONENTS["/numaralar/[id]"],
+      params: { id: segments[1] },
+    }
+  }
+
+  // /araclar/[id]
+  if (segments.length === 2 && segments[0] === "araclar") {
+    return {
+      Component: PAGE_COMPONENTS["/araclar/[id]"],
+      params: { id: segments[1] },
+    }
+  }
+
   // /takipler/[id]
   if (segments.length === 2 && segments[0] === "takipler" && segments[1] !== "yeni") {
     return {
@@ -154,6 +173,14 @@ export function getPageComponent(path: string): { Component: ComponentType; para
     return {
       Component: PAGE_COMPONENTS["/duyurular/[id]"],
       params: { id: segments[1] },
+    }
+  }
+
+  // /tanimlamalar/faaliyet-alanlari/[id]
+  if (segments.length === 3 && segments[0] === "tanimlamalar" && segments[1] === "faaliyet-alanlari") {
+    return {
+      Component: PAGE_COMPONENTS["/tanimlamalar/faaliyet-alanlari/[id]"],
+      params: { id: segments[2] },
     }
   }
 

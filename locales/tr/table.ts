@@ -34,4 +34,5 @@ export const table: TableTranslations = {
   newest: "En Yeni",
   exportToExcel: "Excel'e Aktar",
   exportingToExcel: "Excel'e aktarılıyor...",
+  clearFilters: "Tüm filtreleri temizle",
 }

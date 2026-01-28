@@ -3,7 +3,7 @@ import type { TakiplerTranslations } from "@/types/locale"
 export const takipler: TakiplerTranslations = {
   // Page
   pageTitle: "Kararlar",
-  pageDescription: "Müşteri kararlarını yönetin",
+  pageDescription: "Hedef kararlarını yönetin",
   newTakipButton: "Yeni Karar",
   newTakipPageTitle: "Yeni Karar Ekle",
   newTakipPageDescription: "Karar eklemek istediğiniz GSM numaralarını seçin",
@@ -71,12 +71,12 @@ export const takipler: TakiplerTranslations = {
   deleteTakipConfirm: "Bu kararı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve bağlı alarmlar da silinecektir.",
 
   // Search
-  searchPlaceholder: "Müşteri adı veya GSM ile ara...",
+  searchPlaceholder: "Hedef adı veya GSM ile ara...",
 
   // New Takip Page
   availableGsms: "Mevcut GSM'ler",
   itemsCount: "{count} adet",
-  searchGsmOrCustomer: "GSM veya müşteri ara...",
+  searchGsmOrCustomer: "GSM veya hedef ara...",
   removeAll: "Tümünü Kaldır",
   noResultsFound: "Sonuç bulunamadı",
   allGsmsSelected: "Tüm GSM'ler seçildi",
@@ -96,6 +96,7 @@ export const takipler: TakiplerTranslations = {
   backToTakipler: "Kararlara Dön",
   goToPersonDetail: "Kişi Detayına Git",
   addNewTakip: "Yeni Karar Ekle",
+  noActiveTakip: "Aktif karar bulunmuyor",
   noActiveTakipDescription: "Bu GSM için aktif bir karar kaydı bulunmamaktadır.",
   takipHistory: "Karar Geçmişi",
   duration: "Süre",
