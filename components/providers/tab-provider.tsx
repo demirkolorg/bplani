@@ -22,6 +22,7 @@ const DEFAULT_MAX_TABS = 15
 const initialState: TabState = {
   tabs: [],
   activeTabId: null,
+  activeTabHistory: [],
   maxTabs: DEFAULT_MAX_TABS,
 }
 
@@ -37,9 +38,15 @@ function tabReducer(state: TabState, action: TabAction): TabState {
         if (options?.background) {
           return state // Background'da açılıyorsa active değiştirme
         }
+        // History'yi güncelle
+        const newHistory = state.activeTabHistory.filter((id) => id !== existingTab.id)
+        if (state.activeTabId) {
+          newHistory.push(state.activeTabId)
+        }
         return {
           ...state,
           activeTabId: existingTab.id,
+          activeTabHistory: newHistory,
           tabs: state.tabs.map((t) =>
             t.id === existingTab.id ? { ...t, lastActiveAt: Date.now() } : t
           ),
@@ -57,7 +64,25 @@ function tabReducer(state: TabState, action: TabAction): TabState {
         lastActiveAt: Date.now(),
       }
 
-      let newTabs = [...state.tabs, newTab]
+      // Yeni tab'ı aktif tabın yanına ekle
+      let newTabs: Tab[]
+      if (state.activeTabId) {
+        const activeIndex = state.tabs.findIndex((t) => t.id === state.activeTabId)
+        if (activeIndex !== -1) {
+          // Aktif tab'ın hemen sağına ekle
+          newTabs = [
+            ...state.tabs.slice(0, activeIndex + 1),
+            newTab,
+            ...state.tabs.slice(activeIndex + 1),
+          ]
+        } else {
+          // Aktif tab bulunamazsa sona ekle
+          newTabs = [...state.tabs, newTab]
+        }
+      } else {
+        // Hiç aktif tab yoksa sona ekle
+        newTabs = [...state.tabs, newTab]
+      }
 
       // Max tab kontrolü - en eski kullanılmayanı kaldır (ana sayfa hariç)
       if (newTabs.length > state.maxTabs) {
@@ -70,10 +95,17 @@ function tabReducer(state: TabState, action: TabAction): TabState {
         }
       }
 
+      // History'yi güncelle (background değilse)
+      let newHistory = [...state.activeTabHistory]
+      if (!options?.background && state.activeTabId) {
+        newHistory.push(state.activeTabId)
+      }
+
       return {
         ...state,
         tabs: newTabs,
         activeTabId: options?.background ? state.activeTabId : newTab.id,
+        activeTabHistory: newHistory,
       }
     }
 
@@ -84,20 +116,32 @@ function tabReducer(state: TabState, action: TabAction): TabState {
       // Ana sayfa tabı kapatılamaz
       if (!tab || tab.path === "/") return state
 
-      const tabIndex = state.tabs.findIndex((t) => t.id === tabId)
       const newTabs = state.tabs.filter((t) => t.id !== tabId)
+
+      // History'den de kaldır
+      const newHistory = state.activeTabHistory.filter((id) => id !== tabId)
 
       // Aktif tab kapatılıyorsa yeni aktif seç
       let newActiveId = state.activeTabId
       if (state.activeTabId === tabId) {
         if (newTabs.length === 0) {
           newActiveId = null
-        } else if (tabIndex >= newTabs.length) {
-          // Son tab kapatıldı, bir öncekine git
-          newActiveId = newTabs[newTabs.length - 1].id
         } else {
-          // Aynı pozisyondaki tab'a git
-          newActiveId = newTabs[tabIndex].id
+          // History'den geriye doğru giderek ilk geçerli tab'ı bul
+          let foundPreviousTab = false
+          for (let i = newHistory.length - 1; i >= 0; i--) {
+            const historyTabId = newHistory[i]
+            if (newTabs.some((t) => t.id === historyTabId)) {
+              newActiveId = historyTabId
+              foundPreviousTab = true
+              break
+            }
+          }
+
+          // History'de geçerli tab bulunamadıysa, ilk tab'a git
+          if (!foundPreviousTab) {
+            newActiveId = newTabs[0].id
+          }
         }
       }
 
@@ -105,6 +149,7 @@ function tabReducer(state: TabState, action: TabAction): TabState {
         ...state,
         tabs: newTabs,
         activeTabId: newActiveId,
+        activeTabHistory: newHistory,
       }
     }
 
@@ -119,10 +164,15 @@ function tabReducer(state: TabState, action: TabAction): TabState {
         ? [homeTab, tab]
         : [tab]
 
+      // History'yi temizle, sadece kalan tabları tut
+      const keptTabIds = tabsToKeep.map((t) => t.id)
+      const newHistory = state.activeTabHistory.filter((id) => keptTabIds.includes(id))
+
       return {
         ...state,
         tabs: tabsToKeep,
         activeTabId: tabId,
+        activeTabHistory: newHistory,
       }
     }
 
@@ -135,10 +185,15 @@ function tabReducer(state: TabState, action: TabAction): TabState {
       const newTabs = state.tabs.filter((t, i) => i <= tabIndex || t.path === "/")
       const activeStillExists = newTabs.some((t) => t.id === state.activeTabId)
 
+      // History'yi temizle, sadece kalan tabları tut
+      const keptTabIds = newTabs.map((t) => t.id)
+      const newHistory = state.activeTabHistory.filter((id) => keptTabIds.includes(id))
+
       return {
         ...state,
         tabs: newTabs,
         activeTabId: activeStillExists ? state.activeTabId : tabId,
+        activeTabHistory: newHistory,
       }
     }
 
@@ -147,6 +202,7 @@ function tabReducer(state: TabState, action: TabAction): TabState {
         ...state,
         tabs: [],
         activeTabId: null,
+        activeTabHistory: [],
       }
     }
 
@@ -158,12 +214,14 @@ function tabReducer(state: TabState, action: TabAction): TabState {
           ...state,
           tabs: [],
           activeTabId: null,
+          activeTabHistory: [],
         }
       }
       return {
         ...state,
         tabs: [homeTab],
         activeTabId: homeTab.id,
+        activeTabHistory: [],
       }
     }
 
@@ -172,9 +230,16 @@ function tabReducer(state: TabState, action: TabAction): TabState {
       const tab = state.tabs.find((t) => t.id === tabId)
       if (!tab) return state
 
+      // History'yi güncelle
+      const newHistory = state.activeTabHistory.filter((id) => id !== tabId)
+      if (state.activeTabId) {
+        newHistory.push(state.activeTabId)
+      }
+
       return {
         ...state,
         activeTabId: tabId,
+        activeTabHistory: newHistory,
         tabs: state.tabs.map((t) =>
           t.id === tabId ? { ...t, lastActiveAt: Date.now() } : t
         ),
@@ -217,6 +282,13 @@ function tabReducer(state: TabState, action: TabAction): TabState {
 
     case "REORDER": {
       const { fromIndex, toIndex } = action.payload
+
+      // Ana sayfa tabı (path === "/") taşınamaz
+      const homeTab = state.tabs[0]
+      if (homeTab?.path === "/" && (fromIndex === 0 || toIndex === 0)) {
+        return state
+      }
+
       const newTabs = [...state.tabs]
       const [movedTab] = newTabs.splice(fromIndex, 1)
       newTabs.splice(toIndex, 0, movedTab)
@@ -226,6 +298,7 @@ function tabReducer(state: TabState, action: TabAction): TabState {
     case "HYDRATE": {
       return {
         ...action.payload,
+        activeTabHistory: [], // History restore edilmez, boş başlar
         maxTabs: action.payload.maxTabs || DEFAULT_MAX_TABS,
       }
     }

@@ -576,96 +576,72 @@ export default function KisiDetayPage() {
               )}
 
               {/* İstatistikler */}
-              <div className="grid gap-2 grid-cols-2 lg:grid-cols-6 mb-6">
+              <div className="grid gap-3 grid-cols-2 lg:grid-cols-6 mb-6">
                 {/* GSM Sayısı */}
-                <Card>
-                  <CardContent className="p-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">{t.kisiler.gsm}</p>
-                        <p className="text-base font-bold mt-0.5">{kisi.gsmler?.length || 0}</p>
-                      </div>
-                      <div className="h-7 w-7 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                        <Phone className="h-3.5 w-3.5 text-blue-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="relative overflow-hidden rounded-2xl p-4 bg-green-50/80 dark:bg-green-950/20 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setActiveTab("gsm")}>
+                  <Phone className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-green-500 dark:text-green-400" />
+                  <div className="relative z-10">
+                    <p className="text-3xl font-bold mb-1 text-green-500 dark:text-green-400">
+                      {(kisi.gsmler?.length || 0).toLocaleString("tr-TR")}
+                    </p>
+                    <p className="text-sm font-medium text-foreground">{t.kisiler.gsm}</p>
+                  </div>
+                </div>
 
                 {/* Adres Sayısı */}
-                <Card>
-                  <CardContent className="p-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">{t.kisiler.addresses}</p>
-                        <p className="text-base font-bold mt-0.5">{kisi.adresler?.length || 0}</p>
-                      </div>
-                      <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                        <MapPin className="h-3.5 w-3.5 text-green-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="relative overflow-hidden rounded-2xl p-4 bg-blue-50/80 dark:bg-blue-950/20 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setActiveTab("adres")}>
+                  <MapPin className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-blue-500 dark:text-blue-400" />
+                  <div className="relative z-10">
+                    <p className="text-3xl font-bold mb-1 text-blue-500 dark:text-blue-400">
+                      {(kisi.adresler?.length || 0).toLocaleString("tr-TR")}
+                    </p>
+                    <p className="text-sm font-medium text-foreground">{t.kisiler.addresses}</p>
+                  </div>
+                </div>
 
                 {/* Araç Sayısı */}
-                <Card>
-                  <CardContent className="p-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">{t.kisiler.vehicles}</p>
-                        <p className="text-base font-bold mt-0.5">{araclarData?.data?.length || 0}</p>
-                      </div>
-                      <div className="h-7 w-7 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                        <Car className="h-3.5 w-3.5 text-indigo-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="relative overflow-hidden rounded-2xl p-4 bg-cyan-50/80 dark:bg-cyan-950/20 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setActiveTab("arac")}>
+                  <Car className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-cyan-500 dark:text-cyan-400" />
+                  <div className="relative z-10">
+                    <p className="text-3xl font-bold mb-1 text-cyan-500 dark:text-cyan-400">
+                      {(araclarData?.data?.length || 0).toLocaleString("tr-TR")}
+                    </p>
+                    <p className="text-sm font-medium text-foreground">{t.kisiler.vehicles}</p>
+                  </div>
+                </div>
 
                 {/* Tanıtım Sayısı */}
-                <Card>
-                  <CardContent className="p-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">{t.kisiler.introductions}</p>
-                        <p className="text-base font-bold mt-0.5">{tanitimlar?.length || 0}</p>
-                      </div>
-                      <div className="h-7 w-7 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                        <Megaphone className="h-3.5 w-3.5 text-purple-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="relative overflow-hidden rounded-2xl p-4 bg-orange-50/80 dark:bg-orange-950/20 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setActiveTab("tanitim")}>
+                  <Megaphone className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-orange-500 dark:text-orange-400" />
+                  <div className="relative z-10">
+                    <p className="text-3xl font-bold mb-1 text-orange-500 dark:text-orange-400">
+                      {(tanitimlar?.length || 0).toLocaleString("tr-TR")}
+                    </p>
+                    <p className="text-sm font-medium text-foreground">{t.kisiler.introductions}</p>
+                  </div>
+                </div>
 
                 {/* Operasyon Sayısı */}
-                <Card>
-                  <CardContent className="p-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">{t.kisiler.operations}</p>
-                        <p className="text-base font-bold mt-0.5">{operasyonlar?.length || 0}</p>
-                      </div>
-                      <div className="h-7 w-7 rounded-full bg-violet-100 dark:bg-violet-900 flex items-center justify-center">
-                        <Workflow className="h-3.5 w-3.5 text-violet-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="relative overflow-hidden rounded-2xl p-4 bg-indigo-50/80 dark:bg-indigo-950/20 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setActiveTab("operasyon")}>
+                  <Workflow className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-indigo-500 dark:text-indigo-400" />
+                  <div className="relative z-10">
+                    <p className="text-3xl font-bold mb-1 text-indigo-500 dark:text-indigo-400">
+                      {(operasyonlar?.length || 0).toLocaleString("tr-TR")}
+                    </p>
+                    <p className="text-sm font-medium text-foreground">{t.kisiler.operations}</p>
+                  </div>
+                </div>
 
                 {/* Not Sayısı */}
-                <Card>
-                  <CardContent className="p-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground">{t.kisiler.notes}</p>
-                        <p className="text-base font-bold mt-0.5">{kisi.notlar?.length || 0}</p>
-                      </div>
-                      <div className="h-7 w-7 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                        <FileText className="h-3.5 w-3.5 text-orange-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="relative overflow-hidden rounded-2xl p-4 bg-purple-50/80 dark:bg-purple-950/20 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setActiveTab("notlar")}>
+                  <FileText className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-purple-500 dark:text-purple-400" />
+                  <div className="relative z-10">
+                    <p className="text-3xl font-bold mb-1 text-purple-500 dark:text-purple-400">
+                      {(kisi.notlar?.length || 0).toLocaleString("tr-TR")}
+                    </p>
+                    <p className="text-sm font-medium text-foreground">{t.kisiler.notes}</p>
+                  </div>
+                </div>
               </div>
 
               <div className="grid gap-6 lg:grid-cols-2">

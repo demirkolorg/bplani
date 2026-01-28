@@ -10,7 +10,6 @@ import { Pencil, Calendar, MapPin, FileText, Info, Users, Car } from "lucide-rea
 import { useTanitim } from "@/hooks/use-tanitimlar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -194,35 +193,47 @@ export default function TanitimDetayPage() {
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <div className="flex flex-wrap items-center gap-6 mb-6 p-4 bg-muted/50 rounded-lg">
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-blue-600" />
-          <span className="text-sm text-muted-foreground">{t.tanitimlar.participants}:</span>
-          <Badge variant="secondary" className="font-mono">
-            {tanitim.katilimcilar?.length || 0}
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            ({tanitim.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} {t.kisiler.tipMusteri}, {tanitim.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} {t.kisiler.tipAday})
-          </span>
+      {/* Stats Cards */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 mb-6">
+        {/* Katılımcılar */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-blue-50/80 dark:bg-blue-950/20">
+          <Users className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-blue-500 dark:text-blue-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-blue-500 dark:text-blue-400">
+              {(tanitim.katilimcilar?.length || 0).toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.tanitimlar.participants}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {tanitim.katilimcilar?.filter(k => k.kisi?.tt === true).length || 0} {t.kisiler.tipMusteri}, {tanitim.katilimcilar?.filter(k => k.kisi?.tt === false).length || 0} {t.kisiler.tipAday}
+            </p>
+          </div>
         </div>
-        <Separator orientation="vertical" className="h-6" />
-        <div className="flex items-center gap-2">
-          <Car className="h-4 w-4 text-indigo-600" />
-          <span className="text-sm text-muted-foreground">{t.tanitimlar.vehicles}:</span>
-          <Badge variant="secondary" className="font-mono">
-            {tanitim.araclar?.length || 0}
-          </Badge>
+
+        {/* Araçlar */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-indigo-50/80 dark:bg-indigo-950/20">
+          <Car className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-indigo-500 dark:text-indigo-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-indigo-500 dark:text-indigo-400">
+              {(tanitim.araclar?.length || 0).toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.tanitimlar.vehicles}</p>
+          </div>
         </div>
+
+        {/* Lokasyon */}
         {fullAddress && (
-          <>
-            <Separator orientation="vertical" className="h-6" />
-            <div className="flex items-center gap-2 min-w-0">
-              <MapPin className="h-4 w-4 text-green-600 shrink-0" />
-              <span className="text-sm text-muted-foreground shrink-0">Adres:</span>
-              <span className="text-sm truncate" title={fullAddress}>{fullAddress}</span>
+          <div className="relative overflow-hidden rounded-2xl p-4 bg-green-50/80 dark:bg-green-950/20 lg:col-span-1 col-span-2">
+            <MapPin className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-green-500 dark:text-green-400" />
+            <div className="relative z-10">
+              <p className="text-sm font-medium text-foreground mb-1 flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-green-500 dark:text-green-400" />
+                Lokasyon
+              </p>
+              <p className="text-sm text-muted-foreground line-clamp-2" title={fullAddress}>
+                {fullAddress}
+              </p>
             </div>
-          </>
+          </div>
         )}
       </div>
 

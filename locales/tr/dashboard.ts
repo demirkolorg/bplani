@@ -3,7 +3,7 @@ import type { DashboardTranslations } from "@/types/locale"
 export const dashboard: DashboardTranslations = {
   // Welcome
   welcomeMessage: "Hoş Geldin, {name}",
-  subtitle: "ALTAY - Analiz Listeleme ve Karar Yönetimi",
+  subtitle: "ALTAY - Analiz Listeleme ve Takip Yönetimi",
 
   // Search
   searchPlaceholder: "TC, Telefon, İsim, Adres ile arama yapın...",
@@ -15,7 +15,7 @@ export const dashboard: DashboardTranslations = {
   // Stats
   kisiler: "Kişiler",
   gsm: "GSM",
-  takipler: "Kararlar",
+  takipler: "Takipler",
   tanitimlar: "Etkinlikler",
   operasyonlar: "Operasyonlar",
   araclar: "Araçlar",
@@ -24,12 +24,12 @@ export const dashboard: DashboardTranslations = {
   // Quick Actions
   quickActions: "Hızlı İşlemler",
   newKisi: "Yeni Kişi",
-  newTakip: "Yeni Karar",
+  newTakip: "Yeni Takip",
   newTanitim: "Yeni Etkinlik",
   newOperasyon: "Yeni Operasyon",
 
   // Alerts
-  expiringSoon: "Yakında Bitecek Kararlar",
+  expiringSoon: "Yakında Bitecek Takipler",
   pendingAlarms: "{count} bekleyen alarm",
 
   // Charts

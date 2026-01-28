@@ -14,6 +14,7 @@ export interface Tab {
 export interface TabState {
   tabs: Tab[]
   activeTabId: string | null
+  activeTabHistory: string[] // Gezinme geçmişi (en son aktif olan en sonda)
   maxTabs: number
 }
 

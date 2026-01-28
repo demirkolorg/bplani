@@ -289,62 +289,50 @@ export default function GsmDetayPage() {
       </Card>
 
       {/* Karar İstatistikleri */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t.common.total}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
-              <span className="text-2xl font-bold">{gsm.takipler.length}</span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {/* Toplam */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-blue-50/80 dark:bg-blue-950/20">
+          <Calendar className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-blue-500 dark:text-blue-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-blue-500 dark:text-blue-400">
+              {gsm.takipler.length.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.common.total}</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Aktif
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              <span className="text-2xl font-bold text-blue-600">{activeTakip ? 1 : 0}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Aktif */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-purple-50/80 dark:bg-purple-950/20">
+          <Clock className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-purple-500 dark:text-purple-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-purple-500 dark:text-purple-400">
+              {(activeTakip ? 1 : 0).toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">Aktif</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tamamlanan
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <span className="text-2xl font-bold text-green-600">{completedTakipler}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tamamlanan */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-green-50/80 dark:bg-green-950/20">
+          <CheckCircle2 className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-green-500 dark:text-green-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-green-500 dark:text-green-400">
+              {completedTakipler.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">Tamamlanan</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              İptal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-destructive" />
-              <span className="text-2xl font-bold text-destructive">{cancelledTakipler}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* İptal */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-red-50/80 dark:bg-red-950/20">
+          <XCircle className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-red-500 dark:text-red-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-red-500 dark:text-red-400">
+              {cancelledTakipler.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">İptal</p>
+          </div>
+        </div>
       </div>
 
       {/* Aktif Karar Kaydı */}

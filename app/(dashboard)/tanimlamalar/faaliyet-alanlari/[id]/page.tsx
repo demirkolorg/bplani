@@ -20,8 +20,6 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DataTable } from "@/components/shared/data-table"
 import { getKisiColumns } from "@/components/kisiler/musteri-columns"
@@ -222,79 +220,61 @@ export default function FaaliyetAlaniDetayPage() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t.common.total}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-muted-foreground" />
-              <span className="text-2xl font-bold">{kisiler.length}</span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+        {/* Toplam */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-blue-50/80 dark:bg-blue-950/20">
+          <Users className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-blue-500 dark:text-blue-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-blue-500 dark:text-blue-400">
+              {kisiler.length.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.common.total}</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t.kisiler.tipMusteri}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="text-sm">
-                {musteriCount}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Müşteri */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-green-50/80 dark:bg-green-950/20">
+          <Users className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-green-500 dark:text-green-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-green-500 dark:text-green-400">
+              {musteriCount.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.kisiler.tipMusteri}</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t.kisiler.tipAday}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-sm">
-                {adayCount}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Aday */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-amber-50/80 dark:bg-amber-950/20">
+          <Users className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-amber-500 dark:text-amber-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-amber-500 dark:text-amber-400">
+              {adayCount.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.kisiler.tipAday}</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              PIO
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-sm">
-                {pioCount}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        {/* PIO */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-purple-50/80 dark:bg-purple-950/20">
+          <Briefcase className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-purple-500 dark:text-purple-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-purple-500 dark:text-purple-400">
+              {pioCount.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">PIO</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Takipli
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Phone className="h-5 w-5 text-destructive" />
-              <span className="text-2xl font-bold text-destructive">{takipliCount}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Takipli */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-red-50/80 dark:bg-red-950/20">
+          <Phone className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-red-500 dark:text-red-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-red-500 dark:text-red-400">
+              {takipliCount.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">Takipli</p>
+          </div>
+        </div>
       </div>
 
       {/* Kisiler Table */}

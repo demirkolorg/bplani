@@ -128,43 +128,34 @@ export default function TakipDetayPage() {
 
   return (
     <div className="container mx-auto py-6">
-      {/* Header: GSM ve Kişi Bilgileri */}
+      {/* Header: GSM Numarası Odaklı */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-start gap-4">
-          {kisi && (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted overflow-hidden">
-              {kisi.fotograf ? (
-                <img
-                  src={kisi.fotograf}
-                  alt={`${kisi.ad} ${kisi.soyad}`}
-                  className="h-16 w-16 object-cover"
-                />
-              ) : (
-                <User className="h-8 w-8 text-muted-foreground" />
-              )}
-            </div>
-          )}
+          <div className="h-14 w-14 rounded-xl bg-blue-600 flex items-center justify-center">
+            <Phone className="h-7 w-7 text-white" />
+          </div>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">
-                {kisi ? `${kisi.ad} ${kisi.soyad}` : gsm.numara}
-              </h1>
+              <h1 className="text-3xl font-bold font-mono">{gsm.numara}</h1>
               {activeTakip && (
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
                   {t.takipler.activeTakip || "Aktif"}
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground font-mono">{gsm.numara}</span>
-            </div>
             {kisi && (
-              <Button asChild variant="link" className="p-0 h-auto mt-1">
-                <Link href={`/kisiler/${kisi.id}`}>
-                  {t.takipler.goToPersonDetail || "Kişi Detayına Git"} →
+              <div className="flex items-center gap-2 mt-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  İlişkili Kişi:
+                </span>
+                <Link
+                  href={`/kisiler/${kisi.id}`}
+                  className="text-sm font-medium hover:underline"
+                >
+                  {kisi.ad} {kisi.soyad}
                 </Link>
-              </Button>
+              </div>
             )}
           </div>
         </div>
@@ -193,71 +184,110 @@ export default function TakipDetayPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-5">
-              {/* Kalan Gün - Belirgin Gösterim */}
-              <div className="col-span-full md:col-span-1">
-                <div className="flex flex-col items-center justify-center p-6 rounded-lg border-2 h-full"
-                  style={{
-                    borderColor: isExpired ? "rgb(239, 68, 68)" : isExpiringSoon ? "rgb(249, 115, 22)" : "rgb(34, 197, 94)",
-                    backgroundColor: isExpired ? "rgb(254, 242, 242)" : isExpiringSoon ? "rgb(255, 247, 237)" : "rgb(240, 253, 244)"
-                  }}
-                >
-                  <Clock className={`h-8 w-8 mb-2 ${isExpired ? "text-red-500" : isExpiringSoon ? "text-orange-500" : "text-green-600"}`} />
-                  <span className="text-sm font-medium text-muted-foreground mb-1">
-                    {t.takipler.remainingDays}
-                  </span>
-                  <p className={`text-4xl font-bold ${isExpired ? "text-red-600" : isExpiringSoon ? "text-orange-600" : "text-green-700"}`}>
+            {/* Stats Cards */}
+            <div className="grid gap-3 grid-cols-2 lg:grid-cols-5 mb-6">
+              {/* Kalan Gün */}
+              <div className={`relative overflow-hidden rounded-2xl p-4 ${
+                isExpired
+                  ? "bg-red-50/80 dark:bg-red-950/20"
+                  : isExpiringSoon
+                  ? "bg-orange-50/80 dark:bg-orange-950/20"
+                  : "bg-green-50/80 dark:bg-green-950/20"
+              }`}>
+                <Clock className={`absolute -right-2 -top-2 h-20 w-20 opacity-20 ${
+                  isExpired
+                    ? "text-red-500 dark:text-red-400"
+                    : isExpiringSoon
+                    ? "text-orange-500 dark:text-orange-400"
+                    : "text-green-500 dark:text-green-400"
+                }`} />
+                <div className="relative z-10">
+                  <p className={`text-3xl font-bold mb-1 ${
+                    isExpired
+                      ? "text-red-500 dark:text-red-400"
+                      : isExpiringSoon
+                      ? "text-orange-500 dark:text-orange-400"
+                      : "text-green-500 dark:text-green-400"
+                  }`}>
                     {isExpired ? Math.abs(kalanGun || 0) : kalanGun}
                   </p>
-                  <span className={`text-xs font-medium mt-1 ${isExpired ? "text-red-600" : isExpiringSoon ? "text-orange-600" : "text-green-700"}`}>
+                  <p className="text-sm font-medium text-foreground">
+                    {t.takipler.remainingDays}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {isExpired ? t.takipler.expired : t.common.day}
-                  </span>
+                  </p>
                 </div>
               </div>
 
-              {/* Diğer Bilgiler */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {t.takipler.startDate}
-                  </span>
+              {/* Başlangıç Tarihi */}
+              <div className="relative overflow-hidden rounded-2xl p-4 bg-blue-50/80 dark:bg-blue-950/20">
+                <Calendar className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-blue-500 dark:text-blue-400" />
+                <div className="relative z-10">
+                  <p className="text-xl font-bold mb-1 text-blue-500 dark:text-blue-400">
+                    {new Date(activeTakip.baslamaTarihi).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}
+                  </p>
+                  <p className="text-sm font-medium text-foreground">{t.takipler.startDate}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {new Date(activeTakip.baslamaTarihi).getFullYear()}
+                  </p>
                 </div>
-                <p className="text-lg font-semibold">
-                  {formatDate(activeTakip.baslamaTarihi)}
-                </p>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {t.takipler.endDate}
-                  </span>
+
+              {/* Bitiş Tarihi */}
+              <div className={`relative overflow-hidden rounded-2xl p-4 ${
+                isExpired
+                  ? "bg-red-50/80 dark:bg-red-950/20"
+                  : isExpiringSoon
+                  ? "bg-orange-50/80 dark:bg-orange-950/20"
+                  : "bg-purple-50/80 dark:bg-purple-950/20"
+              }`}>
+                <Calendar className={`absolute -right-2 -top-2 h-20 w-20 opacity-20 ${
+                  isExpired
+                    ? "text-red-500 dark:text-red-400"
+                    : isExpiringSoon
+                    ? "text-orange-500 dark:text-orange-400"
+                    : "text-purple-500 dark:text-purple-400"
+                }`} />
+                <div className="relative z-10">
+                  <p className={`text-xl font-bold mb-1 ${
+                    isExpired
+                      ? "text-red-500 dark:text-red-400"
+                      : isExpiringSoon
+                      ? "text-orange-500 dark:text-orange-400"
+                      : "text-purple-500 dark:text-purple-400"
+                  }`}>
+                    {new Date(activeTakip.bitisTarihi).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" })}
+                  </p>
+                  <p className="text-sm font-medium text-foreground">{t.takipler.endDate}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {new Date(activeTakip.bitisTarihi).getFullYear()}
+                  </p>
                 </div>
-                <p className={`text-lg font-semibold ${isExpired ? "text-destructive" : isExpiringSoon ? "text-orange-500" : ""}`}>
-                  {formatDate(activeTakip.bitisTarihi)}
-                </p>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {t.takipler.durum}
-                  </span>
+
+              {/* Durum */}
+              <div className="relative overflow-hidden rounded-2xl p-4 bg-indigo-50/80 dark:bg-indigo-950/20">
+                <div className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-indigo-500 dark:text-indigo-400 flex items-center justify-center text-6xl font-bold">
+                  {activeTakip.durum === 'UZATILACAK' ? '⟳' : activeTakip.durum === 'DEVAM_EDECEK' ? '→' : activeTakip.durum === 'SONLANDIRILACAK' ? '×' : '✓'}
                 </div>
-                <Badge variant={durumVariants[activeTakip.durum as TakipDurum]}>
-                  {takipDurumLabels[activeTakip.durum as TakipDurum]}
-                </Badge>
+                <div className="relative z-10">
+                  <p className="text-sm font-medium text-foreground mb-2">{t.takipler.durum}</p>
+                  <Badge variant={durumVariants[activeTakip.durum as TakipDurum]} className="text-xs">
+                    {takipDurumLabels[activeTakip.durum as TakipDurum]}
+                  </Badge>
+                </div>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Bell className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {t.takipler.alarm}
-                  </span>
+
+              {/* Alarmlar */}
+              <div className="relative overflow-hidden rounded-2xl p-4 bg-amber-50/80 dark:bg-amber-950/20">
+                <Bell className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-amber-500 dark:text-amber-400" />
+                <div className="relative z-10">
+                  <p className="text-3xl font-bold mb-1 text-amber-500 dark:text-amber-400">
+                    {(activeTakip._count?.alarmlar || 0).toLocaleString("tr-TR")}
+                  </p>
+                  <p className="text-sm font-medium text-foreground">{t.takipler.alarm}</p>
                 </div>
-                <p className="text-lg font-semibold">
-                  {activeTakip._count?.alarmlar || 0}
-                </p>
               </div>
             </div>
 

@@ -19,6 +19,7 @@ export function TabBar() {
     closeTabsToRight,
     closeAllExceptHome,
     openTab,
+    reorderTabs,
   } = useTabs()
 
   // Keyboard shortcuts
@@ -84,10 +85,11 @@ export function TabBar() {
 
   return (
     <div className="sticky top-14 z-10 flex items-center h-10 border-b bg-background px-2 gap-1 overflow-x-auto scrollbar-thin scrollbar-thumb-muted">
-      {tabs.map((tab) => (
+      {tabs.map((tab, index) => (
         <TabItem
           key={tab.id}
           tab={tab}
+          index={index}
           isActive={tab.id === activeTabId}
           isPinned={tab.path === "/"}
           onActivate={() => setActiveTab(tab.id)}
@@ -95,6 +97,7 @@ export function TabBar() {
           onCloseOthers={() => closeOtherTabs(tab.id)}
           onCloseToRight={() => closeTabsToRight(tab.id)}
           onCloseAll={closeAllExceptHome}
+          onReorder={reorderTabs}
         />
       ))}
     </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Languages } from "lucide-react"
 import { useLocale } from "@/components/providers/locale-provider"
 import { Button } from "@/components/ui/button"
 
@@ -15,7 +16,7 @@ export function LocaleToggle() {
   if (!mounted) {
     return (
       <Button variant="ghost" size="icon-sm">
-        <span className="text-xs font-semibold">TR</span>
+        <Languages className="h-4 w-4" />
       </Button>
     )
   }
@@ -27,9 +28,7 @@ export function LocaleToggle() {
       onClick={() => setLocale(locale === "tr" ? "en" : "tr")}
       title={locale === "tr" ? t.common.switchToEnglish : t.common.switchToTurkish}
     >
-      <span className="text-xs font-semibold">
-        {locale.toUpperCase()}
-      </span>
+      <Languages className="h-4 w-4" />
     </Button>
   )
 }

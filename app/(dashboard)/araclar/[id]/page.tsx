@@ -172,15 +172,48 @@ export default function AracDetailPage() {
         </CardContent>
       </Card>
 
+      {/* Statistics Cards */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
+        {/* Toplam Kişi */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-blue-50/80 dark:bg-blue-950/20">
+          <Users className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-blue-500 dark:text-blue-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-blue-500 dark:text-blue-400">
+              {(arac.kisiler?.length || 0).toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.araclar.kisiler}</p>
+          </div>
+        </div>
+
+        {/* Tanıtımlar */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-purple-50/80 dark:bg-purple-950/20">
+          <Megaphone className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-purple-500 dark:text-purple-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-purple-500 dark:text-purple-400">
+              {tanitimlar.length.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.araclar.tanitimlar}</p>
+          </div>
+        </div>
+
+        {/* Operasyonlar */}
+        <div className="relative overflow-hidden rounded-2xl p-4 bg-violet-50/80 dark:bg-violet-950/20">
+          <Workflow className="absolute -right-2 -top-2 h-20 w-20 opacity-20 text-violet-500 dark:text-violet-400" />
+          <div className="relative z-10">
+            <p className="text-3xl font-bold mb-1 text-violet-500 dark:text-violet-400">
+              {operasyonlar.length.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-sm font-medium text-foreground">{t.araclar.operasyonlar}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Sahipler */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
             {t.araclar.kisiler}
-            {arac.kisiler && arac.kisiler.length > 0 && (
-              <Badge variant="secondary">{arac.kisiler.length}</Badge>
-            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -240,9 +273,6 @@ export default function AracDetailPage() {
             <CardTitle className="flex items-center gap-2">
               <Megaphone className="h-5 w-5 text-purple-600" />
               {t.araclar.tanitimlar}
-              {tanitimlar.length > 0 && (
-                <Badge variant="secondary">{tanitimlar.length}</Badge>
-              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -294,9 +324,6 @@ export default function AracDetailPage() {
             <CardTitle className="flex items-center gap-2">
               <Workflow className="h-5 w-5 text-violet-600" />
               {t.araclar.operasyonlar}
-              {operasyonlar.length > 0 && (
-                <Badge variant="secondary">{operasyonlar.length}</Badge>
-              )}
             </CardTitle>
           </CardHeader>
           <CardContent>

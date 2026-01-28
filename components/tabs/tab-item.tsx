@@ -17,6 +17,7 @@ import {
 
 interface TabItemProps {
   tab: Tab
+  index: number
   isActive: boolean
   isPinned?: boolean
   onActivate: () => void
@@ -24,6 +25,7 @@ interface TabItemProps {
   onCloseOthers: () => void
   onCloseToRight: () => void
   onCloseAll: () => void
+  onReorder: (fromIndex: number, toIndex: number) => void
 }
 
 // Dynamic icon resolver
@@ -36,6 +38,7 @@ function getIcon(iconName?: string): LucideIcon | null {
 
 export function TabItem({
   tab,
+  index,
   isActive,
   isPinned = false,
   onActivate,
@@ -43,9 +46,12 @@ export function TabItem({
   onCloseOthers,
   onCloseToRight,
   onCloseAll,
+  onReorder,
 }: TabItemProps) {
   const { t } = useLocale()
   const Icon = getIcon(tab.icon)
+  const [isDragging, setIsDragging] = React.useState(false)
+  const [isDragOver, setIsDragOver] = React.useState(false)
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -62,14 +68,75 @@ export function TabItem({
     }
   }
 
+  const handleDragStart = (e: React.DragEvent) => {
+    if (isPinned) {
+      e.preventDefault()
+      return
+    }
+    setIsDragging(true)
+    e.dataTransfer.effectAllowed = "move"
+    e.dataTransfer.setData("text/plain", index.toString())
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+    setIsDragOver(false)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    // Ana sayfa tabına sürükleme yapılamaz
+    if (isPinned) {
+      return
+    }
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+
+    // Ana sayfa tabına sürükleme yapılamaz
+    if (isPinned) {
+      return
+    }
+
+    const fromIndex = parseInt(e.dataTransfer.getData("text/plain"))
+    const toIndex = index
+
+    if (fromIndex !== toIndex && !isNaN(fromIndex)) {
+      // Ana sayfa tabı (index 0) sabit kalacak
+      // Eğer home tab varsa ve to/from index'ler bunu etkiliyorsa düzelt
+      if (fromIndex === 0 || toIndex === 0) {
+        return // Ana sayfa taşınamaz
+      }
+      onReorder(fromIndex, toIndex)
+    }
+  }
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <div
+          draggable={!isPinned}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
           className={cn(
-            "group relative flex items-center gap-2 px-3 py-1.5 cursor-pointer select-none",
+            "group relative flex items-center gap-2 px-3 py-1.5 select-none",
             "min-w-[100px] max-w-[200px] rounded-t-md border-b-2",
             "hover:bg-muted/50 transition-colors",
+            !isPinned && "cursor-move",
+            isPinned && "cursor-pointer",
+            isDragging && "opacity-40",
+            isDragOver && !isPinned && "bg-muted border-primary/50",
             isActive
               ? "bg-background border-primary text-foreground"
               : "border-transparent text-muted-foreground hover:text-foreground"

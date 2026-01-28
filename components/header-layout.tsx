@@ -7,6 +7,7 @@ import { TabProvider, useTabs } from "@/components/providers/tab-provider"
 import { TabBar, TabContentRenderer } from "@/components/tabs"
 import { HeaderNavMenu, HeaderNavBar } from "@/components/header-nav-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { FontSizeToggle } from "@/components/font-size-toggle"
 import { LocaleToggle } from "@/components/locale-toggle"
 import { NavUser } from "@/components/nav-user"
 import { AlarmBell } from "@/components/alarm-bell"
@@ -102,6 +103,7 @@ function HeaderContent() {
           <div className="flex items-center gap-2">
             <AlarmBell />
             <LocaleToggle />
+            <FontSizeToggle />
             <ThemeToggle />
             <NavUser />
           </div>
