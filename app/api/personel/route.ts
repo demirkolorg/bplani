@@ -4,15 +4,17 @@ import prisma from "@/lib/prisma"
 import { createPersonelSchema, listPersonelQuerySchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 import { logList, logCreate } from "@/lib/logger"
+import { validationErrorResponse, handleApiError, errorResponse } from "@/lib/api-response"
+import { ConflictError, AuthenticationError } from "@/types/errors"
 
 // Yetki kontrolü - sadece ADMIN ve YONETICI erişebilir
 async function checkPermission() {
   const session = await getSession()
   if (!session) {
-    return { error: "Oturum bulunamadı", status: 401 }
+    throw new AuthenticationError("Oturum bulunamadı")
   }
   if (session.rol !== "ADMIN" && session.rol !== "YONETICI") {
-    return { error: "Bu işlem için yetkiniz yok", status: 403 }
+    throw new AuthenticationError("Bu işlem için yetkiniz yok")
   }
   return { session }
 }
@@ -20,20 +22,14 @@ async function checkPermission() {
 // GET /api/personel - List all personel with filtering and pagination
 export async function GET(request: NextRequest) {
   try {
-    const permCheck = await checkPermission()
-    if ("error" in permCheck) {
-      return NextResponse.json({ error: permCheck.error }, { status: permCheck.status })
-    }
+    const { session } = await checkPermission()
 
     const { searchParams } = new URL(request.url)
     const queryParams = Object.fromEntries(searchParams.entries())
 
     const validatedQuery = listPersonelQuerySchema.safeParse(queryParams)
     if (!validatedQuery.success) {
-      return NextResponse.json(
-        { error: "Geçersiz sorgu parametreleri", details: validatedQuery.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedQuery.error)
     }
 
     const { page, limit, search, rol, isActive, sortBy, sortOrder } = validatedQuery.data
@@ -88,7 +84,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    await logList("Personel", { page, limit, search, rol, isActive, sortBy, sortOrder }, personeller.length, permCheck.session)
+    await logList("Personel", { page, limit, search, rol, isActive, sortBy, sortOrder }, personeller.length, session)
 
     return NextResponse.json({
       data: personeller,
@@ -100,27 +96,20 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Error fetching personeller:", error)
-    return NextResponse.json(
-      { error: "Personeller getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "PERSONEL_LIST")
   }
 }
 
 // POST /api/personel - Create a new personel
 export async function POST(request: NextRequest) {
   try {
-    const permCheck = await checkPermission()
-    if ("error" in permCheck) {
-      return NextResponse.json({ error: permCheck.error }, { status: permCheck.status })
-    }
+    const { session } = await checkPermission()
 
     // Sadece ADMIN yeni kullanıcı oluşturabilir
-    if (permCheck.session.rol !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Yeni kullanıcı oluşturmak için Admin yetkisi gereklidir" },
-        { status: 403 }
+    if (session.rol !== "ADMIN") {
+      return handleApiError(
+        new AuthenticationError("Yeni kullanıcı oluşturmak için Admin yetkisi gereklidir"),
+        "PERSONEL_CREATE"
       )
     }
 
@@ -128,10 +117,7 @@ export async function POST(request: NextRequest) {
 
     const validatedData = createPersonelSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     // Check if visibleId already exists
@@ -139,9 +125,9 @@ export async function POST(request: NextRequest) {
       where: { visibleId: validatedData.data.visibleId },
     })
     if (existing) {
-      return NextResponse.json(
-        { error: "Bu kullanıcı ID zaten kullanılıyor" },
-        { status: 409 }
+      return handleApiError(
+        new ConflictError("Bu kullanıcı ID zaten kullanılıyor"),
+        "PERSONEL_CREATE"
       )
     }
 
@@ -166,14 +152,10 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    await logCreate("Personel", personel.id, personel as unknown as Record<string, unknown>, `${personel.ad} ${personel.soyad}`, permCheck.session)
+    await logCreate("Personel", personel.id, personel as unknown as Record<string, unknown>, `${personel.ad} ${personel.soyad}`, session)
 
     return NextResponse.json(personel, { status: 201 })
   } catch (error) {
-    console.error("Error creating personel:", error)
-    return NextResponse.json(
-      { error: "Personel oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "PERSONEL_CREATE")
   }
 }

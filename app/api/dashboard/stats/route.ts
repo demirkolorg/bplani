@@ -153,6 +153,53 @@ export async function GET() {
       ]),
     ])
 
+    // Chart data: Monthly trend (last 6 months)
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+
+    const [monthlyTanitimlar, monthlyOperasyonlar] = await Promise.all([
+      prisma.$queryRaw<Array<{ month: string; count: bigint }>>`
+        SELECT
+          TO_CHAR(DATE_TRUNC('month', tarih), 'YYYY-MM') as month,
+          COUNT(*) as count
+        FROM tanitimlar
+        WHERE tarih >= ${sixMonthsAgo}
+        GROUP BY DATE_TRUNC('month', tarih)
+        ORDER BY DATE_TRUNC('month', tarih)
+      `,
+      prisma.$queryRaw<Array<{ month: string; count: bigint }>>`
+        SELECT
+          TO_CHAR(DATE_TRUNC('month', tarih), 'YYYY-MM') as month,
+          COUNT(*) as count
+        FROM operasyonlar
+        WHERE tarih >= ${sixMonthsAgo}
+        GROUP BY DATE_TRUNC('month', tarih)
+        ORDER BY DATE_TRUNC('month', tarih)
+      `,
+    ])
+
+    // Merge monthly data
+    const monthlyTrend = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date()
+      date.setMonth(date.getMonth() - (5 - i))
+      const month = date.toISOString().slice(0, 7)
+
+      const tanitim = monthlyTanitimlar.find(t => t.month === month)
+      const operasyon = monthlyOperasyonlar.find(o => o.month === month)
+
+      return {
+        month,
+        tanitimCount: tanitim ? Number(tanitim.count) : 0,
+        operasyonCount: operasyon ? Number(operasyon.count) : 0,
+      }
+    })
+
+    // Kişi dağılımı (müşteri vs aday)
+    const kisiDistribution = [
+      { name: 'Müşteri', value: kisiStats.musteri },
+      { name: 'Aday', value: kisiStats.lead },
+    ]
+
     return NextResponse.json({
       kisi: kisiStats,
       takip: takipStats,
@@ -166,6 +213,10 @@ export async function GET() {
         kisiler: recentActivity[0],
         takipler: recentActivity[1],
         tanitimlar: recentActivity[2],
+      },
+      charts: {
+        monthlyTrend,
+        kisiDistribution,
       },
     })
   } catch (error) {

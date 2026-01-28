@@ -52,6 +52,7 @@ import { cn } from "@/lib/utils"
 import { interpolate } from "@/locales"
 import type { ColumnFilterState } from "@/lib/data-table/column-filter-config"
 import { fuzzyFilter, getSearchableText } from "@/lib/data-table/fuzzy-filter"
+import { useDebounce } from "@/hooks/use-debounce"
 
 // Deep search function for nested objects
 function deepSearch(obj: unknown, searchTerm: string, booleanLabels?: { yes: string; no: string; active: string; inactive: string; exists: string; notExists: string }): boolean {
@@ -492,6 +493,8 @@ export function DataTable<TData, TValue>({
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [globalFilterInput, setGlobalFilterInput] = React.useState("")
+  // Debounced global filter to avoid performance issues with large datasets
+  const debouncedGlobalFilter = useDebounce(globalFilterInput, 300)
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize,
@@ -587,7 +590,7 @@ export function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
       rowSelection,
-      globalFilter: globalFilterInput,
+      globalFilter: debouncedGlobalFilter,
       pagination,
     },
   })

@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateAdresInput, UpdateAdresInput, BulkCreateAdresInput } from "@/lib/validations"
 import { kisiKeys } from "./use-kisiler"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 export interface Adres {
   id: string
@@ -97,6 +100,8 @@ export function useAdreslerByKisi(kisiId: string) {
     queryKey: adresKeys.byKisi(kisiId),
     queryFn: () => fetchAdreslerByKisi(kisiId),
     enabled: !!kisiId,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -108,6 +113,11 @@ export function useCreateAdres() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: adresKeys.byKisi(data.kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
+      toast.success("Adres başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -120,6 +130,11 @@ export function useBulkCreateAdres() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: adresKeys.byKisi(variables.kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(variables.kisiId) })
+      toast.success("Adresler başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -132,6 +147,11 @@ export function useUpdateAdres() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: adresKeys.byKisi(data.kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
+      toast.success("Adres başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -143,6 +163,11 @@ export function useDeleteAdres() {
     mutationFn: deleteAdres,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adresKeys.all })
+      toast.success("Adres başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

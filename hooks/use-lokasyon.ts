@@ -7,6 +7,9 @@ import type {
   CreateMahalleInput,
   UpdateMahalleInput,
 } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // ==================== TYPES ====================
 interface UserInfo {
@@ -278,6 +281,8 @@ export function useIller() {
   return useQuery({
     queryKey: ilKeys.lists(),
     queryFn: fetchIller,
+    staleTime: queryConfig.static.staleTime,
+    gcTime: queryConfig.static.gcTime,
   })
 }
 
@@ -286,6 +291,8 @@ export function useIl(id: string) {
     queryKey: ilKeys.detail(id),
     queryFn: () => fetchIl(id),
     enabled: !!id,
+    staleTime: queryConfig.static.staleTime,
+    gcTime: queryConfig.static.gcTime,
   })
 }
 
@@ -296,6 +303,11 @@ export function useCreateIl() {
     mutationFn: createIl,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ilKeys.lists() })
+      toast.success("İl başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -308,6 +320,11 @@ export function useUpdateIl() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ilKeys.lists() })
       queryClient.invalidateQueries({ queryKey: ilKeys.detail(data.id) })
+      toast.success("İl başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -319,6 +336,11 @@ export function useDeleteIl() {
     mutationFn: deleteIl,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ilKeys.lists() })
+      toast.success("İl başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -328,6 +350,8 @@ export function useIlceler(ilId?: string) {
   return useQuery({
     queryKey: ilceKeys.listByIl(ilId),
     queryFn: () => fetchIlceler(ilId),
+    staleTime: queryConfig.static.staleTime,
+    gcTime: queryConfig.static.gcTime,
   })
 }
 
@@ -336,6 +360,8 @@ export function useIlce(id: string) {
     queryKey: ilceKeys.detail(id),
     queryFn: () => fetchIlce(id),
     enabled: !!id,
+    staleTime: queryConfig.static.staleTime,
+    gcTime: queryConfig.static.gcTime,
   })
 }
 
@@ -346,6 +372,11 @@ export function useCreateIlce() {
     mutationFn: createIlce,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ilceKeys.lists() })
+      toast.success("İlçe başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -358,6 +389,11 @@ export function useUpdateIlce() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ilceKeys.lists() })
       queryClient.invalidateQueries({ queryKey: ilceKeys.detail(data.id) })
+      toast.success("İlçe başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -369,6 +405,11 @@ export function useDeleteIlce() {
     mutationFn: deleteIlce,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ilceKeys.lists() })
+      toast.success("İlçe başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -382,6 +423,8 @@ export function useMahalleler(params?: { ilceId?: string; ilId?: string }) {
       ? mahalleKeys.listByIl(params.ilId)
       : mahalleKeys.lists(),
     queryFn: () => fetchMahalleler(params),
+    staleTime: queryConfig.static.staleTime,
+    gcTime: queryConfig.static.gcTime,
   })
 }
 
@@ -390,6 +433,8 @@ export function useMahalle(id: string) {
     queryKey: mahalleKeys.detail(id),
     queryFn: () => fetchMahalle(id),
     enabled: !!id,
+    staleTime: queryConfig.static.staleTime,
+    gcTime: queryConfig.static.gcTime,
   })
 }
 
@@ -400,6 +445,11 @@ export function useCreateMahalle() {
     mutationFn: createMahalle,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mahalleKeys.lists() })
+      toast.success("Mahalle başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -412,6 +462,11 @@ export function useUpdateMahalle() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: mahalleKeys.lists() })
       queryClient.invalidateQueries({ queryKey: mahalleKeys.detail(data.id) })
+      toast.success("Mahalle başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -423,6 +478,11 @@ export function useDeleteMahalle() {
     mutationFn: deleteMahalle,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mahalleKeys.lists() })
+      toast.success("Mahalle başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

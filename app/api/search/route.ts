@@ -159,6 +159,11 @@ export async function GET(request: NextRequest) {
               LIKE ${searchPattern}
             OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(il.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(COALESCE(k.tc, '')) LIKE ${searchPattern}
           LIMIT ${limit}
         `
 
@@ -289,6 +294,18 @@ export async function GET(request: NextRequest) {
               LIKE ${searchPattern}
             OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(ilce.ad, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
+            OR EXISTS (
+              SELECT 1 FROM tanitim_katilimcilari tk
+              JOIN kisiler k ON tk."kisiId" = k.id
+              WHERE tk."tanitimId" = t.id
+                AND (
+                  LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                    LIKE ${searchPattern}
+                  OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                    LIKE ${searchPattern}
+                  OR LOWER(COALESCE(k.tc, '')) LIKE ${searchPattern}
+                )
+            )
           LIMIT ${limit}
         `
 
@@ -392,6 +409,18 @@ export async function GET(request: NextRequest) {
               LIKE ${searchPattern}
             OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(ilce.ad, ''), 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
+            OR EXISTS (
+              SELECT 1 FROM operasyon_katilimcilari ok
+              JOIN kisiler k ON ok."kisiId" = k.id
+              WHERE ok."operasyonId" = o.id
+                AND (
+                  LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                    LIKE ${searchPattern}
+                  OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                    LIKE ${searchPattern}
+                  OR LOWER(COALESCE(k.tc, '')) LIKE ${searchPattern}
+                )
+            )
           LIMIT ${limit}
         `
 
@@ -565,6 +594,18 @@ export async function GET(request: NextRequest) {
               LIKE ${searchPattern}
             OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(ma.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
+            OR EXISTS (
+              SELECT 1 FROM arac_kisileri ak
+              JOIN kisiler k ON ak."kisiId" = k.id
+              WHERE ak."aracId" = a.id
+                AND (
+                  LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                    LIKE ${searchPattern}
+                  OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+                    LIKE ${searchPattern}
+                  OR LOWER(COALESCE(k.tc, '')) LIKE ${searchPattern}
+                )
+            )
           LIMIT ${limit}
         `
 
@@ -598,6 +639,11 @@ export async function GET(request: NextRequest) {
           WHERE
             LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(n.icerik, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
               LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.ad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(k.soyad, 'ı', 'i'), 'ğ', 'g'), 'ü', 'u'), 'ş', 's'), 'ö', 'o'), 'ç', 'c'))
+              LIKE ${searchPattern}
+            OR LOWER(COALESCE(k.tc, '')) LIKE ${searchPattern}
           LIMIT ${limit}
         `
 

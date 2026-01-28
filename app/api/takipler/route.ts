@@ -4,6 +4,8 @@ import { createTakipSchema, bulkCreateTakipSchema, listTakipQuerySchema } from "
 import { getSession } from "@/lib/auth"
 import { getAyarlar } from "@/lib/ayarlar"
 import { logList, logCreate, logBulkCreate } from "@/lib/logger"
+import { validationErrorResponse, handleApiError } from "@/lib/api-response"
+import { NotFoundError } from "@/types/errors"
 
 // GET /api/takipler - List takipler with filters and pagination
 export async function GET(request: NextRequest) {
@@ -13,10 +15,7 @@ export async function GET(request: NextRequest) {
 
     const validatedQuery = listTakipQuerySchema.safeParse(queryParams)
     if (!validatedQuery.success) {
-      return NextResponse.json(
-        { error: "Geçersiz sorgu parametreleri", details: validatedQuery.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedQuery.error)
     }
 
     const {
@@ -125,11 +124,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Error fetching takipler:", error)
-    return NextResponse.json(
-      { error: "Takipler getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "TAKIP_LIST")
   }
 }
 
@@ -163,10 +158,7 @@ export async function POST(request: NextRequest) {
     if (body.gsmIds && Array.isArray(body.gsmIds)) {
       const validatedData = bulkCreateTakipSchema.safeParse(body)
       if (!validatedData.success) {
-        return NextResponse.json(
-          { error: "Geçersiz veri", details: validatedData.error.flatten() },
-          { status: 400 }
-        )
+        return validationErrorResponse(validatedData.error)
       }
 
       const { gsmIds, baslamaTarihi: inputBaslama, bitisTarihi: inputBitis } = validatedData.data
@@ -178,9 +170,9 @@ export async function POST(request: NextRequest) {
       })
 
       if (existingGsms.length !== gsmIds.length) {
-        return NextResponse.json(
-          { error: "Bazı GSM'ler bulunamadı" },
-          { status: 404 }
+        return handleApiError(
+          new NotFoundError("Bazı GSM'ler bulunamadı"),
+          "TAKIP_BULK_CREATE"
         )
       }
 
@@ -294,10 +286,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createTakipSchema.safeParse(body)
 
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     // Check if GSM exists
@@ -306,9 +295,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (!gsm) {
-      return NextResponse.json(
-        { error: "GSM bulunamadı" },
-        { status: 404 }
+      return handleApiError(
+        new NotFoundError("GSM bulunamadı"),
+        "TAKIP_CREATE"
       )
     }
 
@@ -426,10 +415,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(takip, { status: 201 })
   } catch (error) {
-    console.error("Error creating takip:", error)
-    return NextResponse.json(
-      { error: "Takip oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "TAKIP_CREATE")
   }
 }

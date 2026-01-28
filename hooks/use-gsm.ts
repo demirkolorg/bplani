@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateGsmInput, UpdateGsmInput, BulkCreateGsmInput } from "@/lib/validations"
 import { kisiKeys } from "./use-kisiler"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 export interface Gsm {
   id: string
@@ -149,6 +152,8 @@ export function useAllGsmler() {
   return useQuery({
     queryKey: gsmKeys.allWithKisi(),
     queryFn: fetchAllGsmler,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -157,6 +162,8 @@ export function useGsmlerByKisi(kisiId: string) {
     queryKey: gsmKeys.byKisi(kisiId),
     queryFn: () => fetchGsmlerByKisi(kisiId),
     enabled: !!kisiId,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -168,6 +175,11 @@ export function useCreateGsm() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(data.kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
+      toast.success("GSM başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -180,6 +192,11 @@ export function useBulkCreateGsm() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(variables.kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(variables.kisiId) })
+      toast.success("GSM numaraları başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -192,6 +209,11 @@ export function useUpdateGsm() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(data.kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
+      toast.success("GSM başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -204,6 +226,11 @@ export function useDeleteGsm() {
     onSuccess: () => {
       // Invalidate all gsm queries since we don't know which kisi it belonged to
       queryClient.invalidateQueries({ queryKey: gsmKeys.all })
+      toast.success("GSM başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

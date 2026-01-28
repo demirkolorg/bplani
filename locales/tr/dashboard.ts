@@ -31,4 +31,10 @@ export const dashboard: DashboardTranslations = {
   // Alerts
   expiringSoon: "Yakında Bitecek Kararlar",
   pendingAlarms: "{count} bekleyen alarm",
+
+  // Charts
+  monthlyTrend: "Aylık Aktivite Trendi",
+  monthlyTrendDesc: "Son 6 aydaki tanıtım ve operasyon sayıları",
+  kisiDistribution: "Kişi Dağılımı",
+  kisiDistributionDesc: "Müşteri ve aday kişi sayıları",
 }

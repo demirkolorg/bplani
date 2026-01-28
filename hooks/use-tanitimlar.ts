@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateTanitimInput, UpdateTanitimInput, ListTanitimQuery, AddKatilimciInput, AddTanitimAracInput } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // Types for API responses
 export interface TanitimKatilimci {
@@ -232,6 +235,8 @@ export function useTanitimlar(params: Partial<ListTanitimQuery> = {}) {
   return useQuery({
     queryKey: tanitimKeys.list(params),
     queryFn: () => fetchTanitimlar(params),
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -240,6 +245,8 @@ export function useTanitim(id: string) {
     queryKey: tanitimKeys.detail(id),
     queryFn: () => fetchTanitim(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -252,6 +259,11 @@ export function useCreateTanitim() {
       queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
       // Invalidate all byKisi queries since we don't know which kisi was added
       queryClient.invalidateQueries({ queryKey: [...tanitimKeys.all, "byKisi"] })
+      toast.success("Tanıtım başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -264,6 +276,11 @@ export function useUpdateTanitim() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
       queryClient.setQueryData(tanitimKeys.detail(data.id), data)
+      toast.success("Tanıtım başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -275,6 +292,11 @@ export function useDeleteTanitim() {
     mutationFn: deleteTanitim,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
+      toast.success("Tanıtım başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -289,6 +311,11 @@ export function useAddKatilimci() {
       queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
       // Invalidate all byKisi queries since we don't know which kisi was added
       queryClient.invalidateQueries({ queryKey: [...tanitimKeys.all, "byKisi"] })
+      toast.success("Katılımcı başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -303,6 +330,11 @@ export function useRemoveKatilimci() {
       queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
       // Invalidate all byKisi queries
       queryClient.invalidateQueries({ queryKey: [...tanitimKeys.all, "byKisi"] })
+      toast.success("Katılımcı başarıyla çıkarıldı")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -315,6 +347,11 @@ export function useAddTanitimArac() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: tanitimKeys.detail(variables.tanitimId) })
       queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
+      toast.success("Araç başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -327,6 +364,11 @@ export function useRemoveTanitimArac() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: tanitimKeys.detail(variables.tanitimId) })
       queryClient.invalidateQueries({ queryKey: tanitimKeys.lists() })
+      toast.success("Araç başarıyla çıkarıldı")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -336,5 +378,7 @@ export function useTanitimlarByKisi(kisiId: string) {
     queryKey: tanitimKeys.byKisi(kisiId),
     queryFn: () => fetchTanitimlarByKisi(kisiId),
     enabled: !!kisiId,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }

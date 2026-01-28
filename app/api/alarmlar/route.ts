@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma"
 import { createAlarmSchema, listAlarmQuerySchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 import { logList, logCreate } from "@/lib/logger"
+import { validationErrorResponse, handleApiError } from "@/lib/api-response"
 
 // GET /api/alarmlar - List all alarms with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -12,10 +13,7 @@ export async function GET(request: NextRequest) {
 
     const validatedQuery = listAlarmQuerySchema.safeParse(queryParams)
     if (!validatedQuery.success) {
-      return NextResponse.json(
-        { error: "Geçersiz sorgu parametreleri", details: validatedQuery.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedQuery.error)
     }
 
     const { page, limit, search, tip, durum, takipId, aktifOnly, sortBy, sortOrder } = validatedQuery.data
@@ -104,11 +102,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Error fetching alarmlar:", error)
-    return NextResponse.json(
-      { error: "Alarmlar getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "ALARM_LIST")
   }
 }
 
@@ -122,10 +116,7 @@ export async function POST(request: NextRequest) {
 
     const validatedData = createAlarmSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     const data = validatedData.data
@@ -171,10 +162,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(alarm, { status: 201 })
   } catch (error) {
-    console.error("Error creating alarm:", error)
-    return NextResponse.json(
-      { error: "Alarm oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "ALARM_CREATE")
   }
 }

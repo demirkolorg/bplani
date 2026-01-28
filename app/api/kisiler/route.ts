@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma"
 import { createKisiSchema, listKisiQuerySchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 import { logList, logCreate } from "@/lib/logger"
+import { successResponse, validationErrorResponse, handleApiError } from "@/lib/api-response"
+import { ConflictError } from "@/types/errors"
 
 // GET /api/kisiler - List all kisiler with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -12,10 +14,7 @@ export async function GET(request: NextRequest) {
 
     const validatedQuery = listKisiQuerySchema.safeParse(queryParams)
     if (!validatedQuery.success) {
-      return NextResponse.json(
-        { error: "Geçersiz sorgu parametreleri", details: validatedQuery.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedQuery.error)
     }
 
     const { page, limit, search, tt, isArchived, pio, asli, sortBy, sortOrder } = validatedQuery.data
@@ -106,11 +105,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Error fetching kisiler:", error)
-    return NextResponse.json(
-      { error: "Kişiler getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "GET /api/kisiler")
   }
 }
 
@@ -124,10 +119,7 @@ export async function POST(request: NextRequest) {
 
     const validatedData = createKisiSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     // Validate user exists before assigning
@@ -164,19 +156,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(kisi, { status: 201 })
   } catch (error) {
-    console.error("Error creating kisi:", error)
-
     // Handle unique constraint violation for TC
     if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return NextResponse.json(
-        { error: "Bu TC Kimlik No ile kayıtlı bir kişi zaten var" },
-        { status: 409 }
+      return handleApiError(
+        new ConflictError("Bu TC Kimlik No ile kayıtlı bir kişi zaten var"),
+        "POST /api/kisiler"
       )
     }
 
-    return NextResponse.json(
-      { error: "Kişi oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "POST /api/kisiler")
   }
 }

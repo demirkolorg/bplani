@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma"
 import { createTanitimSchema, listTanitimQuerySchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 import { logList, logCreate } from "@/lib/logger"
+import { validationErrorResponse, handleApiError } from "@/lib/api-response"
 
 // GET /api/tanitimlar - List all tanitimlar with filtering and pagination
 export async function GET(request: NextRequest) {
@@ -12,10 +13,7 @@ export async function GET(request: NextRequest) {
 
     const validatedQuery = listTanitimQuerySchema.safeParse(queryParams)
     if (!validatedQuery.success) {
-      return NextResponse.json(
-        { error: "Geçersiz sorgu parametreleri", details: validatedQuery.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedQuery.error)
     }
 
     const { page, limit, search, tarihBaslangic, tarihBitis, kisiId, mahalleId, sortBy, sortOrder } = validatedQuery.data
@@ -124,11 +122,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Error fetching tanitimlar:", error)
-    return NextResponse.json(
-      { error: "Tanıtımlar getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "TANITIM_LIST")
   }
 }
 
@@ -142,10 +136,7 @@ export async function POST(request: NextRequest) {
 
     const validatedData = createTanitimSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     const { katilimcilar, araclar, ...tanitimData } = validatedData.data
@@ -226,10 +217,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(tanitim, { status: 201 })
   } catch (error) {
-    console.error("Error creating tanitim:", error)
-    return NextResponse.json(
-      { error: "Tanıtım oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "TANITIM_CREATE")
   }
 }

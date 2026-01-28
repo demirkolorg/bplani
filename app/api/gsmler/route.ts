@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma"
 import { createGsmSchema, updateGsmSchema, bulkCreateGsmSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 import { logList, logCreate, logUpdate, logDelete, logBulkCreate } from "@/lib/logger"
+import { validationErrorResponse, handleApiError, errorResponse } from "@/lib/api-response"
+import { ConflictError, NotFoundError } from "@/types/errors"
 
 // Normalize GSM number (add leading 0 if missing, remove spaces)
 function normalizeGsmNumber(numara: string): string {
@@ -55,10 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!kisiId) {
-      return NextResponse.json(
-        { error: "kisiId parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("kisiId parametresi gerekli", 400)
     }
 
     const gsmler = await prisma.gsm.findMany({
@@ -97,11 +96,7 @@ export async function GET(request: NextRequest) {
     await logList("Gsm", { kisiId }, gsmler.length)
     return NextResponse.json(gsmler)
   } catch (error) {
-    console.error("Error fetching gsmler:", error)
-    return NextResponse.json(
-      { error: "GSM'ler getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "GSM_LIST")
   }
 }
 
@@ -126,10 +121,7 @@ export async function POST(request: NextRequest) {
     if (body.gsmler && Array.isArray(body.gsmler)) {
       const validatedData = bulkCreateGsmSchema.safeParse(body)
       if (!validatedData.success) {
-        return NextResponse.json(
-          { error: "Geçersiz veri", details: validatedData.error.flatten() },
-          { status: 400 }
-        )
+        return validationErrorResponse(validatedData.error)
       }
 
       const { kisiId, gsmler } = validatedData.data
@@ -147,9 +139,9 @@ export async function POST(request: NextRequest) {
 
       if (existingGsms.length > 0) {
         const duplicates = existingGsms.map(g => g.numara).join(", ")
-        return NextResponse.json(
-          { error: `Bu GSM numaraları sistemde zaten kayıtlı: ${duplicates}` },
-          { status: 409 }
+        return handleApiError(
+          new ConflictError(`Bu GSM numaraları sistemde zaten kayıtlı: ${duplicates}`),
+          "GSM_BULK_CREATE"
         )
       }
 
@@ -178,10 +170,7 @@ export async function POST(request: NextRequest) {
     // Single GSM create
     const validatedData = createGsmSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     // Normalize the number for duplicate check (validation already normalizes it)
@@ -234,11 +223,7 @@ export async function POST(request: NextRequest) {
     await logCreate("Gsm", gsm.id, gsm as unknown as Record<string, unknown>, gsm.numara, session)
     return NextResponse.json(gsm, { status: 201 })
   } catch (error) {
-    console.error("Error creating gsm:", error)
-    return NextResponse.json(
-      { error: "GSM oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "GSM_CREATE")
   }
 }
 
@@ -252,26 +237,20 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get("id")
 
     if (!id) {
-      return NextResponse.json(
-        { error: "id parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("id parametresi gerekli", 400)
     }
 
     const body = await request.json()
     const validatedData = updateGsmSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     const existing = await prisma.gsm.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json(
-        { error: "GSM bulunamadı" },
-        { status: 404 }
+      return handleApiError(
+        new NotFoundError("GSM bulunamadı"),
+        "GSM_UPDATE"
       )
     }
 
@@ -303,11 +282,7 @@ export async function PUT(request: NextRequest) {
     await logUpdate("Gsm", gsm.id, existing as unknown as Record<string, unknown>, gsm as unknown as Record<string, unknown>, gsm.numara, session)
     return NextResponse.json(gsm)
   } catch (error) {
-    console.error("Error updating gsm:", error)
-    return NextResponse.json(
-      { error: "GSM güncellenirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "GSM_UPDATE")
   }
 }
 
@@ -319,17 +294,14 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id")
 
     if (!id) {
-      return NextResponse.json(
-        { error: "id parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("id parametresi gerekli", 400)
     }
 
     const existing = await prisma.gsm.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json(
-        { error: "GSM bulunamadı" },
-        { status: 404 }
+      return handleApiError(
+        new NotFoundError("GSM bulunamadı"),
+        "GSM_DELETE"
       )
     }
 
@@ -338,10 +310,6 @@ export async function DELETE(request: NextRequest) {
     await logDelete("Gsm", id, existing as unknown as Record<string, unknown>, existing.numara, session)
     return NextResponse.json({ message: "GSM başarıyla silindi" })
   } catch (error) {
-    console.error("Error deleting gsm:", error)
-    return NextResponse.json(
-      { error: "GSM silinirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "GSM_DELETE")
   }
 }

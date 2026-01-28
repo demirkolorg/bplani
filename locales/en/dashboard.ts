@@ -31,4 +31,10 @@ export const dashboard: DashboardTranslations = {
   // Alerts
   expiringSoon: "Expiring Soon",
   pendingAlarms: "{count} pending alarms",
+
+  // Charts
+  monthlyTrend: "Monthly Activity Trend",
+  monthlyTrendDesc: "Introductions and operations count in the last 6 months",
+  kisiDistribution: "People Distribution",
+  kisiDistributionDesc: "Customer and candidate counts",
 }

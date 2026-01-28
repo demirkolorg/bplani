@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateNotInput, UpdateNotInput } from "@/lib/validations"
 import { kisiKeys } from "./use-kisiler"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 export interface Not {
   id: string
@@ -73,6 +76,8 @@ export function useNotlarByKisi(kisiId: string) {
     queryKey: notKeys.byKisi(kisiId),
     queryFn: () => fetchNotlarByKisi(kisiId),
     enabled: !!kisiId,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -84,6 +89,11 @@ export function useCreateNot() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: notKeys.byKisi(data.kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
+      toast.success("Not başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -96,6 +106,11 @@ export function useUpdateNot() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: notKeys.byKisi(data.kisiId) })
       queryClient.invalidateQueries({ queryKey: kisiKeys.detail(data.kisiId) })
+      toast.success("Not başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -108,6 +123,11 @@ export function useDeleteNot() {
     onSuccess: () => {
       // Invalidate all not queries since we don't know which kisi it belonged to
       queryClient.invalidateQueries({ queryKey: notKeys.all })
+      toast.success("Not başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

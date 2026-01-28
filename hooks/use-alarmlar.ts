@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateAlarmInput, UpdateAlarmInput, ListAlarmQuery, AlarmTip, AlarmDurum } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // Types for API responses
 export interface AlarmKisi {
@@ -151,6 +154,8 @@ export function useAlarmlar(params: Partial<ListAlarmQuery> = {}) {
   return useQuery({
     queryKey: alarmKeys.list(params),
     queryFn: () => fetchAlarmlar(params),
+    staleTime: queryConfig.realtime.staleTime,
+    gcTime: queryConfig.realtime.gcTime,
   })
 }
 
@@ -159,6 +164,8 @@ export function useAlarm(id: string) {
     queryKey: alarmKeys.detail(id),
     queryFn: () => fetchAlarm(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -170,6 +177,11 @@ export function useCreateAlarm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: alarmKeys.lists() })
       queryClient.invalidateQueries({ queryKey: alarmKeys.bildirimler() })
+      toast.success("Alarm başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -183,6 +195,11 @@ export function useUpdateAlarm() {
       queryClient.invalidateQueries({ queryKey: alarmKeys.lists() })
       queryClient.invalidateQueries({ queryKey: alarmKeys.bildirimler() })
       queryClient.setQueryData(alarmKeys.detail(data.id), data)
+      toast.success("Alarm başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -195,6 +212,11 @@ export function useDeleteAlarm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: alarmKeys.lists() })
       queryClient.invalidateQueries({ queryKey: alarmKeys.bildirimler() })
+      toast.success("Alarm başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -204,6 +226,8 @@ export function useBildirimler() {
     queryKey: alarmKeys.bildirimler(),
     queryFn: fetchBildirimler,
     refetchInterval: 60000, // Refetch every minute
+    staleTime: queryConfig.realtime.staleTime,
+    gcTime: queryConfig.realtime.gcTime,
   })
 }
 
@@ -215,6 +239,11 @@ export function useMarkAllAsRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: alarmKeys.bildirimler() })
       queryClient.invalidateQueries({ queryKey: alarmKeys.lists() })
+      toast.success("Tüm bildirimler okundu olarak işaretlendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

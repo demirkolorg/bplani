@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Bell, Clock, Save, Loader2, Palette, Mail, Settings2 } from "lucide-react"
+import { Bell, Clock, Save, Loader2, Palette, Mail } from "lucide-react"
 
 import { useAyarlar, useUpdateAyarlar } from "@/hooks/use-ayarlar"
 import { Button } from "@/components/ui/button"

@@ -7,6 +7,9 @@ import type {
   ListPersonelQuery,
   PersonelRol,
 } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // Types for API responses
 export interface Personel {
@@ -156,6 +159,8 @@ export function usePersoneller(params: Partial<ListPersonelQuery> = {}) {
   return useQuery({
     queryKey: personelKeys.list(params),
     queryFn: () => fetchPersoneller(params),
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -164,6 +169,8 @@ export function usePersonel(id: string) {
     queryKey: personelKeys.detail(id),
     queryFn: () => fetchPersonel(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -174,6 +181,11 @@ export function useCreatePersonel() {
     mutationFn: createPersonel,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: personelKeys.lists() })
+      toast.success("Personel başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -186,6 +198,11 @@ export function useUpdatePersonel() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: personelKeys.lists() })
       queryClient.setQueryData(personelKeys.detail(data.id), data)
+      toast.success("Personel başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -197,6 +214,11 @@ export function useDeletePersonel() {
     mutationFn: deletePersonel,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: personelKeys.lists() })
+      toast.success("Personel başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -204,6 +226,13 @@ export function useDeletePersonel() {
 export function useChangePassword() {
   return useMutation({
     mutationFn: changePassword,
+    onSuccess: () => {
+      toast.success("Şifre başarıyla değiştirildi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
+    },
   })
 }
 
@@ -215,6 +244,11 @@ export function useChangeRol() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: personelKeys.lists() })
       queryClient.setQueryData(personelKeys.detail(data.id), data)
+      toast.success("Rol başarıyla değiştirildi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -227,6 +261,11 @@ export function useToggleActive() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: personelKeys.lists() })
       queryClient.setQueryData(personelKeys.detail(data.id), data)
+      toast.success("Durum başarıyla değiştirildi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

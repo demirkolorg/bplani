@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { queryConfig } from "@/lib/query-config"
 
 export interface DashboardStats {
   kisi: {
@@ -72,6 +73,7 @@ export function useDashboardStats() {
     queryKey: ["dashboard-stats"],
     queryFn: fetchDashboardStats,
     refetchInterval: 60000, // Her 1 dakikada bir yenile
-    staleTime: 30000, // 30 saniye boyunca taze say
+    staleTime: queryConfig.stats.staleTime,
+    gcTime: queryConfig.stats.gcTime,
   })
 }

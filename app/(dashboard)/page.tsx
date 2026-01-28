@@ -20,11 +20,12 @@ import { useDashboardStats } from "@/hooks/use-dashboard-stats"
 import { useUser } from "@/components/providers/auth-provider"
 import { useLocale } from "@/components/providers/locale-provider"
 import { interpolate } from "@/locales"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GlobalSearch } from "@/components/search/global-search"
 import { TabLink } from "@/components/tabs/tab-link"
 import { DuyuruList } from "@/components/duyurular/duyuru-list"
+import { MonthlyTrendChart } from "@/components/dashboard/monthly-trend-chart"
+import { KisiDistributionChart } from "@/components/dashboard/kisi-distribution-chart"
 import { cn } from "@/lib/utils"
 
 // Stat Card Component
@@ -106,22 +107,6 @@ export default function DashboardPage() {
                 Ctrl K
               </kbd>
             </div>
-
-            {/* Quick Search Tags */}
-            <div className="flex flex-wrap justify-center gap-2 mt-5">
-              <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 px-3 py-1">
-                {t.dashboard.searchTagTc}
-              </Badge>
-              <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 px-3 py-1">
-                {t.dashboard.searchTagPhone}
-              </Badge>
-              <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 px-3 py-1">
-                {t.dashboard.searchTagName}
-              </Badge>
-              <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80 px-3 py-1">
-                {t.dashboard.searchTagAddress}
-              </Badge>
-            </div>
           </div>
         </div>
       </div>
@@ -200,6 +185,14 @@ export default function DashboardPage() {
             </>
           )}
         </div>
+
+        {/* Charts Section */}
+        {!isLoading && stats?.charts && (
+          <div className="grid gap-6 md:grid-cols-2 mb-6">
+            <MonthlyTrendChart data={stats.charts.monthlyTrend} />
+            <KisiDistributionChart data={stats.charts.kisiDistribution} />
+          </div>
+        )}
 
         {/* Duyurular & Actions Grid */}
         <div className="grid lg:grid-cols-3 gap-6 mt-2">

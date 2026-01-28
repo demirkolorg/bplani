@@ -15,7 +15,7 @@ export const tabloTercihSchema = z.object({
   // TanStack native ColumnFiltersState format
   filtreler: z.array(z.object({
     id: z.string(),
-    value: z.any(), // { operator: string, value: any }
+    value: z.unknown(), // { operator: string, value: FilterValue }
   })).optional(),
 })
 

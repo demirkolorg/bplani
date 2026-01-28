@@ -1518,6 +1518,12 @@ export interface DashboardTranslations {
   // Alerts
   expiringSoon: string
   pendingAlarms: string
+
+  // Charts
+  monthlyTrend: string
+  monthlyTrendDesc: string
+  kisiDistribution: string
+  kisiDistributionDesc: string
 }
 
 export interface QueryBuilderTranslations {

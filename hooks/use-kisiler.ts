@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateKisiInput, UpdateKisiInput, ListKisiQuery } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // Types for API responses
 export interface FaaliyetAlaniRef {
@@ -170,6 +173,8 @@ export function useKisiler(params: Partial<ListKisiQuery> = {}) {
   return useQuery({
     queryKey: kisiKeys.list(params),
     queryFn: () => fetchKisiler(params),
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -178,6 +183,8 @@ export function useKisi(id: string) {
     queryKey: kisiKeys.detail(id),
     queryFn: () => fetchKisi(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -188,6 +195,11 @@ export function useCreateKisi() {
     mutationFn: createKisi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: kisiKeys.lists() })
+      toast.success("Kişi başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -200,6 +212,11 @@ export function useUpdateKisi() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: kisiKeys.lists() })
       queryClient.setQueryData(kisiKeys.detail(data.id), data)
+      toast.success("Kişi başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -211,6 +228,11 @@ export function useDeleteKisi() {
     mutationFn: deleteKisi,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: kisiKeys.lists() })
+      toast.success("Kişi başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

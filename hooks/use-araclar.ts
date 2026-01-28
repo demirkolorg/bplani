@@ -5,6 +5,9 @@ import type {
   CreateModelInput,
   UpdateModelInput,
 } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // ==================== TYPES ====================
 interface UserInfo {
@@ -176,6 +179,8 @@ export function useMarkalar() {
   return useQuery({
     queryKey: markaKeys.lists(),
     queryFn: fetchMarkalar,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -184,6 +189,8 @@ export function useMarka(id: string) {
     queryKey: markaKeys.detail(id),
     queryFn: () => fetchMarka(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -194,6 +201,11 @@ export function useCreateMarka() {
     mutationFn: createMarka,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: markaKeys.lists() })
+      toast.success("Marka başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -206,6 +218,11 @@ export function useUpdateMarka() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: markaKeys.lists() })
       queryClient.invalidateQueries({ queryKey: markaKeys.detail(data.id) })
+      toast.success("Marka başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -217,6 +234,11 @@ export function useDeleteMarka() {
     mutationFn: deleteMarka,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: markaKeys.lists() })
+      toast.success("Marka başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -226,6 +248,8 @@ export function useModeller(markaId?: string) {
   return useQuery({
     queryKey: modelKeys.listByMarka(markaId),
     queryFn: () => fetchModeller(markaId),
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -234,6 +258,8 @@ export function useModel(id: string) {
     queryKey: modelKeys.detail(id),
     queryFn: () => fetchModel(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -244,6 +270,11 @@ export function useCreateModel() {
     mutationFn: createModel,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: modelKeys.lists() })
+      toast.success("Model başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -256,6 +287,11 @@ export function useUpdateModel() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: modelKeys.lists() })
       queryClient.invalidateQueries({ queryKey: modelKeys.detail(data.id) })
+      toast.success("Model başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -267,6 +303,11 @@ export function useDeleteModel() {
     mutationFn: deleteModel,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: modelKeys.lists() })
+      toast.success("Model başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

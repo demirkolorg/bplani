@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma"
 import { createNotSchema, updateNotSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 import { logList, logCreate, logUpdate, logDelete } from "@/lib/logger"
+import { validationErrorResponse, handleApiError, errorResponse } from "@/lib/api-response"
+import { NotFoundError } from "@/types/errors"
 
 // GET /api/notlar - List notes for a kisi
 export async function GET(request: NextRequest) {
@@ -11,10 +13,7 @@ export async function GET(request: NextRequest) {
     const kisiId = searchParams.get("kisiId")
 
     if (!kisiId) {
-      return NextResponse.json(
-        { error: "kisiId parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("kisiId parametresi gerekli", 400)
     }
 
     const notlar = await prisma.not.findMany({
@@ -34,11 +33,7 @@ export async function GET(request: NextRequest) {
     await logList("Not", { kisiId }, notlar.length)
     return NextResponse.json(notlar)
   } catch (error) {
-    console.error("Error fetching notlar:", error)
-    return NextResponse.json(
-      { error: "Notlar getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "NOT_LIST")
   }
 }
 
@@ -64,10 +59,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createNotSchema.safeParse(body)
 
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     const not = await prisma.not.create({
@@ -89,11 +81,7 @@ export async function POST(request: NextRequest) {
     await logCreate("Not", not.id, not as unknown as Record<string, unknown>, not.icerik.substring(0, 50), session)
     return NextResponse.json(not, { status: 201 })
   } catch (error) {
-    console.error("Error creating not:", error)
-    return NextResponse.json(
-      { error: "Not oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "NOT_CREATE")
   }
 }
 
@@ -105,27 +93,21 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get("id")
 
     if (!id) {
-      return NextResponse.json(
-        { error: "id parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("id parametresi gerekli", 400)
     }
 
     const body = await request.json()
     const validatedData = updateNotSchema.safeParse(body)
 
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     const existing = await prisma.not.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json(
-        { error: "Not bulunamadı" },
-        { status: 404 }
+      return handleApiError(
+        new NotFoundError("Not bulunamadı"),
+        "NOT_UPDATE"
       )
     }
 
@@ -146,11 +128,7 @@ export async function PUT(request: NextRequest) {
     await logUpdate("Not", not.id, existing as unknown as Record<string, unknown>, not as unknown as Record<string, unknown>, not.icerik.substring(0, 50), session)
     return NextResponse.json(not)
   } catch (error) {
-    console.error("Error updating not:", error)
-    return NextResponse.json(
-      { error: "Not güncellenirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "NOT_UPDATE")
   }
 }
 
@@ -162,17 +140,14 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id")
 
     if (!id) {
-      return NextResponse.json(
-        { error: "id parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("id parametresi gerekli", 400)
     }
 
     const existing = await prisma.not.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json(
-        { error: "Not bulunamadı" },
-        { status: 404 }
+      return handleApiError(
+        new NotFoundError("Not bulunamadı"),
+        "NOT_DELETE"
       )
     }
 
@@ -181,10 +156,6 @@ export async function DELETE(request: NextRequest) {
     await logDelete("Not", id, existing as unknown as Record<string, unknown>, existing.icerik.substring(0, 50), session)
     return NextResponse.json({ message: "Not başarıyla silindi" })
   } catch (error) {
-    console.error("Error deleting not:", error)
-    return NextResponse.json(
-      { error: "Not silinirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "NOT_DELETE")
   }
 }

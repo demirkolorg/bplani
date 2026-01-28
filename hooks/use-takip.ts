@@ -2,6 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateTakipInput, UpdateTakipInput, BulkCreateTakipInput, ListTakipQuery, TakipDurum } from "@/lib/validations"
 import { gsmKeys } from "./use-gsm"
 import { alarmKeys } from "./use-alarmlar"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 export interface Takip {
   id: string
@@ -174,6 +177,8 @@ export function useTakipler(params: Partial<ListTakipQuery> = {}) {
   return useQuery({
     queryKey: takipKeys.list(params),
     queryFn: () => fetchTakipler(params),
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -182,6 +187,8 @@ export function useTakip(id: string) {
     queryKey: takipKeys.detail(id),
     queryFn: () => fetchTakip(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -190,6 +197,8 @@ export function useTakiplerByGsm(gsmId: string) {
     queryKey: takipKeys.byGsm(gsmId),
     queryFn: () => fetchTakipler({ gsmId, limit: 100 }),
     enabled: !!gsmId,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -198,6 +207,8 @@ export function useTakiplerByKisi(kisiId: string) {
     queryKey: takipKeys.byKisi(kisiId),
     queryFn: () => fetchTakipler({ kisiId, limit: 100 }),
     enabled: !!kisiId,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -254,6 +265,8 @@ export function useGsmWithActiveTakipler() {
 
       return Array.from(gsmMap.values())
     },
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -272,6 +285,11 @@ export function useCreateTakip() {
         // Invalidate GSM queries to refresh takip data in GSM list
         queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(data.gsm.kisi.id) })
       }
+      toast.success("Takip başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -285,6 +303,11 @@ export function useBulkCreateTakip() {
       queryClient.invalidateQueries({ queryKey: takipKeys.all })
       // Invalidate alarm queries (takip oluşturulunca otomatik alarm oluşuyor)
       queryClient.invalidateQueries({ queryKey: alarmKeys.all })
+      toast.success("Takipler başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -305,6 +328,11 @@ export function useUpdateTakip() {
         // Invalidate GSM queries to refresh takip data in GSM list
         queryClient.invalidateQueries({ queryKey: gsmKeys.byKisi(data.gsm.kisi.id) })
       }
+      toast.success("Takip başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -318,6 +346,11 @@ export function useDeleteTakip() {
       queryClient.invalidateQueries({ queryKey: takipKeys.all })
       // Invalidate alarm queries (takip silinince alarmlar da siliniyor)
       queryClient.invalidateQueries({ queryKey: alarmKeys.all })
+      toast.success("Takip başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

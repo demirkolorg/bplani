@@ -5,6 +5,9 @@ import type {
   AddKisiToAracInput,
   AracRenk,
 } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // ==================== TYPES ====================
 interface UserInfo {
@@ -229,6 +232,8 @@ export function useAraclar(params?: ListAracParams) {
   return useQuery({
     queryKey: aracKeys.list(params),
     queryFn: () => fetchAraclar(params),
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -237,6 +242,8 @@ export function useAraclarByKisi(kisiId?: string) {
     queryKey: aracKeys.listByKisi(kisiId),
     queryFn: () => fetchAraclar({ kisiId }),
     enabled: !!kisiId,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -245,6 +252,8 @@ export function useArac(id: string) {
     queryKey: aracKeys.detail(id),
     queryFn: () => fetchArac(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -255,6 +264,11 @@ export function useCreateArac() {
     mutationFn: createArac,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: aracKeys.lists() })
+      toast.success("Araç başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -267,6 +281,11 @@ export function useUpdateArac() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: aracKeys.lists() })
       queryClient.invalidateQueries({ queryKey: aracKeys.detail(data.id) })
+      toast.success("Araç başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -278,6 +297,11 @@ export function useDeleteArac() {
     mutationFn: deleteArac,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: aracKeys.lists() })
+      toast.success("Araç başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -290,6 +314,11 @@ export function useAddKisiToArac() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: aracKeys.lists() })
       queryClient.invalidateQueries({ queryKey: aracKeys.detail(variables.aracId) })
+      toast.success("Kişi araca başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -302,6 +331,11 @@ export function useRemoveKisiFromArac() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: aracKeys.lists() })
       queryClient.invalidateQueries({ queryKey: aracKeys.detail(variables.aracId) })
+      toast.success("Kişi araçtan başarıyla çıkarıldı")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

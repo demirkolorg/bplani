@@ -10,8 +10,15 @@ export async function POST() {
       await logLogout(session)
     }
 
-    await removeAuthCookie()
-    return NextResponse.json({ success: true })
+    // Create response
+    const response = NextResponse.json({
+      success: true
+    })
+
+    // Delete cookie on response
+    response.cookies.delete('auth-token')
+
+    return response
   } catch (error) {
     console.error('Logout error:', error)
     return NextResponse.json(

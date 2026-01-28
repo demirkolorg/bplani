@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma"
 import { createAracSchema, listAracQuerySchema } from "@/lib/validations"
 import { getSession, canManageLokasyon } from "@/lib/auth"
 import { logList, logCreate } from "@/lib/logger"
+import { validationErrorResponse, handleApiError } from "@/lib/api-response"
+import { ConflictError, AuthenticationError } from "@/types/errors"
 
 // GET /api/araclar/vehicles - List all vehicles
 export async function GET(request: NextRequest) {
@@ -21,10 +23,7 @@ export async function GET(request: NextRequest) {
 
     const validatedQuery = listAracQuerySchema.safeParse(queryParams)
     if (!validatedQuery.success) {
-      return NextResponse.json(
-        { error: "Geçersiz sorgu parametreleri", details: validatedQuery.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedQuery.error)
     }
 
     const { page, limit, kisiId, modelId, markaId, search, sortBy, sortOrder } = validatedQuery.data
@@ -95,11 +94,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Error fetching araclar:", error)
-    return NextResponse.json(
-      { error: "Araçlar getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "ARAC_LIST")
   }
 }
 
@@ -110,9 +105,9 @@ export async function POST(request: NextRequest) {
 
     // Yetki kontrolü: Sadece ADMIN ve YONETICI
     if (!canManageLokasyon(session)) {
-      return NextResponse.json(
-        { error: "Bu işlem için yetkiniz yok" },
-        { status: 403 }
+      return handleApiError(
+        new AuthenticationError("Bu işlem için yetkiniz yok"),
+        "ARAC_CREATE"
       )
     }
 
@@ -121,10 +116,7 @@ export async function POST(request: NextRequest) {
 
     const validatedData = createAracSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     let validUserId: string | null = null
@@ -168,18 +160,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(arac, { status: 201 })
   } catch (error) {
-    console.error("Error creating arac:", error)
-
     if (error instanceof Error && error.message.includes("Unique constraint")) {
-      return NextResponse.json(
-        { error: "Bu plaka ile bir araç zaten kayıtlı" },
-        { status: 409 }
+      return handleApiError(
+        new ConflictError("Bu plaka ile bir araç zaten kayıtlı"),
+        "ARAC_CREATE"
       )
     }
-
-    return NextResponse.json(
-      { error: "Araç oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "ARAC_CREATE")
   }
 }

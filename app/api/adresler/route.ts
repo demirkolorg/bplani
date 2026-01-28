@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma"
 import { createAdresSchema, updateAdresSchema, bulkCreateAdresSchema } from "@/lib/validations"
 import { getSession } from "@/lib/auth"
 import { logList, logCreate, logUpdate, logDelete, logBulkCreate } from "@/lib/logger"
+import { validationErrorResponse, handleApiError, errorResponse } from "@/lib/api-response"
+import { NotFoundError } from "@/types/errors"
 
 // GET /api/adresler - List addresses for a kisi
 export async function GET(request: NextRequest) {
@@ -11,10 +13,7 @@ export async function GET(request: NextRequest) {
     const kisiId = searchParams.get("kisiId")
 
     if (!kisiId) {
-      return NextResponse.json(
-        { error: "kisiId parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("kisiId parametresi gerekli", 400)
     }
 
     const adresler = await prisma.adres.findMany({
@@ -36,11 +35,7 @@ export async function GET(request: NextRequest) {
     await logList("Adres", { kisiId }, adresler.length)
     return NextResponse.json(adresler)
   } catch (error) {
-    console.error("Error fetching adresler:", error)
-    return NextResponse.json(
-      { error: "Adresler getirilirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "ADRES_LIST")
   }
 }
 
@@ -65,10 +60,7 @@ export async function POST(request: NextRequest) {
     if (body.adresler && Array.isArray(body.adresler)) {
       const validatedData = bulkCreateAdresSchema.safeParse(body)
       if (!validatedData.success) {
-        return NextResponse.json(
-          { error: "Geçersiz veri", details: validatedData.error.flatten() },
-          { status: 400 }
-        )
+        return validationErrorResponse(validatedData.error)
       }
 
       const { kisiId, adresler } = validatedData.data
@@ -98,10 +90,7 @@ export async function POST(request: NextRequest) {
     // Single address create
     const validatedData = createAdresSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     // If this address is primary, unset existing primaries
@@ -134,11 +123,7 @@ export async function POST(request: NextRequest) {
     await logCreate("Adres", adres.id, adres as unknown as Record<string, unknown>, adres.ad || undefined, session)
     return NextResponse.json(adres, { status: 201 })
   } catch (error) {
-    console.error("Error creating adres:", error)
-    return NextResponse.json(
-      { error: "Adres oluşturulurken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "ADRES_CREATE")
   }
 }
 
@@ -152,26 +137,20 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get("id")
 
     if (!id) {
-      return NextResponse.json(
-        { error: "id parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("id parametresi gerekli", 400)
     }
 
     const body = await request.json()
     const validatedData = updateAdresSchema.safeParse(body)
     if (!validatedData.success) {
-      return NextResponse.json(
-        { error: "Geçersiz veri", details: validatedData.error.flatten() },
-        { status: 400 }
-      )
+      return validationErrorResponse(validatedData.error)
     }
 
     const existing = await prisma.adres.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json(
-        { error: "Adres bulunamadı" },
-        { status: 404 }
+      return handleApiError(
+        new NotFoundError("Adres bulunamadı"),
+        "ADRES_UPDATE"
       )
     }
 
@@ -214,11 +193,7 @@ export async function PUT(request: NextRequest) {
     await logUpdate("Adres", adres.id, existing as unknown as Record<string, unknown>, adres as unknown as Record<string, unknown>, adres.ad || undefined, session)
     return NextResponse.json(adres)
   } catch (error) {
-    console.error("Error updating adres:", error)
-    return NextResponse.json(
-      { error: "Adres güncellenirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "ADRES_UPDATE")
   }
 }
 
@@ -230,17 +205,14 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id")
 
     if (!id) {
-      return NextResponse.json(
-        { error: "id parametresi gerekli" },
-        { status: 400 }
-      )
+      return errorResponse("id parametresi gerekli", 400)
     }
 
     const existing = await prisma.adres.findUnique({ where: { id } })
     if (!existing) {
-      return NextResponse.json(
-        { error: "Adres bulunamadı" },
-        { status: 404 }
+      return handleApiError(
+        new NotFoundError("Adres bulunamadı"),
+        "ADRES_DELETE"
       )
     }
 
@@ -249,10 +221,6 @@ export async function DELETE(request: NextRequest) {
     await logDelete("Adres", id, existing as unknown as Record<string, unknown>, existing.ad || undefined, session)
     return NextResponse.json({ message: "Adres başarıyla silindi" })
   } catch (error) {
-    console.error("Error deleting adres:", error)
-    return NextResponse.json(
-      { error: "Adres silinirken bir hata oluştu" },
-      { status: 500 }
-    )
+    return handleApiError(error, "ADRES_DELETE")
   }
 }

@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateOperasyonInput, UpdateOperasyonInput, ListOperasyonQuery, AddOperasyonKatilimciInput, AddOperasyonAracInput } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // Types for API responses
 export interface OperasyonKatilimci {
@@ -232,6 +235,8 @@ export function useOperasyonlar(params: Partial<ListOperasyonQuery> = {}) {
   return useQuery({
     queryKey: operasyonKeys.list(params),
     queryFn: () => fetchOperasyonlar(params),
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -240,6 +245,8 @@ export function useOperasyon(id: string) {
     queryKey: operasyonKeys.detail(id),
     queryFn: () => fetchOperasyon(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -252,6 +259,11 @@ export function useCreateOperasyon() {
       queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
       // Invalidate all byKisi queries since we don't know which kisi was added
       queryClient.invalidateQueries({ queryKey: [...operasyonKeys.all, "byKisi"] })
+      toast.success("Operasyon başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -264,6 +276,11 @@ export function useUpdateOperasyon() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
       queryClient.setQueryData(operasyonKeys.detail(data.id), data)
+      toast.success("Operasyon başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -275,6 +292,11 @@ export function useDeleteOperasyon() {
     mutationFn: deleteOperasyon,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
+      toast.success("Operasyon başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -289,6 +311,11 @@ export function useAddOperasyonKatilimci() {
       queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
       // Invalidate all byKisi queries since we don't know which kisi was added
       queryClient.invalidateQueries({ queryKey: [...operasyonKeys.all, "byKisi"] })
+      toast.success("Katılımcı başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -303,6 +330,11 @@ export function useRemoveOperasyonKatilimci() {
       queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
       // Invalidate all byKisi queries
       queryClient.invalidateQueries({ queryKey: [...operasyonKeys.all, "byKisi"] })
+      toast.success("Katılımcı başarıyla çıkarıldı")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -315,6 +347,11 @@ export function useAddOperasyonArac() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: operasyonKeys.detail(variables.operasyonId) })
       queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
+      toast.success("Araç başarıyla eklendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -327,6 +364,11 @@ export function useRemoveOperasyonArac() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: operasyonKeys.detail(variables.operasyonId) })
       queryClient.invalidateQueries({ queryKey: operasyonKeys.lists() })
+      toast.success("Araç başarıyla çıkarıldı")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -336,5 +378,7 @@ export function useOperasyonlarByKisi(kisiId: string) {
     queryKey: operasyonKeys.byKisi(kisiId),
     queryFn: () => fetchOperasyonlarByKisi(kisiId),
     enabled: !!kisiId,
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }

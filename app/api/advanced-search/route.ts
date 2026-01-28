@@ -5,6 +5,8 @@ import {
   executeQueryWithPagination,
   type QueryOutput,
 } from "@/lib/query-builder"
+import { heavyApiRateLimit, getClientIdentifier } from "@/lib/rate-limit"
+import { errorResponse } from "@/lib/api-response"
 
 /**
  * POST /api/advanced-search
@@ -21,6 +23,23 @@ import {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting for heavy search operations
+    const clientId = getClientIdentifier(request)
+    const { success, limit, remaining, reset } = await heavyApiRateLimit.limit(clientId)
+
+    if (!success) {
+      return errorResponse(
+        "Arama rate limit'i aşıldı. Lütfen bekleyin.",
+        429,
+        "RATE_LIMIT_EXCEEDED",
+        {
+          resetAt: new Date(reset).toISOString(),
+          limit,
+          remaining,
+        }
+      )
+    }
+
     // Parse request body
     const query = (await request.json()) as QueryOutput
 

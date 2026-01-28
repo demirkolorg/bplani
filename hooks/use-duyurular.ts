@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { CreateDuyuruInput, UpdateDuyuruInput, ListDuyuruQuery, DuyuruOncelik } from "@/lib/validations"
+import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/error-handler"
+import { queryConfig } from "@/lib/query-config"
 
 // Types for API responses
 export interface Duyuru {
@@ -105,10 +108,12 @@ export function useDuyurular(params: Partial<ListDuyuruQuery> = {}) {
   return useQuery({
     queryKey: duyuruKeys.list(params),
     queryFn: () => fetchDuyurular(params),
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
-// Special hook for homepage - shows max 3 active announcements with 5 minute cache
+// Special hook for homepage - shows max 3 active announcements
 export function useActiveDuyurular() {
   return useQuery({
     queryKey: duyuruKeys.active(),
@@ -118,8 +123,8 @@ export function useActiveDuyurular() {
       sortBy: "oncelik",
       sortOrder: "desc"
     }),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
+    staleTime: queryConfig.list.staleTime,
+    gcTime: queryConfig.list.gcTime,
   })
 }
 
@@ -128,6 +133,8 @@ export function useDuyuru(id: string) {
     queryKey: duyuruKeys.detail(id),
     queryFn: () => fetchDuyuru(id),
     enabled: !!id,
+    staleTime: queryConfig.detail.staleTime,
+    gcTime: queryConfig.detail.gcTime,
   })
 }
 
@@ -139,6 +146,11 @@ export function useCreateDuyuru() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: duyuruKeys.lists() })
       queryClient.invalidateQueries({ queryKey: duyuruKeys.active() })
+      toast.success("Duyuru başarıyla oluşturuldu")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -152,6 +164,11 @@ export function useUpdateDuyuru() {
       queryClient.invalidateQueries({ queryKey: duyuruKeys.lists() })
       queryClient.invalidateQueries({ queryKey: duyuruKeys.active() })
       queryClient.setQueryData(duyuruKeys.detail(data.id), data)
+      toast.success("Duyuru başarıyla güncellendi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }
@@ -164,6 +181,11 @@ export function useDeleteDuyuru() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: duyuruKeys.lists() })
       queryClient.invalidateQueries({ queryKey: duyuruKeys.active() })
+      toast.success("Duyuru başarıyla silindi")
+    },
+    onError: (error) => {
+      const message = getErrorMessage(error)
+      toast.error(message)
     },
   })
 }

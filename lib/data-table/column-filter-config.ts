@@ -48,7 +48,7 @@ export interface ColumnFilterConfig {
   filterField?: string
 
   /** Custom filter function for complex filtering logic (DEPRECATED - use column.filterFn instead) */
-  customFilterFn?: (value: any, filterValue: any, operator: FilterOperator) => boolean
+  customFilterFn?: (value: unknown, filterValue: FilterValue, operator: FilterOperator) => boolean
 
   /** Whether this column is filterable (default: true) */
   filterable?: boolean
