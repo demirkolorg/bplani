@@ -73,15 +73,10 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get total count
-    const total = await prisma.tanitim.count({ where })
-
-    // Get paginated results
+    // Get all results (pagination handled client-side)
     const tanitimlar = await prisma.tanitim.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
       include: {
         mahalle: {
           include: {
@@ -115,10 +110,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: tanitimlar,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: tanitimlar.length,
+        total: tanitimlar.length,
+        totalPages: 1,
       },
     })
   } catch (error) {

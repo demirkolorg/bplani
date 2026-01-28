@@ -40,8 +40,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get total count
-    const total = await prisma.gsm.count({ where })
+    // Get all results (pagination handled client-side)
 
     // Build orderBy
     let orderBy: Record<string, unknown> = {}
@@ -51,12 +50,10 @@ export async function GET(request: NextRequest) {
       orderBy = { [sortBy]: sortOrder }
     }
 
-    // Get paginated results
+    
     const numaralar = await prisma.gsm.findMany({
       where,
       orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
       include: {
         kisi: {
           select: {
@@ -87,10 +84,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: numaralar,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: numaralar.length,
+        total: numaralar.length,
+        totalPages: 1,
       },
     })
   } catch (error) {

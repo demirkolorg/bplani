@@ -46,15 +46,10 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get total count
-    const total = await prisma.kisi.count({ where })
-
-    // Get paginated results
+    // Get all results (pagination handled client-side)
     const kisiler = await prisma.kisi.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
       include: {
         gsmler: {
           orderBy: { isPrimary: "desc" },
@@ -98,10 +93,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: kisiler,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: kisiler.length,
+        total: kisiler.length,
+        totalPages: 1,
       },
     })
   } catch (error) {

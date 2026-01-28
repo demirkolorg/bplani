@@ -35,7 +35,7 @@ export const updateKisiSchema = createKisiSchema.partial().extend({
 // List query params schema
 export const listKisiQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   search: z.string().optional(),
   tt: z.coerce.boolean().optional(), // true = Müşteri, false = Aday
   isArchived: z.coerce.boolean().optional(),

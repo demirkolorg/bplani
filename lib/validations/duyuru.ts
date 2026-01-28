@@ -36,7 +36,7 @@ export const updateDuyuruSchema = z.object({
 // List query params schema
 export const listDuyuruQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   onlyActive: z.coerce.boolean().default(true),
   sortBy: z.enum(["oncelik", "publishedAt", "createdAt", "updatedAt"]).default("oncelik"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),

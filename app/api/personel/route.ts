@@ -53,15 +53,12 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get total count
-    const total = await prisma.personel.count({ where })
+    // Get all results (pagination handled client-side)
 
-    // Get paginated results
+    
     const personeller = await prisma.personel.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
       select: {
         id: true,
         visibleId: true,
@@ -89,10 +86,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: personeller,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: personeller.length,
+        total: personeller.length,
+        totalPages: 1,
       },
     })
   } catch (error) {

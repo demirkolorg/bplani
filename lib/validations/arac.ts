@@ -12,7 +12,7 @@ export const updateMarkaSchema = createMarkaSchema.partial()
 
 export const listMarkaQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   search: z.string().optional(),
   sortBy: z.enum(["ad", "createdAt", "updatedAt"]).default("ad"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
@@ -37,7 +37,7 @@ export const updateModelSchema = z.object({
 
 export const listModelQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   markaId: z.string().cuid("Geçersiz marka ID").optional(),
   search: z.string().optional(),
   sortBy: z.enum(["ad", "createdAt", "updatedAt"]).default("ad"),

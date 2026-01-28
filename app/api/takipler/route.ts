@@ -66,14 +66,10 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const skip = (page - 1) * limit
-
-    const [takipler, total] = await Promise.all([
-      prisma.takip.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { [sortBy]: sortOrder },
+    // Get all results (pagination handled client-side)
+    const takipler = await prisma.takip.findMany({
+      where,
+      orderBy: { [sortBy]: sortOrder },
         include: {
           gsm: {
             include: {
@@ -108,19 +104,17 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-      }),
-      prisma.takip.count({ where }),
-    ])
+      })
 
     await logList("Takip", { page, limit, search, gsmId, kisiId, durum, bitisTarihiBaslangic, bitisTarihiBitis, sortBy, sortOrder }, takipler.length)
 
     return NextResponse.json({
       data: takipler,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: takipler.length,
+        total: takipler.length,
+        totalPages: 1,
       },
     })
   } catch (error) {

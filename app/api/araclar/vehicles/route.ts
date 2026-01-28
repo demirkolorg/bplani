@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
     }
 
     const { page, limit, kisiId, modelId, markaId, search, sortBy, sortOrder } = validatedQuery.data
-    const skip = (page - 1) * limit
 
     // Build where clause
     const where: {
@@ -55,12 +54,10 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const [araclar, total] = await Promise.all([
-      prisma.arac.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: sortBy === "plaka" ? { plaka: sortOrder }
+    // Get all results (pagination handled client-side)
+    const araclar = await prisma.arac.findMany({
+      where,
+      orderBy: sortBy === "plaka" ? { plaka: sortOrder }
           : sortBy === "renk" ? { renk: sortOrder }
           : sortBy === "createdAt" ? { createdAt: sortOrder }
           : { updatedAt: sortOrder },
@@ -78,19 +75,17 @@ export async function GET(request: NextRequest) {
           createdUser: { select: { ad: true, soyad: true } },
           updatedUser: { select: { ad: true, soyad: true } },
         },
-      }),
-      prisma.arac.count({ where }),
-    ])
+      })
 
-    await logList("Arac", validatedQuery.data, total)
+    await logList("Arac", validatedQuery.data, araclar.length)
 
     return NextResponse.json({
       data: araclar,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: araclar.length,
+        total: araclar.length,
+        totalPages: 1,
       },
     })
   } catch (error) {

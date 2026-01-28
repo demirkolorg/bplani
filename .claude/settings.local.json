@@ -66,7 +66,13 @@
       "Bash(timeout /t 3)",
       "Bash(timeout 5 bash:*)",
       "Bash(cat:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(for file in tanitim.ts takip.ts personel.ts operasyon.ts lokasyon.ts duyuru.ts araclar.ts arac.ts alarm.ts)",
+      "Bash(do sed -i 's/\\\\.max\\(100\\)\\\\.default\\(20\\)/.max\\(200\\).default\\(100\\)/g; s/\\\\.max\\(10000\\)\\\\.default\\(20\\)/.max\\(10000\\).default\\(100\\)/g' \"$file\")",
+      "Bash(done)",
+      "Bash(for file in tanitim.ts operasyon.ts personel.ts alarm.ts araclar.ts arac.ts duyuru.ts lokasyon.ts)",
+      "Bash(do sed -i 's/\\\\.max\\(200\\)\\\\.default\\(100\\)/.max\\(100000\\).default\\(10000\\)/g; s/\\\\.max\\(10000\\)\\\\.default\\(100\\)/.max\\(100000\\).default\\(10000\\)/g' \"$file\")",
+      "Bash(del /F \"D:\\\\projects\\\\bplani\\\\.next\\\\dev\\\\lock\")"
     ]
   }
 }

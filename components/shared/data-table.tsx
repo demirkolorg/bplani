@@ -12,9 +12,11 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
   useReactTable,
 } from "@tanstack/react-table"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Check, ChevronsUpDown, Filter, X, Columns3, Download } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, Check, ChevronsUpDown, Filter, X, Columns3, Download, Search, ArrowUp, ArrowDown } from "lucide-react"
 import * as XLSX from "xlsx"
 
 import { Button } from "@/components/ui/button"
@@ -366,15 +368,15 @@ type TableDensity = "compact" | "normal" | "wide"
 
 const densityStyles: Record<TableDensity, { header: string; cell: string }> = {
   compact: {
-    header: "h-8 px-2 text-xs",
+    header: "h-10 px-2 text-xs",
     cell: "px-2 py-1 text-xs",
   },
   normal: {
-    header: "h-10 px-3 text-sm",
+    header: "h-12 px-3 text-sm",
     cell: "px-3 py-2 text-sm",
   },
   wide: {
-    header: "h-12 px-4 text-sm",
+    header: "h-14 px-4 text-sm",
     cell: "p-4 text-sm",
   },
 }
@@ -398,6 +400,17 @@ export interface ColumnVisibilityLabels {
   [key: string]: string
 }
 
+export interface FacetedFilterOption {
+  label: string
+  value: string
+}
+
+export interface FacetedFilterSetup {
+  columnId: string
+  title: string
+  options?: FacetedFilterOption[]
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -414,6 +427,8 @@ interface DataTableProps<TData, TValue> {
   headerActions?: React.ReactNode
   /** Default column filters (from preferences) */
   defaultColumnFilters?: ColumnFiltersState
+  /** Faceted filter configurations */
+  facetedFilterSetup?: FacetedFilterSetup[]
   /** Callback when column visibility changes */
   onColumnVisibilityChange?: (visibility: VisibilityState) => void
   /** Callback when sorting changes */
@@ -438,6 +453,7 @@ export function DataTable<TData, TValue>({
   columnVisibilityLabels = {},
   defaultColumnVisibility,
   defaultColumnFilters,
+  facetedFilterSetup = [],
   headerActions,
   onColumnVisibilityChange,
   onSortChange,
@@ -472,9 +488,14 @@ export function DataTable<TData, TValue>({
   const allSortOptions = [...sortOptions, ...commonSortOptions]
 
   // Initialize sorting state with default sort (only if provided)
-  const initialSort: SortingState = defaultSort
-    ? [{ id: defaultSort.column, desc: defaultSort.direction === "desc" }]
-    : []
+  // Use useMemo to keep reference stable
+  const initialSort: SortingState = React.useMemo(
+    () =>
+      defaultSort
+        ? [{ id: defaultSort.column, desc: defaultSort.direction === "desc" }]
+        : [],
+    [defaultSort]
+  )
 
   const [sorting, setSorting] = React.useState<SortingState>(initialSort)
   const [selectedSort, setSelectedSort] = React.useState<string>(
@@ -504,6 +525,33 @@ export function DataTable<TData, TValue>({
 
   // Check if any column filter is active
   const hasActiveColumnFilters = columnFilters.length > 0
+
+  // Check if sorting is different from default
+  const hasCustomSorting = React.useMemo(() => {
+    // If no initial sort and no current sort, not custom
+    if (sorting.length === 0 && initialSort.length === 0) return false
+
+    // If lengths differ, it's custom
+    if (sorting.length !== initialSort.length) return true
+
+    // Compare each sort item using JSON stringify for deep equality
+    // This handles the case where arrays are different references but same content
+    const sortingStr = JSON.stringify(sorting.map(s => ({ id: s.id, desc: s.desc })))
+    const initialSortStr = JSON.stringify(initialSort.map(s => ({ id: s.id, desc: s.desc })))
+
+    return sortingStr !== initialSortStr
+  }, [sorting, initialSort])
+
+  // Calculate total active filters count
+  const activeFiltersCount = React.useMemo(() => {
+    let count = 0
+    // Global search
+    if (globalFilterInput) count++
+    // Faceted filters (column filters)
+    count += columnFilters.length
+    // Note: Sorting is NOT counted as a filter
+    return count
+  }, [globalFilterInput, columnFilters.length])
 
   // Advanced filter change handler (TanStack native)
   const handleAdvancedFilterChange = (columnId: string, filter: ColumnFilterState | null) => {
@@ -571,6 +619,8 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilterInput,
@@ -600,6 +650,59 @@ export function DataTable<TData, TValue>({
   const totalPages = table.getPageCount()
   const startRow = pagination.pageIndex * pagination.pageSize + 1
   const endRow = Math.min(currentPage * pagination.pageSize, totalRows)
+
+  // Get active filter details for dropdown
+  const activeFilterDetails = React.useMemo(() => {
+    const details: {
+      search?: string
+      filters: Array<{ column: string; values: string[] }>
+      sorting: Array<{ column: string; direction: "asc" | "desc" }>
+    } = {
+      filters: [],
+      sorting: [],
+    }
+
+    if (globalFilterInput) {
+      details.search = globalFilterInput
+    }
+
+    columnFilters.forEach((filter) => {
+      const column = table.getColumn(filter.id)
+      if (column && Array.isArray(filter.value)) {
+        // Find faceted filter setup for this column
+        const filterSetup = facetedFilterSetup.find(f => f.columnId === filter.id)
+        const columnName = filterSetup?.title || filter.id
+
+        // Get labels for values
+        const valueLabels = (filter.value as string[]).map(val => {
+          const option = filterSetup?.options?.find(opt => opt.value === val)
+          return option?.label || val
+        })
+
+        details.filters.push({
+          column: columnName,
+          values: valueLabels,
+        })
+      }
+    })
+
+    // Always include sorting info (UI will decide when to show it)
+    if (hasCustomSorting) {
+      sorting.forEach((sort) => {
+        const column = table.getColumn(sort.id)
+        if (column) {
+          const columnDef = column.columnDef as any
+          const columnName = columnDef.meta?.exportHeader || sort.id
+          details.sorting.push({
+            column: columnName,
+            direction: sort.desc ? "desc" : "asc",
+          })
+        }
+      })
+    }
+
+    return details
+  }, [globalFilterInput, columnFilters, sorting, hasCustomSorting, table, facetedFilterSetup])
 
   // Excel Export fonksiyonu
   const [isExporting, setIsExporting] = React.useState(false)
@@ -793,12 +896,189 @@ export function DataTable<TData, TValue>({
     <div className="w-full">
       {/* Search and Controls */}
       <div className="flex items-center justify-between gap-4 py-4">
-        <Input
-          placeholder={effectiveSearchPlaceholder}
-          value={globalFilterInput}
-          onChange={(e) => setGlobalFilterInput(e.target.value)}
-          className="max-w-sm"
-        />
+        <div className="flex items-center gap-2 flex-1">
+          <Input
+            placeholder={effectiveSearchPlaceholder}
+            value={globalFilterInput}
+            onChange={(e) => setGlobalFilterInput(e.target.value)}
+            className="max-w-sm"
+          />
+          {/* Faceted Filters */}
+          {facetedFilterSetup.map((filterSetup) => {
+            const column = table.getColumn(filterSetup.columnId)
+            if (!column) return null
+
+            const facetedValues = column.getFacetedUniqueValues()
+            const selectedValues = new Set(
+              (column.getFilterValue() as string[]) || []
+            )
+
+            return (
+              <Popover key={filterSetup.columnId}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9 border-dashed">
+                    <ChevronsUpDown className="mr-2 h-4 w-4" />
+                    {filterSetup.title}
+                    {selectedValues.size > 0 && (
+                      <div className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                        {selectedValues.size}
+                      </div>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={filterSetup.title} />
+                    <CommandList>
+                      <CommandEmpty>Sonuç bulunamadı.</CommandEmpty>
+                      <CommandGroup>
+                        {filterSetup.options?.map((option) => {
+                          const isSelected = selectedValues.has(option.value)
+                          const count = facetedValues?.get(option.value) || 0
+                          return (
+                            <CommandItem
+                              key={option.value}
+                              onSelect={() => {
+                                const newValues = new Set(selectedValues)
+                                if (isSelected) {
+                                  newValues.delete(option.value)
+                                } else {
+                                  newValues.add(option.value)
+                                }
+                                column?.setFilterValue(
+                                  newValues.size > 0 ? Array.from(newValues) : undefined
+                                )
+                              }}
+                            >
+                              <div
+                                className={cn(
+                                  "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground"
+                                    : "opacity-50 [&_svg]:invisible"
+                                )}
+                              >
+                                <Check className="h-4 w-4" />
+                              </div>
+                              <span className="flex-1">{option.label}</span>
+                              {count > 0 && (
+                                <span className="ml-auto text-xs text-muted-foreground">
+                                  {count}
+                                </span>
+                              )}
+                            </CommandItem>
+                          )
+                        })}
+                      </CommandGroup>
+                      {selectedValues.size > 0 && (
+                        <>
+                          <CommandGroup>
+                            <CommandItem
+                              onSelect={() => column?.setFilterValue(undefined)}
+                              className="justify-center text-center"
+                            >
+                              Temizle
+                            </CommandItem>
+                          </CommandGroup>
+                        </>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )
+          })}
+          {/* Active Filters Summary */}
+          {activeFiltersCount > 0 && (
+            <>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-9"
+                onClick={() => {
+                  clearAllColumnFilters()
+                  setGlobalFilterInput("")
+                  setSorting(initialSort) // Reset to default sorting
+                }}
+              >
+                <X className="mr-2 h-4 w-4" />
+                Temizle
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9">
+                    <Filter className="mr-2 h-4 w-4" />
+                    {activeFiltersCount}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[400px]">
+                  <DropdownMenuLabel className="text-base font-semibold">
+                    Aktif Filtre ve Sıralama Özeti
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  {/* Global Search */}
+                  {activeFilterDetails.search && (
+                    <div className="px-2 py-3">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                        <Search className="h-4 w-4" />
+                        Genel Arama:
+                      </div>
+                      <div className="ml-6 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Search className="h-3 w-3" />
+                          Genel: '{activeFilterDetails.search}'
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Faceted Filters */}
+                  {activeFilterDetails.filters.length > 0 && (
+                    <div className="px-2 py-3">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                        <Filter className="h-4 w-4" />
+                        Sütun Filtreleri:
+                      </div>
+                      <div className="ml-6 space-y-1">
+                        {activeFilterDetails.filters.map((filter, idx) => (
+                          <div key={idx} className="text-sm flex items-start gap-2">
+                            <Filter className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                            <span>
+                              '{filter.column}': {filter.values.map(v => `'${v}'`).join(", ")}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sorting - Only show if there are other active filters */}
+                  {activeFilterDetails.sorting.length > 0 && (globalFilterInput || columnFilters.length > 0) && (
+                    <div className="px-2 py-3">
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                        <ArrowUpDown className="h-4 w-4" />
+                        Sıralamalar:
+                      </div>
+                      <div className="ml-6 space-y-1">
+                        {activeFilterDetails.sorting.map((sort, idx) => (
+                          <div key={idx} className="text-sm flex items-center gap-2">
+                            {sort.direction === "asc" ? (
+                              <ArrowUp className="h-3 w-3" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3" />
+                            )}
+                            '{sort.column}' ({sort.direction === "asc" ? "Artan" : "Azalan"})
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {headerActions}
           {/* Excel Export Button */}
@@ -815,18 +1095,6 @@ export function DataTable<TData, TValue>({
               <Download className="h-4 w-4" />
             )}
           </Button>
-
-          {/* Clear All Filters Button */}
-          {hasActiveColumnFilters && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={clearAllColumnFilters}
-              title={t.table.clearFilters || "Tüm filtreleri temizle"}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
 
           {/* Column Visibility Dropdown */}
           <DropdownMenu>

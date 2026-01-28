@@ -73,15 +73,12 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get total count
-    const total = await prisma.operasyon.count({ where })
+    // Get all results (pagination handled client-side)
 
-    // Get paginated results
+    
     const operasyonlar = await prisma.operasyon.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
       include: {
         mahalle: {
           include: {
@@ -115,10 +112,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: operasyonlar,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: operasyonlar.length,
+        total: operasyonlar.length,
+        totalPages: 1,
       },
     })
   } catch (error) {

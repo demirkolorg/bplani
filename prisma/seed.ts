@@ -69,6 +69,40 @@ const kisiData = [
   { tc: '44567890123', ad: 'Cansu', soyad: 'Yurt', tt: false },
   { tc: '55678901234', ad: 'Cem', soyad: 'Kılıç', tt: true },
   { tc: '66789012345', ad: 'Derya', soyad: 'Taş', tt: false },
+  { tc: '12398745610', ad: 'Murat', soyad: 'Öz', tt: true },
+  { tc: '23498745621', ad: 'Ayşe', soyad: 'Polat', tt: true },
+  { tc: '34598745632', ad: 'Serkan', soyad: 'Çetin', tt: false },
+  { tc: '45698745643', ad: 'Esra', soyad: 'Aslan', tt: true },
+  { tc: '56798745654', ad: 'Okan', soyad: 'Duman', tt: false },
+  { tc: '67898745665', ad: 'Gül', soyad: 'Kurt', tt: true },
+  { tc: '78998745676', ad: 'Tolga', soyad: 'Acar', tt: false },
+  { tc: '89098745687', ad: 'Merve', soyad: 'Vural', tt: true },
+  { tc: '90198745698', ad: 'Kemal', soyad: 'Şimşek', tt: true },
+  { tc: '11298745609', ad: 'Seda', soyad: 'Tekin', tt: false },
+  { tc: '22398745610', ad: 'Volkan', soyad: 'Aydın', tt: true },
+  { tc: '33498745621', ad: 'Nilüfer', soyad: 'Çakır', tt: false },
+  { tc: '44598745632', ad: 'Onur', soyad: 'Eren', tt: true },
+  { tc: '55698745643', ad: 'Pınar', soyad: 'Bozkurt', tt: true },
+  { tc: '66798745654', ad: 'Sinan', soyad: 'Yalçın', tt: false },
+  { tc: '77898745665', ad: 'Gamze', soyad: 'Doğan', tt: true },
+  { tc: '88998745676', ad: 'Erkan', soyad: 'Avcı', tt: false },
+  { tc: '99098745687', ad: 'Başak', soyad: 'Yücel', tt: true },
+  { tc: '10198745698', ad: 'Taner', soyad: 'Korkmaz', tt: false },
+  { tc: '21298745609', ad: 'Burcu', soyad: 'Çelik', tt: true },
+  { tc: '32398745610', ad: 'Umut', soyad: 'Güler', tt: true },
+  { tc: '43498745621', ad: 'Dilek', soyad: 'Yavuz', tt: false },
+  { tc: '54598745632', ad: 'Levent', soyad: 'Çiftçi', tt: true },
+  { tc: '65698745643', ad: 'Hülya', soyad: 'Özdemir', tt: false },
+  { tc: '76798745654', ad: 'Yasin', soyad: 'Aktaş', tt: true },
+  { tc: '87898745665', ad: 'Gizem', soyad: 'Öztürk', tt: true },
+  { tc: '98998745676', ad: 'Engin', soyad: 'Karaca', tt: false },
+  { tc: '10098745687', ad: 'Tuğba', soyad: 'Şahin', tt: true },
+  { tc: '21198745698', ad: 'Berk', soyad: 'Demirtaş', tt: false },
+  { tc: '32298745609', ad: 'Ebru', soyad: 'Yıldırım', tt: true },
+  { tc: '43398745610', ad: 'Selim', soyad: 'Koçak', tt: true },
+  { tc: '54498745621', ad: 'Aslı', soyad: 'Uysal', tt: false },
+  { tc: '65598745632', ad: 'Arda', soyad: 'Tunç', tt: true },
+  { tc: '76698745643', ad: 'Serap', soyad: 'Çoban', tt: false },
 ];
 
 // GSM numaraları - Her kişi için benzersiz ve gerçekçi numaralar
@@ -90,6 +124,40 @@ const gsmData = [
   ['5461234579', '5379876550'],               // Cansu (2 numara)
   ['5321234580'],                             // Cem (1 numara)
   ['5331234581', '5389876551'],               // Derya (2 numara)
+  ['5321234590', '5341234591'],               // Murat (2 numara)
+  ['5331234592'],                             // Ayşe (1 numara)
+  ['5341234593', '5351234594'],               // Serkan (2 numara)
+  ['5361234595'],                             // Esra (1 numara)
+  ['5371234596', '5381234597', '5321234598'], // Okan (3 numara)
+  ['5391234599'],                             // Gül (1 numara)
+  ['5421234600', '5331234601'],               // Tolga (2 numara)
+  ['5431234602'],                             // Merve (1 numara)
+  ['5441234603', '5341234604'],               // Kemal (2 numara)
+  ['5451234605'],                             // Seda (1 numara)
+  ['5461234606', '5351234607'],               // Volkan (2 numara)
+  ['5471234608'],                             // Nilüfer (1 numara)
+  ['5481234609', '5361234610', '5321234611'], // Onur (3 numara)
+  ['5491234612'],                             // Pınar (1 numara)
+  ['5521234613', '5331234614'],               // Sinan (2 numara)
+  ['5531234615'],                             // Gamze (1 numara)
+  ['5541234616', '5341234617'],               // Erkan (2 numara)
+  ['5551234618'],                             // Başak (1 numara)
+  ['5561234619', '5351234620'],               // Taner (2 numara)
+  ['5571234621'],                             // Burcu (1 numara)
+  ['5581234622', '5361234623'],               // Umut (2 numara)
+  ['5591234624'],                             // Dilek (1 numara)
+  ['5321234625', '5331234626', '5341234627'], // Levent (3 numara)
+  ['5351234628'],                             // Hülya (1 numara)
+  ['5361234629', '5371234630'],               // Yasin (2 numara)
+  ['5381234631'],                             // Gizem (1 numara)
+  ['5391234632', '5321234633'],               // Engin (2 numara)
+  ['5421234634'],                             // Tuğba (1 numara)
+  ['5431234635', '5331234636'],               // Berk (2 numara)
+  ['5441234637'],                             // Ebru (1 numara)
+  ['5451234638', '5341234639', '5351234640'], // Selim (3 numara)
+  ['5461234641'],                             // Aslı (1 numara)
+  ['5471234642', '5361234643'],               // Arda (2 numara)
+  ['5481234644'],                             // Serap (1 numara)
 ];
 
 // Araç plakaları (rastgele modeller atanacak)
@@ -109,6 +177,26 @@ const aracData = [
   { plaka: '06 DDD 333' },
   { plaka: '41 EEE 444' },
   { plaka: '35 FFF 555' },
+  { plaka: '34 GGG 666' },
+  { plaka: '06 HHH 777' },
+  { plaka: '35 III 888' },
+  { plaka: '16 JJJ 999' },
+  { plaka: '34 KKK 000' },
+  { plaka: '07 LLL 111' },
+  { plaka: '41 MMM 222' },
+  { plaka: '34 NNN 333' },
+  { plaka: '06 OOO 444' },
+  { plaka: '35 PPP 555' },
+  { plaka: '34 QQQ 666' },
+  { plaka: '16 RRR 777' },
+  { plaka: '06 SSS 888' },
+  { plaka: '41 TTT 999' },
+  { plaka: '35 UUU 000' },
+  { plaka: '34 VVV 111' },
+  { plaka: '07 WWW 222' },
+  { plaka: '34 XXX 333' },
+  { plaka: '06 YYY 444' },
+  { plaka: '35 ZZZ 555' },
 ];
 
 // Faaliyet Alanları
@@ -399,9 +487,9 @@ async function seedTanitimlar(adminId: string, kisiler: { id: string }[], mahall
 
   const now = new Date();
 
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 25; i++) {
     const tarih = new Date(now);
-    tarih.setDate(tarih.getDate() - Math.floor(Math.random() * 30)); // Son 30 gün
+    tarih.setDate(tarih.getDate() - Math.floor(Math.random() * 90)); // Son 90 gün
 
     const randomMahalle = mahalleler[Math.floor(Math.random() * mahalleler.length)];
 
@@ -417,8 +505,8 @@ async function seedTanitimlar(adminId: string, kisiler: { id: string }[], mahall
       },
     });
 
-    // Katılımcı ekle (2-4 kişi)
-    const katilimciSayisi = 2 + Math.floor(Math.random() * 3);
+    // Katılımcı ekle (2-5 kişi)
+    const katilimciSayisi = 2 + Math.floor(Math.random() * 4);
     const shuffled = [...kisiler].sort(() => 0.5 - Math.random());
 
     for (let j = 0; j < katilimciSayisi && j < shuffled.length; j++) {
@@ -431,7 +519,7 @@ async function seedTanitimlar(adminId: string, kisiler: { id: string }[], mahall
     }
   }
 
-  console.log('12 tanıtım oluşturuldu.');
+  console.log('25 tanıtım oluşturuldu.');
 }
 
 async function seedOperasyonlar(adminId: string, kisiler: { id: string }[], mahalleler: { id: string }[]) {
@@ -439,9 +527,9 @@ async function seedOperasyonlar(adminId: string, kisiler: { id: string }[], maha
 
   const now = new Date();
 
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 25; i++) {
     const tarih = new Date(now);
-    tarih.setDate(tarih.getDate() - Math.floor(Math.random() * 30)); // Son 30 gün
+    tarih.setDate(tarih.getDate() - Math.floor(Math.random() * 90)); // Son 90 gün
 
     const randomMahalle = mahalleler[Math.floor(Math.random() * mahalleler.length)];
 
@@ -457,8 +545,8 @@ async function seedOperasyonlar(adminId: string, kisiler: { id: string }[], maha
       },
     });
 
-    // Katılımcı ekle (1-3 kişi)
-    const katilimciSayisi = 1 + Math.floor(Math.random() * 3);
+    // Katılımcı ekle (1-4 kişi)
+    const katilimciSayisi = 1 + Math.floor(Math.random() * 4);
     const shuffled = [...kisiler].sort(() => 0.5 - Math.random());
 
     for (let j = 0; j < katilimciSayisi && j < shuffled.length; j++) {
@@ -471,7 +559,7 @@ async function seedOperasyonlar(adminId: string, kisiler: { id: string }[], maha
     }
   }
 
-  console.log('12 operasyon oluşturuldu.');
+  console.log('25 operasyon oluşturuldu.');
 }
 
 async function seedAraclar(adminId: string, kisiler: { id: string }[]) {

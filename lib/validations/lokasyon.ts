@@ -19,7 +19,7 @@ export const updateIlSchema = createIlSchema.partial()
 
 export const listIlQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   search: z.string().optional(),
   isActive: z.coerce.boolean().optional(),
   sortBy: z.enum(["ad", "plaka", "createdAt", "updatedAt"]).default("ad"),
@@ -47,7 +47,7 @@ export const updateIlceSchema = z.object({
 
 export const listIlceQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   ilId: z.string().cuid("Geçersiz il ID").optional(),
   search: z.string().optional(),
   isActive: z.coerce.boolean().optional(),
@@ -76,7 +76,7 @@ export const updateMahalleSchema = z.object({
 
 export const listMahalleQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   ilceId: z.string().cuid("Geçersiz ilçe ID").optional(),
   ilId: z.string().cuid("Geçersiz il ID").optional(),
   search: z.string().optional(),

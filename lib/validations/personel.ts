@@ -52,7 +52,7 @@ export const changeRolSchema = z.object({
 // List query params schema
 export const listPersonelQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   search: z.string().optional(),
   rol: z.enum(personelRolValues).optional(),
   isActive: z.coerce.boolean().optional(),

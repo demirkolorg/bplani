@@ -55,7 +55,7 @@ export const addOperasyonAracSchema = z.object({
 // List query params schema
 export const listOperasyonQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(100000).default(10000),
   search: z.string().optional(),
   tarihBaslangic: z.coerce.date().optional(),
   tarihBitis: z.coerce.date().optional(),

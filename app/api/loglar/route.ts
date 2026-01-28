@@ -55,8 +55,6 @@ export async function GET(request: NextRequest) {
       prisma.log.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
-        take: limit,
         include: {
           user: {
             select: {
@@ -74,10 +72,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: loglar,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: loglar.length,
+        total: loglar.length,
+        totalPages: 1,
       },
     })
   } catch (error) {

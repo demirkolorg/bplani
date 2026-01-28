@@ -1,17 +1,15 @@
 "use client"
 
-import { ArrowUpDown, Phone, MapPin, Megaphone, FileText, Shield, Car } from "lucide-react"
+import { Megaphone, FileText, Shield, Car } from "lucide-react"
 import type { Table } from "@tanstack/react-table"
 
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { ColumnHeaderMenu } from "@/components/shared/column-header-menu"
 import type { Kisi } from "@/hooks/use-kisiler"
 import type { SortOption } from "@/components/shared/data-table"
 import type { Translations } from "@/types/locale"
 import type { DataTableColumnDef } from "@/lib/data-table/types"
 import { createOperatorFilterFn, createArrayFilterFn } from "@/lib/data-table/column-filter-fns"
-import { ColumnHeaderFilter } from "@/components/shared/column-header-filter"
 
 // Kişi tablosu için özel sıralama seçenekleri
 export function getKisiSortOptions(t: Translations): SortOption[] {
@@ -41,18 +39,13 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     // Tip column (first visible column)
     {
       id: "tip",
-      accessorFn: (row) => row.tt,
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <span>{t.kisiler.tip}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.kisiler.tip}
-            formatValue={(val) => val ? t.kisiler.tipMusteri : t.kisiler.tipAday}
-            showBlanks={false}
-          />
-        </div>
+      accessorFn: (row) => String(row.tt),
+      header: ({ column }) => (
+        <ColumnHeaderMenu
+          column={column}
+          title={t.kisiler.tip}
+          enableSorting={true}
+        />
       ),
       cell: ({ row }) => {
         const tt = row.original.tt
@@ -70,13 +63,23 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
         )
       },
       filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") return true
-        const { operator, value } = filterValue as { operator: string; value: any[] }
-        const cellValue = row.getValue<boolean>(columnId)
+        // Support both object-based and array-based filter values
+        if (!filterValue) return true
 
-        // "in" operator for multi-select
-        if (operator === "in" && Array.isArray(value)) {
-          return value.includes(cellValue)
+        // Faceted filter passes array directly
+        if (Array.isArray(filterValue)) {
+          const cellValue = String(row.original.tt)
+          return filterValue.includes(cellValue)
+        }
+
+        // Column header filter passes object
+        if (typeof filterValue === "object") {
+          const { operator, value } = filterValue as { operator: string; value: any[] }
+          const cellValue = row.original.tt
+
+          if (operator === "in" && Array.isArray(value)) {
+            return value.includes(cellValue)
+          }
         }
 
         return false
@@ -86,22 +89,12 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "ad",
       accessorKey: "ad",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            {t.common.firstName}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.common.firstName}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu
+          column={column}
+          title={t.common.firstName}
+          enableSorting={true}
+        />
       ),
       cell: ({ row }) => {
         const ad = row.original.ad
@@ -126,22 +119,12 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "soyad",
       accessorKey: "soyad",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            {t.common.lastName}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.common.lastName}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu
+          column={column}
+          title={t.common.lastName}
+          enableSorting={true}
+        />
       ),
       cell: ({ row }) => {
         const soyad = row.original.soyad
@@ -152,12 +135,22 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
         )
       },
       filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") return true
-        const { operator, value } = filterValue as { operator: string; value: any[] }
+        if (!filterValue) return true
+
         const cellValue = row.getValue<string>(columnId)
 
-        if (operator === "in" && Array.isArray(value)) {
-          return value.includes(cellValue)
+        // Faceted filter passes array directly
+        if (Array.isArray(filterValue)) {
+          return filterValue.includes(cellValue)
+        }
+
+        // Column header filter passes object
+        if (typeof filterValue === "object") {
+          const { operator, value } = filterValue as { operator: string; value: any[] }
+
+          if (operator === "in" && Array.isArray(value)) {
+            return value.includes(cellValue)
+          }
         }
 
         return false
@@ -166,15 +159,12 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "tc",
       accessorKey: "tc",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <span>{t.kisiler.tcKimlik}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.kisiler.tcKimlik}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu
+          column={column}
+          title={t.kisiler.tcKimlik}
+          enableSorting={true}
+        />
       ),
       cell: ({ row }) => {
         const tc = row.original.tc
@@ -199,33 +189,8 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "faaliyet",
       accessorFn: (row) => row.faaliyetAlanlari?.map(f => f.faaliyetAlani.ad).join(", ") || "",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <span>{t.kisiler.faaliyet}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.kisiler.faaliyet}
-            getFilterValues={(rows) => {
-              // Extract all unique faaliyet names from array field
-              const faaliyetMap = new Map<string, number>()
-              rows.forEach((row: Kisi) => {
-                row.faaliyetAlanlari?.forEach(fa => {
-                  if (fa.faaliyetAlani.ad) {
-                    faaliyetMap.set(fa.faaliyetAlani.ad, (faaliyetMap.get(fa.faaliyetAlani.ad) || 0) + 1)
-                  }
-                })
-              })
-
-              const values: any[] = []
-              faaliyetMap.forEach((count, ad) => {
-                values.push({ value: ad, label: ad, count })
-              })
-              values.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
-              return values
-            }}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title={t.kisiler.faaliyet} enableSorting={true} />
       ),
       cell: ({ row }) => {
         const faaliyetAlanlari = row.original.faaliyetAlanlari
@@ -244,12 +209,22 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
         )
       },
       filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") return true
-        const { operator, value } = filterValue as { operator: string; value: any[] }
+        if (!filterValue) return true
+
         const faaliyetAlanlari = row.original.faaliyetAlanlari || []
 
-        if (operator === "in" && Array.isArray(value)) {
-          return faaliyetAlanlari.some(fa => value.includes(fa.faaliyetAlani.ad))
+        // Faceted filter passes array directly
+        if (Array.isArray(filterValue)) {
+          return faaliyetAlanlari.some(fa => filterValue.includes(fa.faaliyetAlani.ad))
+        }
+
+        // Column header filter passes object
+        if (typeof filterValue === "object") {
+          const { operator, value } = filterValue as { operator: string; value: any[] }
+
+          if (operator === "in" && Array.isArray(value)) {
+            return faaliyetAlanlari.some(fa => value.includes(fa.faaliyetAlani.ad))
+          }
         }
 
         return false
@@ -258,34 +233,8 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "gsm",
       accessorFn: (row) => row.gsmler?.map(g => g.numara).join(", ") || "",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <Phone className="h-4 w-4 text-blue-600" />
-          <span>GSM</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title="GSM"
-            getFilterValues={(rows) => {
-              // Extract all unique GSM numbers from array field
-              const gsmMap = new Map<string, number>()
-              rows.forEach((row: Kisi) => {
-                row.gsmler?.forEach(gsm => {
-                  if (gsm.numara) {
-                    gsmMap.set(gsm.numara, (gsmMap.get(gsm.numara) || 0) + 1)
-                  }
-                })
-              })
-
-              const values: any[] = []
-              gsmMap.forEach((count, numara) => {
-                values.push({ value: numara, label: numara, count })
-              })
-              values.sort((a, b) => a.label.localeCompare(b.label))
-              return values
-            }}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title="GSM" enableSorting={true} />
       ),
       cell: ({ row }) => {
         const gsmler = row.original.gsmler
@@ -317,35 +266,8 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "il",
       accessorFn: (row) => row.adresler?.map(a => a.mahalle.ilce.il.ad).join(", ") || "",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <MapPin className="h-4 w-4 text-green-600" />
-          <span>{t.lokasyon.il}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.lokasyon.il}
-            getFilterValues={(rows) => {
-              // Extract all unique il names from array field
-              const ilMap = new Map<string, number>()
-              rows.forEach((row: Kisi) => {
-                row.adresler?.forEach(adres => {
-                  const ilAd = adres.mahalle.ilce.il.ad
-                  if (ilAd) {
-                    ilMap.set(ilAd, (ilMap.get(ilAd) || 0) + 1)
-                  }
-                })
-              })
-
-              const values: any[] = []
-              ilMap.forEach((count, ilAd) => {
-                values.push({ value: ilAd, label: ilAd, count })
-              })
-              values.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
-              return values
-            }}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title={t.lokasyon.il} enableSorting={true} />
       ),
       cell: ({ row }) => {
         const adresler = row.original.adresler
@@ -363,12 +285,22 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
         )
       },
       filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") return true
-        const { operator, value } = filterValue as { operator: string; value: any[] }
+        if (!filterValue) return true
+
         const adresler = row.original.adresler || []
 
-        if (operator === "in" && Array.isArray(value)) {
-          return adresler.some(adres => value.includes(adres.mahalle.ilce.il.ad))
+        // Faceted filter passes array directly
+        if (Array.isArray(filterValue)) {
+          return adresler.some(adres => filterValue.includes(adres.mahalle.ilce.il.ad))
+        }
+
+        // Column header filter passes object
+        if (typeof filterValue === "object") {
+          const { operator, value } = filterValue as { operator: string; value: any[] }
+
+          if (operator === "in" && Array.isArray(value)) {
+            return adresler.some(adres => value.includes(adres.mahalle.ilce.il.ad))
+          }
         }
 
         return false
@@ -377,35 +309,8 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "ilce",
       accessorFn: (row) => row.adresler?.map(a => a.mahalle.ilce.ad).join(", ") || "",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <MapPin className="h-4 w-4 text-blue-600" />
-          <span>{t.lokasyon.ilce}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.lokasyon.ilce}
-            getFilterValues={(rows) => {
-              // Extract all unique ilce names from array field
-              const ilceMap = new Map<string, number>()
-              rows.forEach((row: Kisi) => {
-                row.adresler?.forEach(adres => {
-                  const ilceAd = adres.mahalle.ilce.ad
-                  if (ilceAd) {
-                    ilceMap.set(ilceAd, (ilceMap.get(ilceAd) || 0) + 1)
-                  }
-                })
-              })
-
-              const values: any[] = []
-              ilceMap.forEach((count, ilceAd) => {
-                values.push({ value: ilceAd, label: ilceAd, count })
-              })
-              values.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
-              return values
-            }}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title={t.lokasyon.ilce} enableSorting={true} />
       ),
       cell: ({ row }) => {
         const adresler = row.original.adresler
@@ -423,12 +328,22 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
         )
       },
       filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") return true
-        const { operator, value } = filterValue as { operator: string; value: any[] }
+        if (!filterValue) return true
+
         const adresler = row.original.adresler || []
 
-        if (operator === "in" && Array.isArray(value)) {
-          return adresler.some(adres => value.includes(adres.mahalle.ilce.ad))
+        // Faceted filter passes array directly
+        if (Array.isArray(filterValue)) {
+          return adresler.some(adres => filterValue.includes(adres.mahalle.ilce.ad))
+        }
+
+        // Column header filter passes object
+        if (typeof filterValue === "object") {
+          const { operator, value } = filterValue as { operator: string; value: any[] }
+
+          if (operator === "in" && Array.isArray(value)) {
+            return adresler.some(adres => value.includes(adres.mahalle.ilce.ad))
+          }
         }
 
         return false
@@ -437,35 +352,8 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "mahalle",
       accessorFn: (row) => row.adresler?.map(a => a.mahalle.ad).join(", ") || "",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <MapPin className="h-4 w-4 text-amber-600" />
-          <span>{t.lokasyon.mahalle}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.lokasyon.mahalle}
-            getFilterValues={(rows) => {
-              // Extract all unique mahalle names from array field
-              const mahalleMap = new Map<string, number>()
-              rows.forEach((row: Kisi) => {
-                row.adresler?.forEach(adres => {
-                  const mahalleAd = adres.mahalle.ad
-                  if (mahalleAd) {
-                    mahalleMap.set(mahalleAd, (mahalleMap.get(mahalleAd) || 0) + 1)
-                  }
-                })
-              })
-
-              const values: any[] = []
-              mahalleMap.forEach((count, mahalleAd) => {
-                values.push({ value: mahalleAd, label: mahalleAd, count })
-              })
-              values.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
-              return values
-            }}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title={t.lokasyon.mahalle} enableSorting={true} />
       ),
       cell: ({ row }) => {
         const adresler = row.original.adresler
@@ -483,12 +371,22 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
         )
       },
       filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") return true
-        const { operator, value } = filterValue as { operator: string; value: any[] }
+        if (!filterValue) return true
+
         const adresler = row.original.adresler || []
 
-        if (operator === "in" && Array.isArray(value)) {
-          return adresler.some(adres => value.includes(adres.mahalle.ad))
+        // Faceted filter passes array directly
+        if (Array.isArray(filterValue)) {
+          return adresler.some(adres => filterValue.includes(adres.mahalle.ad))
+        }
+
+        // Column header filter passes object
+        if (typeof filterValue === "object") {
+          const { operator, value } = filterValue as { operator: string; value: any[] }
+
+          if (operator === "in" && Array.isArray(value)) {
+            return adresler.some(adres => value.includes(adres.mahalle.ad))
+          }
         }
 
         return false
@@ -497,35 +395,8 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "adresDetay",
       accessorFn: (row) => row.adresler?.map(a => a.detay || "").filter(d => d).join(", ") || "",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <MapPin className="h-4 w-4 text-purple-600" />
-          <span>Adres Detayı</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title="Adres Detayı"
-            getFilterValues={(rows) => {
-              // Extract all unique address details from array field
-              const detayMap = new Map<string, number>()
-              rows.forEach((row: Kisi) => {
-                row.adresler?.forEach(adres => {
-                  const detay = adres.detay
-                  if (detay && detay.trim() !== "") {
-                    detayMap.set(detay, (detayMap.get(detay) || 0) + 1)
-                  }
-                })
-              })
-
-              const values: any[] = []
-              detayMap.forEach((count, detay) => {
-                values.push({ value: detay, label: detay, count })
-              })
-              values.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
-              return values
-            }}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title="Adres Detayı" enableSorting={true} />
       ),
       cell: ({ row }) => {
         const adresler = row.original.adresler
@@ -557,25 +428,12 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "tanitim",
       accessorFn: (row) => row._count?.tanitimlar ?? 0,
-      size: 60,
-      header: ({ column, table }) => (
-        <div className="flex items-center justify-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <Megaphone className="h-4 w-4 text-purple-600" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Tanıtım</p>
-            </TooltipContent>
-          </Tooltip>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title="Tanıtım"
-            showBlanks={false}
-          />
+      size: 45,
+      header: ({ column }) => (
+        <div className="flex items-center justify-center">
+          <ColumnHeaderMenu column={column} enableSorting={true}>
+            <Megaphone className="h-4 w-4 text-purple-600" />
+          </ColumnHeaderMenu>
         </div>
       ),
       cell: ({ row }) => {
@@ -605,25 +463,12 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "operasyon",
       accessorFn: (row) => row._count?.operasyonlar ?? 0,
-      size: 60,
-      header: ({ column, table }) => (
-        <div className="flex items-center justify-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <Shield className="h-4 w-4 text-indigo-600" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Operasyon</p>
-            </TooltipContent>
-          </Tooltip>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title="Operasyon"
-            showBlanks={false}
-          />
+      size: 45,
+      header: ({ column }) => (
+        <div className="flex items-center justify-center">
+          <ColumnHeaderMenu column={column} enableSorting={true}>
+            <Shield className="h-4 w-4 text-indigo-600" />
+          </ColumnHeaderMenu>
         </div>
       ),
       cell: ({ row }) => {
@@ -653,25 +498,12 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "arac",
       accessorFn: (row) => row._count?.araclar ?? 0,
-      size: 60,
-      header: ({ column, table }) => (
-        <div className="flex items-center justify-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <Car className="h-4 w-4 text-slate-600" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Araç</p>
-            </TooltipContent>
-          </Tooltip>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title="Araç"
-            showBlanks={false}
-          />
+      size: 45,
+      header: ({ column }) => (
+        <div className="flex items-center justify-center">
+          <ColumnHeaderMenu column={column} enableSorting={true}>
+            <Car className="h-4 w-4 text-slate-600" />
+          </ColumnHeaderMenu>
         </div>
       ),
       cell: ({ row }) => {
@@ -701,25 +533,12 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "not",
       accessorFn: (row) => row._count?.notlar ?? row.notlar?.length ?? 0,
-      size: 60,
-      header: ({ column, table }) => (
-        <div className="flex items-center justify-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <FileText className="h-4 w-4 text-orange-600" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t.common.note}</p>
-            </TooltipContent>
-          </Tooltip>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.common.note}
-            showBlanks={false}
-          />
+      size: 45,
+      header: ({ column }) => (
+        <div className="flex items-center justify-center">
+          <ColumnHeaderMenu column={column} enableSorting={true}>
+            <FileText className="h-4 w-4 text-orange-600" />
+          </ColumnHeaderMenu>
         </div>
       ),
       cell: ({ row }) => {
@@ -747,21 +566,13 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
       },
     },
     {
-      accessorKey: "pio",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <span>{t.kisiler.pio}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.kisiler.pio}
-            formatValue={(val) => val ? t.common.yes : t.common.no}
-            showBlanks={false}
-          />
-        </div>
+      id: "pio",
+      accessorFn: (row) => String(row.pio),
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title={t.kisiler.pio} enableSorting={true} />
       ),
       cell: ({ row }) => {
-        const pio = row.getValue("pio") as boolean
+        const pio = row.original.pio
         return pio ? (
           <Badge variant="default">{t.common.yes}</Badge>
         ) : (
@@ -769,33 +580,35 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
         )
       },
       filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") return true
-        const { operator, value } = filterValue as { operator: string; value: any[] }
-        const cellValue = row.getValue<boolean>(columnId)
+        if (!filterValue) return true
 
-        if (operator === "in" && Array.isArray(value)) {
-          return value.includes(cellValue)
+        // Faceted filter passes array directly
+        if (Array.isArray(filterValue)) {
+          const cellValue = String(row.original.pio)
+          return filterValue.includes(cellValue)
+        }
+
+        // Column header filter passes object
+        if (typeof filterValue === "object") {
+          const { operator, value } = filterValue as { operator: string; value: any[] }
+          const cellValue = row.original.pio
+
+          if (operator === "in" && Array.isArray(value)) {
+            return value.includes(cellValue)
+          }
         }
 
         return false
       },
     },
     {
-      accessorKey: "asli",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <span>{t.kisiler.asli}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.kisiler.asli}
-            formatValue={(val) => val ? t.common.yes : t.common.no}
-            showBlanks={false}
-          />
-        </div>
+      id: "asli",
+      accessorFn: (row) => String(row.asli),
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title={t.kisiler.asli} enableSorting={true} />
       ),
       cell: ({ row }) => {
-        const asli = row.getValue("asli") as boolean
+        const asli = row.original.asli
         return asli ? (
           <Badge variant="default">{t.common.yes}</Badge>
         ) : (
@@ -803,12 +616,22 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
         )
       },
       filterFn: (row, columnId, filterValue) => {
-        if (!filterValue || typeof filterValue !== "object") return true
-        const { operator, value } = filterValue as { operator: string; value: any[] }
-        const cellValue = row.getValue<boolean>(columnId)
+        if (!filterValue) return true
 
-        if (operator === "in" && Array.isArray(value)) {
-          return value.includes(cellValue)
+        // Faceted filter passes array directly
+        if (Array.isArray(filterValue)) {
+          const cellValue = String(row.original.asli)
+          return filterValue.includes(cellValue)
+        }
+
+        // Column header filter passes object
+        if (typeof filterValue === "object") {
+          const { operator, value } = filterValue as { operator: string; value: any[] }
+          const cellValue = row.original.asli
+
+          if (operator === "in" && Array.isArray(value)) {
+            return value.includes(cellValue)
+          }
         }
 
         return false
@@ -817,17 +640,8 @@ export function getKisiColumns(t: Translations): DataTableColumnDef<Kisi>[] {
     {
       id: "tt",
       accessorKey: "tt",
-      header: ({ column, table }) => (
-        <div className="flex items-center gap-1">
-          <span>{t.kisiler.tt}</span>
-          <ColumnHeaderFilter
-            column={column}
-            table={table}
-            title={t.kisiler.tt}
-            formatValue={(val) => val ? t.common.yes : t.common.no}
-            showBlanks={false}
-          />
-        </div>
+      header: ({ column }) => (
+        <ColumnHeaderMenu column={column} title={t.kisiler.tt} enableSorting={true} />
       ),
       cell: ({ row }) => {
         const tt = row.original.tt

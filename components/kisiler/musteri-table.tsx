@@ -37,6 +37,128 @@ export function KisiTable() {
   const columns = React.useMemo(() => getKisiColumns(t), [t])
   const sortOptions = React.useMemo(() => getKisiSortOptions(t), [t])
 
+  // Faceted filter setup
+  const facetedFilterSetup = React.useMemo(() => {
+    // Extract unique soyad values from data
+    const soyadOptions: { label: string; value: string }[] = []
+    const soyadSet = new Set<string>()
+
+    // Extract unique faaliyet values from data
+    const faaliyetOptions: { label: string; value: string }[] = []
+    const faaliyetSet = new Set<string>()
+
+    // Extract unique il values from data
+    const ilOptions: { label: string; value: string }[] = []
+    const ilSet = new Set<string>()
+
+    // Extract unique ilce values from data
+    const ilceOptions: { label: string; value: string }[] = []
+    const ilceSet = new Set<string>()
+
+    // Extract unique mahalle values from data
+    const mahalleOptions: { label: string; value: string }[] = []
+    const mahalleSet = new Set<string>()
+
+    data?.data?.forEach((kisi: Kisi) => {
+      // Soyad
+      if (kisi.soyad && !soyadSet.has(kisi.soyad)) {
+        soyadSet.add(kisi.soyad)
+        soyadOptions.push({ label: kisi.soyad, value: kisi.soyad })
+      }
+
+      // Faaliyet alanları
+      kisi.faaliyetAlanlari?.forEach((fa) => {
+        if (fa.faaliyetAlani.ad && !faaliyetSet.has(fa.faaliyetAlani.ad)) {
+          faaliyetSet.add(fa.faaliyetAlani.ad)
+          faaliyetOptions.push({
+            label: fa.faaliyetAlani.ad,
+            value: fa.faaliyetAlani.ad,
+          })
+        }
+      })
+
+      // İl, İlçe, Mahalle
+      kisi.adresler?.forEach((adres) => {
+        const ilAd = adres.mahalle.ilce.il.ad
+        const ilceAd = adres.mahalle.ilce.ad
+        const mahalleAd = adres.mahalle.ad
+
+        if (ilAd && !ilSet.has(ilAd)) {
+          ilSet.add(ilAd)
+          ilOptions.push({ label: ilAd, value: ilAd })
+        }
+
+        if (ilceAd && !ilceSet.has(ilceAd)) {
+          ilceSet.add(ilceAd)
+          ilceOptions.push({ label: ilceAd, value: ilceAd })
+        }
+
+        if (mahalleAd && !mahalleSet.has(mahalleAd)) {
+          mahalleSet.add(mahalleAd)
+          mahalleOptions.push({ label: mahalleAd, value: mahalleAd })
+        }
+      })
+    })
+
+    soyadOptions.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
+    faaliyetOptions.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
+    ilOptions.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
+    ilceOptions.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
+    mahalleOptions.sort((a, b) => a.label.localeCompare(b.label, 'tr'))
+
+    return [
+      {
+        columnId: "tip",
+        title: t.kisiler.tip,
+        options: [
+          { label: t.kisiler.tipMusteri, value: "true" },
+          { label: t.kisiler.tipAday, value: "false" },
+        ],
+      },
+      {
+        columnId: "soyad",
+        title: t.common.lastName,
+        options: soyadOptions,
+      },
+      {
+        columnId: "pio",
+        title: t.kisiler.pio,
+        options: [
+          { label: t.common.yes, value: "true" },
+          { label: t.common.no, value: "false" },
+        ],
+      },
+      {
+        columnId: "asli",
+        title: t.kisiler.asli,
+        options: [
+          { label: t.common.yes, value: "true" },
+          { label: t.common.no, value: "false" },
+        ],
+      },
+      {
+        columnId: "faaliyet",
+        title: t.kisiler.faaliyet,
+        options: faaliyetOptions,
+      },
+      {
+        columnId: "il",
+        title: t.lokasyon.il,
+        options: ilOptions,
+      },
+      {
+        columnId: "ilce",
+        title: t.lokasyon.ilce,
+        options: ilceOptions,
+      },
+      {
+        columnId: "mahalle",
+        title: t.lokasyon.mahalle,
+        options: mahalleOptions,
+      },
+    ]
+  }, [t, data?.data])
+
   // Load saved filters on mount
   const [initialFilters] = React.useState(() => prefs.filters || [])
 
@@ -104,6 +226,7 @@ export function KisiTable() {
         pageSize={prefs.pageSize}
         defaultColumnVisibility={prefs.columnVisibility}
         defaultColumnFilters={initialFilters}
+        facetedFilterSetup={facetedFilterSetup}
         onRowClick={handleRowClick}
         rowWrapper={rowWrapper}
         onColumnVisibilityChange={prefs.setColumnVisibility}

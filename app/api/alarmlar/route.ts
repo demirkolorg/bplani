@@ -58,15 +58,12 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Get total count
-    const total = await prisma.alarm.count({ where })
+    // Get all results (pagination handled client-side)
 
-    // Get paginated results
+    
     const alarmlar = await prisma.alarm.findMany({
       where,
       orderBy: { [sortBy]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
       include: {
         takip: {
           include: {
@@ -95,10 +92,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: alarmlar,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page: 1,
+        limit: alarmlar.length,
+        total: alarmlar.length,
+        totalPages: 1,
       },
     })
   } catch (error) {
