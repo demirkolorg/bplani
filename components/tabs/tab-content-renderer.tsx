@@ -3,11 +3,12 @@
 import * as React from "react"
 import { useTabs } from "@/components/providers/tab-provider"
 import { TabPanel } from "./tab-panel"
+import { TabSelector } from "./tab-selector"
 import { Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function TabContentRenderer() {
-  const { tabs, activeTabId, openTab, mounted } = useTabs()
+  const { tabs, activeTabId, openTab, mounted, splitActive, splitPrimaryTabId, splitSecondaryTabId, splitOrientation } = useTabs()
 
   // Mounted olana kadar loading göster
   if (!mounted) {
@@ -39,6 +40,37 @@ export function TabContentRenderer() {
     )
   }
 
+  // Split view mode - ama sadece activeTabId split edilen tablardan biriyse
+  const isSplitTabActive = splitActive && splitPrimaryTabId && (activeTabId === splitPrimaryTabId || activeTabId === splitSecondaryTabId)
+
+  if (isSplitTabActive) {
+    const primaryTab = tabs.find((t) => t.id === splitPrimaryTabId)
+    const secondaryTab = splitSecondaryTabId ? tabs.find((t) => t.id === splitSecondaryTabId) : null
+
+    if (primaryTab) {
+      const isHorizontal = splitOrientation === "horizontal"
+
+      return (
+        <div className={`h-full w-full flex ${isHorizontal ? "flex-row" : "flex-col"}`}>
+          {/* Primary tab (sol/üst) */}
+          <div className={`${isHorizontal ? "w-1/2" : "h-1/2"} relative bg-background ${isHorizontal ? "border-r" : "border-b"}`}>
+            <TabPanel tab={primaryTab} isActive={true} />
+          </div>
+
+          {/* Secondary tab veya seçici (sağ/alt) */}
+          <div className={`${isHorizontal ? "w-1/2" : "h-1/2"} relative bg-background`}>
+            {secondaryTab ? (
+              <TabPanel tab={secondaryTab} isActive={true} />
+            ) : (
+              <TabSelector />
+            )}
+          </div>
+        </div>
+      )
+    }
+  }
+
+  // Normal mode
   return (
     <div className="h-full w-full relative bg-background">
       {tabs.map((tab) => (

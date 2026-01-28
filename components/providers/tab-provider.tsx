@@ -10,6 +10,9 @@ import type {
   TabContextType,
   OpenTabOptions,
   PersistedTabState,
+  SplitOrientation,
+  TabGroup,
+  TabSession,
 } from "@/types/tabs"
 import { getRouteTitle, getRouteIcon, getRouteTitleKey } from "@/lib/tab-config"
 import { useLocale } from "@/components/providers/locale-provider"
@@ -23,6 +26,13 @@ const initialState: TabState = {
   tabs: [],
   activeTabId: null,
   activeTabHistory: [],
+  closedTabHistory: [],
+  groups: [],
+  sessions: [],
+  splitActive: false,
+  splitPrimaryTabId: null,
+  splitSecondaryTabId: null,
+  splitOrientation: "horizontal",
   maxTabs: DEFAULT_MAX_TABS,
 }
 
@@ -33,8 +43,8 @@ function tabReducer(state: TabState, action: TabAction): TabState {
       const { path, title, icon, options } = action.payload
       const existingTab = state.tabs.find((t) => t.path === path)
 
-      // Zaten açık - focus ol
-      if (existingTab) {
+      // Zaten açık - focus ol (duplicate flag yoksa)
+      if (existingTab && !options?.duplicate) {
         if (options?.background) {
           return state // Background'da açılıyorsa active değiştirme
         }
@@ -62,6 +72,7 @@ function tabReducer(state: TabState, action: TabAction): TabState {
         scrollPosition: 0,
         openedAt: Date.now(),
         lastActiveAt: Date.now(),
+        isPinned: path === "/" ? true : undefined, // Ana sayfa her zaman pinli
       }
 
       // Yeni tab'ı aktif tabın yanına ekle
@@ -113,10 +124,13 @@ function tabReducer(state: TabState, action: TabAction): TabState {
       const { tabId } = action.payload
       const tab = state.tabs.find((t) => t.id === tabId)
 
-      // Ana sayfa tabı kapatılamaz
-      if (!tab || tab.path === "/") return state
+      // Pinli tab'lar kapatılamaz
+      if (!tab || tab.isPinned) return state
 
       const newTabs = state.tabs.filter((t) => t.id !== tabId)
+
+      // Kapatılan tab'ı closedTabHistory'ye ekle (son 10 tab)
+      const newClosedHistory = [...state.closedTabHistory, tab].slice(-10)
 
       // History'den de kaldır
       const newHistory = state.activeTabHistory.filter((id) => id !== tabId)
@@ -150,6 +164,7 @@ function tabReducer(state: TabState, action: TabAction): TabState {
         tabs: newTabs,
         activeTabId: newActiveId,
         activeTabHistory: newHistory,
+        closedTabHistory: newClosedHistory,
       }
     }
 
@@ -280,6 +295,16 @@ function tabReducer(state: TabState, action: TabAction): TabState {
       }
     }
 
+    case "SET_TAB_DIRTY": {
+      const { tabId, isDirty } = action.payload
+      return {
+        ...state,
+        tabs: state.tabs.map((t) =>
+          t.id === tabId ? { ...t, isDirty } : t
+        ),
+      }
+    }
+
     case "REORDER": {
       const { fromIndex, toIndex } = action.payload
 
@@ -295,10 +320,255 @@ function tabReducer(state: TabState, action: TabAction): TabState {
       return { ...state, tabs: newTabs }
     }
 
+    case "REOPEN_LAST_CLOSED_TAB": {
+      // Kapatılan tab history'si boşsa işlem yapma
+      if (state.closedTabHistory.length === 0) return state
+
+      // Son kapatılan tab'ı al
+      const lastClosedTab = state.closedTabHistory[state.closedTabHistory.length - 1]
+      const newClosedHistory = state.closedTabHistory.slice(0, -1)
+
+      // Aynı path'te tab zaten açıksa sadece focus ol
+      const existingTab = state.tabs.find((t) => t.path === lastClosedTab.path)
+      if (existingTab) {
+        const newHistory = state.activeTabHistory.filter((id) => id !== existingTab.id)
+        if (state.activeTabId) {
+          newHistory.push(state.activeTabId)
+        }
+        return {
+          ...state,
+          activeTabId: existingTab.id,
+          activeTabHistory: newHistory,
+          closedTabHistory: newClosedHistory,
+        }
+      }
+
+      // Yeni tab olarak ekle (yeni ID ile)
+      const reopenedTab: Tab = {
+        ...lastClosedTab,
+        id: uuidv4(), // Yeni ID
+        openedAt: Date.now(),
+        lastActiveAt: Date.now(),
+      }
+
+      // Aktif tab'ın yanına ekle
+      let newTabs: Tab[]
+      if (state.activeTabId) {
+        const activeIndex = state.tabs.findIndex((t) => t.id === state.activeTabId)
+        if (activeIndex !== -1) {
+          newTabs = [
+            ...state.tabs.slice(0, activeIndex + 1),
+            reopenedTab,
+            ...state.tabs.slice(activeIndex + 1),
+          ]
+        } else {
+          newTabs = [...state.tabs, reopenedTab]
+        }
+      } else {
+        newTabs = [...state.tabs, reopenedTab]
+      }
+
+      // History'yi güncelle
+      let newHistory = [...state.activeTabHistory]
+      if (state.activeTabId) {
+        newHistory.push(state.activeTabId)
+      }
+
+      return {
+        ...state,
+        tabs: newTabs,
+        activeTabId: reopenedTab.id,
+        activeTabHistory: newHistory,
+        closedTabHistory: newClosedHistory,
+      }
+    }
+
+    case "PIN_TAB": {
+      const { tabId } = action.payload
+      const tab = state.tabs.find((t) => t.id === tabId)
+      if (!tab || tab.isPinned) return state
+
+      // Tab'ı pinle
+      const pinnedTab = { ...tab, isPinned: true }
+      const otherTabs = state.tabs.filter((t) => t.id !== tabId)
+
+      // Ana sayfa (path === "/") varsa ayır
+      const homeTab = otherTabs.find((t) => t.path === "/")
+      const nonHomeTabs = otherTabs.filter((t) => t.path !== "/")
+
+      // Pinli tab'ları (ana sayfa hariç) ve unpinli tab'ları ayır
+      const pinnedTabs = nonHomeTabs.filter((t) => t.isPinned)
+      const unpinnedTabs = nonHomeTabs.filter((t) => !t.isPinned)
+
+      // Ana sayfa en başta, sonra pinli tab'lar, sonra unpinli tab'lar
+      return {
+        ...state,
+        tabs: homeTab
+          ? [homeTab, ...pinnedTabs, pinnedTab, ...unpinnedTabs]
+          : [...pinnedTabs, pinnedTab, ...unpinnedTabs],
+      }
+    }
+
+    case "UNPIN_TAB": {
+      const { tabId } = action.payload
+      const tab = state.tabs.find((t) => t.id === tabId)
+      if (!tab || !tab.isPinned) return state
+
+      // Ana sayfa (path === "/") unpinlenemez
+      if (tab.path === "/") return state
+
+      // Tab'ı unpin et
+      return {
+        ...state,
+        tabs: state.tabs.map((t) =>
+          t.id === tabId ? { ...t, isPinned: false } : t
+        ),
+      }
+    }
+
+    case "CREATE_GROUP": {
+      const { groupId, name, color } = action.payload
+      const newGroup: TabGroup = {
+        id: groupId,
+        name,
+        color,
+      }
+      return {
+        ...state,
+        groups: [...state.groups, newGroup],
+      }
+    }
+
+    case "UPDATE_GROUP": {
+      const { groupId, name, color } = action.payload
+      return {
+        ...state,
+        groups: state.groups.map((g) =>
+          g.id === groupId
+            ? { ...g, ...(name !== undefined && { name }), ...(color !== undefined && { color }) }
+            : g
+        ),
+      }
+    }
+
+    case "DELETE_GROUP": {
+      const { groupId } = action.payload
+      // Grup silindiğinde, o gruptaki tab'ların groupId'sini null yap
+      return {
+        ...state,
+        groups: state.groups.filter((g) => g.id !== groupId),
+        tabs: state.tabs.map((t) =>
+          t.groupId === groupId ? { ...t, groupId: undefined } : t
+        ),
+      }
+    }
+
+    case "ASSIGN_TAB_TO_GROUP": {
+      const { tabId, groupId } = action.payload
+      return {
+        ...state,
+        tabs: state.tabs.map((t) =>
+          t.id === tabId ? { ...t, groupId: groupId || undefined } : t
+        ),
+      }
+    }
+
+    case "SAVE_SESSION": {
+      const { sessionId, name } = action.payload
+      const newSession: TabSession = {
+        id: sessionId,
+        name,
+        tabs: state.tabs.map((t) => ({
+          id: t.id,
+          path: t.path,
+          title: t.title,
+          icon: t.icon,
+          scrollPosition: t.scrollPosition,
+          openedAt: t.openedAt,
+          isDynamic: t.isDynamic,
+          isPinned: t.isPinned,
+          groupId: t.groupId,
+        })),
+        createdAt: Date.now(),
+      }
+      return {
+        ...state,
+        sessions: [...state.sessions, newSession],
+      }
+    }
+
+    case "LOAD_SESSION": {
+      const { sessionId } = action.payload
+      const session = state.sessions.find((s) => s.id === sessionId)
+      if (!session) return state
+
+      // Session'daki tab'ları yükle
+      const loadedTabs: Tab[] = session.tabs.map((t) => ({
+        ...t,
+        lastActiveAt: Date.now(),
+      }))
+
+      return {
+        ...state,
+        tabs: loadedTabs,
+        activeTabId: loadedTabs.length > 0 ? loadedTabs[0].id : null,
+        activeTabHistory: [],
+      }
+    }
+
+    case "DELETE_SESSION": {
+      const { sessionId } = action.payload
+      return {
+        ...state,
+        sessions: state.sessions.filter((s) => s.id !== sessionId),
+      }
+    }
+
+    case "START_SPLIT_VIEW": {
+      const { tabId, orientation } = action.payload
+      const tab = state.tabs.find((t) => t.id === tabId)
+      if (!tab) return state
+
+      return {
+        ...state,
+        splitActive: true,
+        splitPrimaryTabId: tabId,
+        splitSecondaryTabId: null, // null = seçici göster
+        splitOrientation: orientation,
+      }
+    }
+
+    case "SELECT_SPLIT_TAB": {
+      const { tabId } = action.payload
+      const tab = state.tabs.find((t) => t.id === tabId)
+      if (!tab || !state.splitActive) return state
+
+      return {
+        ...state,
+        splitSecondaryTabId: tabId,
+      }
+    }
+
+    case "CLOSE_SPLIT_VIEW": {
+      return {
+        ...state,
+        splitActive: false,
+        splitPrimaryTabId: null,
+        splitSecondaryTabId: null,
+      }
+    }
+
     case "HYDRATE": {
       return {
         ...action.payload,
         activeTabHistory: [], // History restore edilmez, boş başlar
+        closedTabHistory: [], // Closed tab history restore edilmez, boş başlar
+        groups: action.payload.groups || [], // Groups restore edilir
+        sessions: action.payload.sessions || [], // Sessions restore edilir
+        splitActive: false, // Split mode restore edilmez
+        splitPrimaryTabId: null,
+        splitSecondaryTabId: null,
+        splitOrientation: "horizontal",
         maxTabs: action.payload.maxTabs || DEFAULT_MAX_TABS,
       }
     }
@@ -338,6 +608,10 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
                 icon: tab.path === "/" ? "Home" : tab.icon,
               })),
               activeTabId: parsed.activeTabId,
+              groups: parsed.groups || [],
+              sessions: parsed.sessions || [],
+              activeTabHistory: [],
+              closedTabHistory: [],
               maxTabs: DEFAULT_MAX_TABS,
             },
           })
@@ -364,8 +638,12 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
           scrollPosition: t.scrollPosition,
           openedAt: t.openedAt,
           isDynamic: t.isDynamic,
+          isPinned: t.isPinned,
+          groupId: t.groupId,
         })),
         activeTabId: state.activeTabId,
+        groups: state.groups,
+        sessions: state.sessions,
       }
       localStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(persistedState))
     }, 500)
@@ -480,12 +758,72 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
     []
   )
 
+  const setTabDirty = React.useCallback((tabId: string, isDirty: boolean) => {
+    dispatch({ type: "SET_TAB_DIRTY", payload: { tabId, isDirty } })
+  }, [])
+
   const reorderTabs = React.useCallback(
     (fromIndex: number, toIndex: number) => {
       dispatch({ type: "REORDER", payload: { fromIndex, toIndex } })
     },
     []
   )
+
+  const reopenLastClosedTab = React.useCallback(() => {
+    dispatch({ type: "REOPEN_LAST_CLOSED_TAB" })
+  }, [])
+
+  const pinTab = React.useCallback((tabId: string) => {
+    dispatch({ type: "PIN_TAB", payload: { tabId } })
+  }, [])
+
+  const unpinTab = React.useCallback((tabId: string) => {
+    dispatch({ type: "UNPIN_TAB", payload: { tabId } })
+  }, [])
+
+  const createGroup = React.useCallback((name: string, color: string): string => {
+    const groupId = uuidv4()
+    dispatch({ type: "CREATE_GROUP", payload: { groupId, name, color } })
+    return groupId
+  }, [])
+
+  const updateGroup = React.useCallback((groupId: string, name?: string, color?: string) => {
+    dispatch({ type: "UPDATE_GROUP", payload: { groupId, name, color } })
+  }, [])
+
+  const deleteGroup = React.useCallback((groupId: string) => {
+    dispatch({ type: "DELETE_GROUP", payload: { groupId } })
+  }, [])
+
+  const assignTabToGroup = React.useCallback((tabId: string, groupId: string | null) => {
+    dispatch({ type: "ASSIGN_TAB_TO_GROUP", payload: { tabId, groupId } })
+  }, [])
+
+  const saveSession = React.useCallback((name: string): string => {
+    const sessionId = uuidv4()
+    dispatch({ type: "SAVE_SESSION", payload: { sessionId, name } })
+    return sessionId
+  }, [])
+
+  const loadSession = React.useCallback((sessionId: string) => {
+    dispatch({ type: "LOAD_SESSION", payload: { sessionId } })
+  }, [])
+
+  const deleteSession = React.useCallback((sessionId: string) => {
+    dispatch({ type: "DELETE_SESSION", payload: { sessionId } })
+  }, [])
+
+  const startSplitView = React.useCallback((tabId: string, orientation: SplitOrientation) => {
+    dispatch({ type: "START_SPLIT_VIEW", payload: { tabId, orientation } })
+  }, [])
+
+  const selectSplitTab = React.useCallback((tabId: string) => {
+    dispatch({ type: "SELECT_SPLIT_TAB", payload: { tabId } })
+  }, [])
+
+  const closeSplitView = React.useCallback(() => {
+    dispatch({ type: "CLOSE_SPLIT_VIEW" })
+  }, [])
 
   const getTabByPath = React.useCallback(
     (path: string) => {
@@ -501,6 +839,13 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
     activeTabId: state.activeTabId,
     activeTab,
     mounted,
+    closedTabHistory: state.closedTabHistory,
+    groups: state.groups,
+    sessions: state.sessions,
+    splitActive: state.splitActive,
+    splitPrimaryTabId: state.splitPrimaryTabId,
+    splitSecondaryTabId: state.splitSecondaryTabId,
+    splitOrientation: state.splitOrientation,
     openTab,
     closeTab,
     closeOtherTabs,
@@ -511,7 +856,21 @@ export function TabProvider({ children }: { children: React.ReactNode }) {
     updateTabTitle,
     updateTabIcon,
     updateScrollPosition,
+    setTabDirty,
     reorderTabs,
+    reopenLastClosedTab,
+    pinTab,
+    unpinTab,
+    createGroup,
+    updateGroup,
+    deleteGroup,
+    assignTabToGroup,
+    saveSession,
+    loadSession,
+    deleteSession,
+    startSplitView,
+    selectSplitTab,
+    closeSplitView,
     getTabByPath,
   }
 

@@ -1380,6 +1380,21 @@ export interface TabsTranslations {
   closeOtherTabs: string
   closeTabsToRight: string
   closeAllTabs: string
+  reopenClosedTab: string
+  pinTab: string
+  unpinTab: string
+  duplicateTab: string
+  searchTabs: string
+  addToGroup: string
+  removeFromGroup: string
+  newGroup: string
+  saveWorkspace: string
+  loadWorkspace: string
+  deleteWorkspace: string
+  workspaceName: string
+  splitHorizontal: string
+  splitVertical: string
+  closeSplit: string
   newTab: string
 
   // Route titles

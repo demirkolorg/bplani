@@ -57,15 +57,9 @@ export function LoginForm({
       onSubmit={handleSubmit}
       {...props}
     >
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">{t.auth.loginTitle}</h1>
-        <p className="text-muted-foreground text-sm text-balance">
-          {t.auth.loginSubtitle}
-        </p>
-      </div>
       <div className="grid gap-6">
         <div className="grid gap-3">
-          <Label htmlFor="visibleId">{t.auth.identityNumber}</Label>
+          <Label htmlFor="visibleId" className="text-gray-200">{t.auth.identityNumber}</Label>
           <Input
             id="visibleId"
             type="text"
@@ -74,11 +68,12 @@ export function LoginForm({
             onChange={(e) => setVisibleId(e.target.value)}
             required
             disabled={isLoading}
+            className="bg-[#1a1a1a] border-gray-700 text-white placeholder:text-gray-500"
           />
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
-            <Label htmlFor="parola">{t.auth.password}</Label>
+            <Label htmlFor="parola" className="text-gray-200">{t.auth.password}</Label>
           </div>
           <Input
             id="parola"
@@ -87,9 +82,10 @@ export function LoginForm({
             onChange={(e) => setParola(e.target.value)}
             required
             disabled={isLoading}
+            className="bg-[#1a1a1a] border-gray-700 text-white placeholder:text-gray-500"
           />
         </div>
-        {error && <p className="text-sm text-destructive text-center">{error}</p>}
+        {error && <p className="text-sm text-red-400 text-center">{error}</p>}
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? (
             <>
